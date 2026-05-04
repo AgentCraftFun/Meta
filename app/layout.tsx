@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import Providers from './providers';
 
 export const metadata: Metadata = {
   title: 'MetaMap — Trending Narratives by Country',
@@ -32,7 +33,9 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="bg-black text-neutral-100 antialiased">{children}</body>
+      <body className="bg-black text-neutral-100 antialiased">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

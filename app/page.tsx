@@ -1,4 +1,5 @@
 import dynamic from 'next/dynamic';
+import SourceModeBadge from '@/components/hud/SourceModeBadge';
 
 const Stage = dynamic(() => import('@/components/globe/Stage'), {
   ssr: false,
@@ -25,6 +26,7 @@ export default function Page() {
   return (
     <main className="relative h-screen w-screen overflow-hidden bg-black">
       <Stage />
+      <SourceModeBadge />
     </main>
   );
 }
