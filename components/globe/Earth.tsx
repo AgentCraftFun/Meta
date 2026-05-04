@@ -1,14 +1,12 @@
 'use client';
 
 import { useTexture } from '@react-three/drei';
-import { useFrame } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { SUN_DIRECTION } from '@/lib/sun';
 
 const TEXTURES = {
   day: '/textures/8k_earth_daymap.jpg',
-  night: '/textures/8k_earth_nightmap.jpg',
   specular: '/textures/8k_earth_specular_map.png',
 };
 
@@ -18,7 +16,7 @@ const vertexShader = /* glsl */ `
 
   void main() {
     vUv = uv;
-    // World-space normal so sunDirection (world-space) lines up.
+    // World-space normal so the static sunDirection lines up.
     vNormal = normalize(mat3(modelMatrix) * normal);
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
@@ -26,7 +24,6 @@ const vertexShader = /* glsl */ `
 
 const fragmentShader = /* glsl */ `
   uniform sampler2D dayTexture;
-  uniform sampler2D nightTexture;
   uniform sampler2D specularMap;
   uniform vec3 sunDirection;
 
@@ -34,45 +31,24 @@ const fragmentShader = /* glsl */ `
   varying vec3 vNormal;
 
   void main() {
-    vec3 dayColor = texture2D(dayTexture, vUv).rgb;
-    vec3 nightColor = texture2D(nightTexture, vUv).rgb;
+    vec3 surfaceColor = texture2D(dayTexture, vUv).rgb;
     float specMask = texture2D(specularMap, vUv).r;
 
     float cosAngle = dot(normalize(vNormal), normalize(sunDirection));
 
-    // Smoother, narrower terminator transition
-    float dayMix = smoothstep(-0.15, 0.25, cosAngle);
+    // 0.25 floor keeps the unlit side readable for markers.
+    float lighting = mix(0.25, 1.4, smoothstep(-0.3, 0.6, cosAngle));
 
-    // City lights — sodium-vapor warmth, kept strong
-    vec3 cityLights = nightColor * 2.5;
-    cityLights.r *= 1.1;
-    cityLights.g *= 0.95;
-    cityLights.b *= 0.7;
+    vec3 color = surfaceColor * lighting;
 
-    vec3 color = mix(cityLights, dayColor, dayMix);
+    // Cool atmospheric scattering on the shadow side — never pure dark.
+    float shadowAmount = 1.0 - smoothstep(-0.3, 0.3, cosAngle);
+    color = mix(color, color * vec3(0.5, 0.7, 1.0), shadowAmount * 0.4);
 
-    // Sun glint ONLY on oceans — land never speculars
+    // Sun glint ONLY on water and only at tight angles.
     float oceanMask = step(0.5, specMask);
-    float specBoost = pow(max(0.0, cosAngle), 8.0) * oceanMask * 0.3;
+    float specBoost = pow(max(0.0, cosAngle), 24.0) * oceanMask * 0.5;
     color += vec3(specBoost);
-
-    // Subtle warm rim — Gaussian peak right at the terminator edge, not a
-    // wide band. exp(-x^2) makes a narrow lobe centered at cosAngle=0.
-    float terminatorEdge = exp(-pow(cosAngle * 8.0, 2.0)) * 0.15;
-    vec3 warmRim = vec3(1.0, 0.6, 0.4) * terminatorEdge;
-    color += warmRim;
-
-    // Cool atmospheric scattering on the day side limb (Rayleigh tint near
-    // the silhouette edge — gives the "earth from space" feel without
-    // painting bands).
-    float fresnel = 1.0 - abs(dot(normalize(vNormal), vec3(0.0, 0.0, 1.0)));
-    vec3 atmosphericTint =
-      vec3(0.4, 0.6, 1.0) * pow(fresnel, 3.0) * dayMix * 0.2;
-    color += atmosphericTint;
-
-    // 15% saturation boost — rich documentary look without going cartoony
-    vec3 luma = vec3(dot(color, vec3(0.299, 0.587, 0.114)));
-    color = mix(luma, color, 1.15);
 
     gl_FragColor = vec4(color, 1.0);
   }
@@ -81,24 +57,18 @@ const fragmentShader = /* glsl */ `
 export default function Earth() {
   const meshRef = useRef<THREE.Mesh>(null);
 
-  const [dayMap, nightMap, specMap] = useTexture([
-    TEXTURES.day,
-    TEXTURES.night,
-    TEXTURES.specular,
-  ]);
+  const [dayMap, specMap] = useTexture([TEXTURES.day, TEXTURES.specular]);
 
   dayMap.colorSpace = THREE.SRGBColorSpace;
-  nightMap.colorSpace = THREE.SRGBColorSpace;
   specMap.colorSpace = THREE.NoColorSpace;
   dayMap.anisotropy = 8;
-  nightMap.anisotropy = 8;
   specMap.anisotropy = 4;
 
+  // Sun is static — calculate once, no per-frame uniform sync needed.
   const material = useMemo(() => {
     return new THREE.ShaderMaterial({
       uniforms: {
         dayTexture: { value: dayMap },
-        nightTexture: { value: nightMap },
         specularMap: { value: specMap },
         sunDirection: { value: SUN_DIRECTION.clone() },
       },
@@ -106,11 +76,7 @@ export default function Earth() {
       fragmentShader,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dayMap, nightMap, specMap]);
-
-  useFrame(() => {
-    material.uniforms.sunDirection.value.copy(SUN_DIRECTION);
-  });
+  }, [dayMap, specMap]);
 
   return (
     <mesh ref={meshRef}>

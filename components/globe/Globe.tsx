@@ -15,35 +15,32 @@ import { SUN_POSITION } from '@/lib/sun';
 import Atmosphere from './Atmosphere';
 import Clouds from './Clouds';
 import Earth from './Earth';
+import NebulaBackground from './NebulaBackground';
 
 export default function Globe() {
   return (
     <>
-      {/* Background — barely-blue near-black, not pure black */}
-      <color attach="background" args={['#000308']} />
+      {/* Procedural nebula sphere fills the background */}
+      <NebulaBackground />
 
-      {/* 3-point cinematic lighting */}
+      {/* Sun from upper-right */}
       <directionalLight
         position={SUN_POSITION}
-        intensity={1.8}
-        color="#fff5e6"
+        intensity={2.0}
+        color="#fffaf0"
       />
-      <ambientLight intensity={0.02} color="#1a1a2e" />
-      <directionalLight
-        position={[-3, -1, -2]}
-        intensity={0.15}
-        color="#4a90e2"
-      />
+      {/* Just enough ambient to lift true black */}
+      <ambientLight intensity={0.05} color="#1a2540" />
 
-      {/* Sparse, larger stars — fewer but more cinematic */}
+      {/* Denser, more varied stars */}
       <Stars
-        radius={50}
-        depth={50}
-        count={3000}
-        factor={3}
-        saturation={0}
+        radius={300}
+        depth={60}
+        count={8000}
+        factor={4}
+        saturation={0.5}
         fade
-        speed={0.3}
+        speed={0.5}
       />
 
       <Earth />
@@ -65,26 +62,22 @@ export default function Globe() {
       />
 
       <EffectComposer multisampling={0}>
-        {/* Aggressive bloom — needed to compensate for 0.6 exposure */}
         <Bloom
-          intensity={1.8}
-          luminanceThreshold={0.6}
-          luminanceSmoothing={0.7}
+          intensity={1.0}
+          luminanceThreshold={0.7}
+          luminanceSmoothing={0.6}
           mipmapBlur
-          radius={0.85}
-          levels={9}
+          radius={0.7}
+          levels={8}
         />
-        {/* Color grading */}
         <HueSaturation hue={0} saturation={-0.05} />
         <BrightnessContrast brightness={-0.03} contrast={0.15} />
-        {/* Lens chromatic aberration */}
         <ChromaticAberration
           blendFunction={BlendFunction.NORMAL}
           offset={new THREE.Vector2(0.0008, 0.0008)}
           radialModulation={false}
           modulationOffset={0}
         />
-        {/* Cinematic framing */}
         <Vignette eskil={false} offset={0.2} darkness={0.85} />
       </EffectComposer>
     </>

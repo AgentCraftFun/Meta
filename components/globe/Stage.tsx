@@ -18,10 +18,10 @@ export default function Stage() {
           stencil: false,
           depth: true,
         }}
-        camera={{ position: [0.5, 0.6, 2.8], fov: 35, near: 0.1, far: 100 }}
+        camera={{ position: [1.2, 0.8, 2.5], fov: 35, near: 0.1, far: 1000 }}
         onCreated={({ gl }) => {
           gl.toneMapping = THREE.ACESFilmicToneMapping;
-          gl.toneMappingExposure = 0.85;
+          gl.toneMappingExposure = 0.95;
           gl.outputColorSpace = THREE.SRGBColorSpace;
         }}
       >
