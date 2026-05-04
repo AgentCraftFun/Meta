@@ -67,9 +67,9 @@ export default function Globe() {
       <EffectComposer multisampling={0}>
         {/* Aggressive bloom — needed to compensate for 0.6 exposure */}
         <Bloom
-          intensity={3.5}
-          luminanceThreshold={0.0}
-          luminanceSmoothing={0.6}
+          intensity={2.5}
+          luminanceThreshold={0.55}
+          luminanceSmoothing={0.7}
           mipmapBlur
           radius={0.85}
           levels={9}

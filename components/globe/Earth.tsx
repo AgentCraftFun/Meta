@@ -40,26 +40,42 @@ const fragmentShader = /* glsl */ `
 
     float cosAngle = dot(normalize(vNormal), normalize(sunDirection));
 
-    // Sharper terminator with narrower transition zone
-    float dayMix = smoothstep(-0.1, 0.15, cosAngle);
+    // Wide, soft terminator so the day/night transition reads like a band,
+    // not a line.
+    float dayMix = smoothstep(-0.25, 0.35, cosAngle);
 
-    // Boost night lights so they survive bloom + tone mapping
+    // Twilight scattering band — peaks right at the boundary and falls off
+    // on both sides, painting warm sunset colors across the terminator.
+    float twilight =
+      smoothstep(-0.3, 0.0, cosAngle) *
+      (1.0 - smoothstep(0.0, 0.4, cosAngle));
+    vec3 twilightColor = vec3(1.0, 0.5, 0.3);
+
+    // City lights — boosted with sodium-vapor warmth so they survive bloom
+    // and tone mapping.
     vec3 cityLights = nightColor * 2.5;
-    // Sodium-vapor warmth
     cityLights.r *= 1.1;
     cityLights.g *= 0.95;
     cityLights.b *= 0.7;
 
     vec3 color = mix(cityLights, dayColor, dayMix);
 
-    // Cool color grade on day side
+    // Warm twilight glow at the terminator.
+    color += twilightColor * twilight * 0.25;
+
+    // Cool color grade on day side.
     color = mix(color, color * vec3(0.85, 0.95, 1.1), 0.3 * dayMix);
 
-    // Sun glint on oceans
-    float specBoost = pow(max(0.0, cosAngle), 4.0) * specMask * 0.5;
+    // Sun glint ONLY on oceans (specMask high). Land never speculars,
+    // so the Sahara, snow, and deserts stop blowing out under bloom.
+    float oceanMask = step(0.5, specMask);
+    float specBoost = pow(max(0.0, cosAngle), 8.0) * oceanMask * 0.3;
     color += vec3(specBoost);
 
-    // Slight overall darkening for cinematic feel
+    // Dim bright land slightly to prevent blowout under bloom.
+    color = mix(color, color * 0.85, dayMix * 0.5);
+
+    // Filmic crush.
     color *= 0.85;
 
     gl_FragColor = vec4(color, 1.0);
