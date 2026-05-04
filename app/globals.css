@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: #000;
+  color: #e6f7ff;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+#__next,
+body > div {
+  height: 100%;
+}
+
+canvas {
+  display: block;
+  outline: none;
+}
+
+::selection {
+  background: rgba(94, 240, 255, 0.25);
+  color: #fff;
+}
