@@ -3,13 +3,13 @@ import './globals.css';
 import Providers from './providers';
 
 export const metadata: Metadata = {
-  title: 'MetaMap — Trending Narratives by Country',
+  title: 'MetaMap — The world\'s attention, mapped in real time',
   description:
-    'A hyperrealistic 3D globe visualizing trending narratives by country in real time.',
+    'A live geopolitical attention dashboard for on-chain traders. A 3D earth that shows you what the world is talking about, country by country.',
 };
 
 export const viewport: Viewport = {
-  themeColor: '#000000',
+  themeColor: '#05080F',
   width: 'device-width',
   initialScale: 1,
 };
@@ -20,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="bg-black">
+    <html lang="en">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
@@ -29,11 +29,11 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body className="bg-black text-neutral-100 antialiased">
+      <body className="bg-[#05080F] text-slate-100 antialiased">
         <Providers>{children}</Providers>
       </body>
     </html>

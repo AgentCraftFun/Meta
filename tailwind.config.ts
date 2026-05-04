@@ -13,6 +13,16 @@ const config: Config = {
         },
       },
       fontFamily: {
+        sans: [
+          'Inter',
+          'ui-sans-serif',
+          'system-ui',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'Segoe UI',
+          'Roboto',
+          'sans-serif',
+        ],
         mono: [
           'JetBrains Mono',
           'ui-monospace',
