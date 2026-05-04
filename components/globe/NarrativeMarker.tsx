@@ -2,17 +2,11 @@
 
 import { Html } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
-import { memo, useMemo, useRef, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { latLngToVec3, surfaceQuaternion } from '@/lib/geo';
-import type { Narrative, NarrativeCategory } from '@/lib/types';
+import type { Narrative } from '@/lib/types';
 import MarkerCard from './MarkerCard';
-
-const COLORS: Record<NarrativeCategory, string> = {
-  breaking: '#ffb547', // amber
-  trending: '#5ef0ff', // cyan
-  emerging: '#b48bff', // violet
-};
 
 export type CountryGroup = {
   iso: string;
@@ -30,62 +24,164 @@ type Props = {
   onClick: (iso: string) => void;
 };
 
-const STEM_HEIGHT = 0.04;
-const HEAD_RADIUS = 0.012;
+const HOT_COLOR = new THREE.Color(1.0, 0.25, 0.15);
+const WHITE_COLOR = new THREE.Color(0.95, 0.95, 1.0);
+const COOL_COLOR = new THREE.Color(0.3, 0.6, 1.0);
 
-function NarrativeMarkerImpl({
-  group,
-  selected,
-  dimmed,
-  onClick,
-}: Props) {
+function heatColorFor(n: Narrative): THREE.Color {
+  if (n.category === 'breaking' || n.momentum > 0.7) return HOT_COLOR.clone();
+  if (n.momentum < -0.2) return COOL_COLOR.clone();
+  return WHITE_COLOR.clone();
+}
+
+const RING_VERT = /* glsl */ `
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const RING_FRAG = /* glsl */ `
+  uniform float time;
+  uniform float intensity;
+  uniform vec3 heatColor;
+  varying vec2 vUv;
+
+  void main() {
+    float dist = length(vUv - 0.5) * 2.0;
+
+    // Animated radar pulse moving outward
+    float pulse = sin(time * 2.5 - dist * 8.0) * 0.5 + 0.5;
+    pulse = pow(pulse, 2.0);
+
+    // Soft ring band
+    float ring = smoothstep(0.30, 0.50, dist) * (1.0 - smoothstep(0.85, 1.0, dist));
+
+    float alpha = ring * pulse * intensity;
+    gl_FragColor = vec4(heatColor, alpha);
+  }
+`;
+
+const BEAM_VERT = /* glsl */ `
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const BEAM_FRAG = /* glsl */ `
+  uniform float time;
+  uniform float intensity;
+  uniform vec3 heatColor;
+  varying vec2 vUv;
+
+  void main() {
+    // Bright at base, fading toward top
+    float verticalFade = pow(1.0 - vUv.y, 1.5);
+    // Bright in centre, soft edges (volumetric look on a low-poly cylinder)
+    float horizontalFade = pow(1.0 - abs(vUv.x - 0.5) * 2.0, 2.0);
+    // Subtle vertical energy bands flowing upward
+    float energyFlow = sin(vUv.y * 20.0 - time * 3.0) * 0.15 + 0.85;
+    // Gentle whole-beam pulse
+    float pulse = sin(time * 2.0) * 0.2 + 0.8;
+
+    float alpha = verticalFade * horizontalFade * energyFlow * pulse * intensity * 2.0;
+    gl_FragColor = vec4(heatColor, alpha);
+  }
+`;
+
+const CLICK_SPIKE_MS = 500;
+
+function NarrativeMarkerImpl({ group, selected, dimmed, onClick }: Props) {
   const { iso, name, lat, lng, top } = group;
   const [hovered, setHovered] = useState(false);
+  const clickSpikeAt = useRef(0);
   const { camera } = useThree();
 
-  const groupRef = useRef<THREE.Group>(null);
-  const ringRef = useRef<THREE.Mesh>(null);
-  const headMatRef = useRef<THREE.MeshBasicMaterial>(null);
-  const stemMatRef = useRef<THREE.MeshBasicMaterial>(null);
-  const ringMatRef = useRef<THREE.MeshBasicMaterial>(null);
-
-  const colorHex = COLORS[top.category];
-  const color = useMemo(() => new THREE.Color(colorHex), [colorHex]);
-
-  // Surface anchor + orientation so local +Y points outward.
+  const heatColor = useMemo(() => heatColorFor(top), [top]);
   const surfacePos = useMemo(() => latLngToVec3(lat, lng, 1), [lat, lng]);
   const orientation = useMemo(() => surfaceQuaternion(lat, lng), [lat, lng]);
-
-  // Volume drives marker size: roughly 0.7× → 1.6× of base.
-  const sizeScale = 0.7 + (top.volume / 100) * 0.9;
-
-  // Faster pulse when momentum is hot.
-  const pulsePeriod = top.momentum > 0.5 ? 0.9 : 1.5;
-
-  // Shared scratch vectors so we don't allocate per frame.
-  const camDir = useMemo(() => new THREE.Vector3(), []);
   const surfaceNormal = useMemo(() => surfacePos.clone().normalize(), [surfacePos]);
+
+  const baseIntensity = 0.4 + (top.volume / 100) * 0.6;
+  const beamHeight = 0.08 + (top.volume / 100) * 0.15;
+
+  // Imperative materials so we can mutate uniforms without recompiling.
+  const ringMat = useMemo(() => {
+    return new THREE.ShaderMaterial({
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      uniforms: {
+        time: { value: 0 },
+        intensity: { value: baseIntensity },
+        heatColor: { value: heatColor.clone() },
+      },
+      vertexShader: RING_VERT,
+      fragmentShader: RING_FRAG,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const beamMat = useMemo(() => {
+    return new THREE.ShaderMaterial({
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      uniforms: {
+        time: { value: 0 },
+        intensity: { value: baseIntensity },
+        heatColor: { value: heatColor.clone() },
+      },
+      vertexShader: BEAM_VERT,
+      fragmentShader: BEAM_FRAG,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const coreMatRef = useRef<THREE.MeshBasicMaterial>(null);
+
+  // Sync heat color when narrative shifts category/momentum.
+  useEffect(() => {
+    ringMat.uniforms.heatColor.value.copy(heatColor);
+    beamMat.uniforms.heatColor.value.copy(heatColor);
+    if (coreMatRef.current) coreMatRef.current.color.copy(heatColor);
+  }, [heatColor, ringMat, beamMat]);
+
+  // One module-scoped scratch vector reused per frame.
+  const camDir = useMemo(() => new THREE.Vector3(), []);
 
   useFrame((state) => {
     const t = state.clock.elapsedTime;
-    const phase = (t % pulsePeriod) / pulsePeriod; // 0..1
-    const ringScale = 1 + phase * 0.6; // 1..1.6
-    const ringAlpha = (1 - phase) * 0.65;
 
-    if (ringRef.current) ringRef.current.scale.setScalar(ringScale);
-    if (ringMatRef.current) ringMatRef.current.opacity = ringAlpha;
-
-    // Backside fade — markers on the far hemisphere drop to ~10% opacity.
+    // Backside fade — markers behind the planet drop to ~0.
     camera.getWorldPosition(camDir).normalize();
     const facing = surfaceNormal.dot(camDir);
-    const visibility = THREE.MathUtils.smoothstep(facing, -0.05, 0.25);
-    const baseOpacity = dimmed && !selected ? 0.4 : 1.0;
-    const opacity = visibility * baseOpacity + (1 - visibility) * 0.1;
+    const visibility = THREE.MathUtils.smoothstep(facing, -0.05, 0.2);
 
-    if (headMatRef.current) headMatRef.current.opacity = opacity;
-    if (stemMatRef.current) stemMatRef.current.opacity = opacity * 0.85;
-    if (ringMatRef.current) {
-      ringMatRef.current.opacity = ringAlpha * opacity;
+    // Click spike — peaks at 2x at the moment of click, decays linearly.
+    let spike = 1;
+    const since = performance.now() - clickSpikeAt.current;
+    if (since < CLICK_SPIKE_MS) {
+      spike = 1 + (1 - since / CLICK_SPIKE_MS);
+    }
+
+    const hoverMul = hovered ? 1.5 : 1;
+    const dimMul = dimmed && !selected ? 0.4 : 1;
+
+    const i = baseIntensity * hoverMul * spike * dimMul * visibility;
+
+    ringMat.uniforms.time.value = t;
+    ringMat.uniforms.intensity.value = i;
+    beamMat.uniforms.time.value = t;
+    beamMat.uniforms.intensity.value = i;
+    if (coreMatRef.current) {
+      coreMatRef.current.opacity = Math.min(
+        1,
+        0.9 * visibility * dimMul * hoverMul * spike
+      );
     }
   });
 
@@ -93,10 +189,8 @@ function NarrativeMarkerImpl({
 
   return (
     <group
-      ref={groupRef}
       position={surfacePos}
       quaternion={orientation}
-      scale={sizeScale}
       onPointerOver={(e) => {
         e.stopPropagation();
         setHovered(true);
@@ -109,50 +203,40 @@ function NarrativeMarkerImpl({
       }}
       onClick={(e) => {
         e.stopPropagation();
+        clickSpikeAt.current = performance.now();
         onClick(iso);
       }}
     >
-      {/* Stem */}
-      <mesh position={[0, STEM_HEIGHT / 2, 0]}>
+      {/* Surface ring — radar ping at the country centroid */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.001, 0]}>
+        <ringGeometry args={[0.005, 0.018, 32]} />
+        <primitive object={ringMat} attach="material" />
+      </mesh>
+
+      {/* Vertical light beam */}
+      <mesh position={[0, beamHeight / 2, 0]}>
         <cylinderGeometry
-          args={[0.0014, 0.0014, STEM_HEIGHT, 6]}
+          args={[0.0005, 0.002, beamHeight, 12, 1, true]}
         />
-        <meshBasicMaterial
-          ref={stemMatRef}
-          color={color}
-          toneMapped={false}
-          transparent
-        />
+        <primitive object={beamMat} attach="material" />
       </mesh>
 
-      {/* Glowing head */}
-      <mesh position={[0, STEM_HEIGHT, 0]}>
-        <sphereGeometry args={[HEAD_RADIUS, 18, 18]} />
+      {/* Bright core sphere — the bloom emitter */}
+      <mesh position={[0, 0.002, 0]}>
+        <sphereGeometry args={[0.008, 16, 16]} />
         <meshBasicMaterial
-          ref={headMatRef}
-          color={color}
-          toneMapped={false}
+          ref={coreMatRef}
+          color={heatColor}
           transparent
-        />
-      </mesh>
-
-      {/* Pulsing halo — sphere that scales 1→1.6 and fades */}
-      <mesh ref={ringRef} position={[0, STEM_HEIGHT, 0]}>
-        <sphereGeometry args={[HEAD_RADIUS * 1.6, 20, 20]} />
-        <meshBasicMaterial
-          ref={ringMatRef}
-          color={color}
+          opacity={0.9}
           toneMapped={false}
-          transparent
-          opacity={0.4}
           depthWrite={false}
         />
       </mesh>
 
-      {/* Hover/selected card */}
       {showCard && (
         <Html
-          position={[0, STEM_HEIGHT + HEAD_RADIUS * 2.2, 0]}
+          position={[0, beamHeight + 0.012, 0]}
           distanceFactor={1.2}
           zIndexRange={[40, 0]}
           occlude={false}
@@ -163,7 +247,7 @@ function NarrativeMarkerImpl({
             iso={iso}
             name={name}
             narrative={top}
-            colorHex={colorHex}
+            colorHex={`#${heatColor.getHexString()}`}
             totalForCountry={group.total}
           />
         </Html>
@@ -173,9 +257,6 @@ function NarrativeMarkerImpl({
 }
 
 const NarrativeMarker = memo(NarrativeMarkerImpl, (prev, next) => {
-  // Skip re-render unless visible state, dim state, or the underlying
-  // top-narrative changes (id + volume + category + momentum cover the
-  // visual surface).
   if (prev.selected !== next.selected) return false;
   if (prev.dimmed !== next.dimmed) return false;
   if (prev.onClick !== next.onClick) return false;
