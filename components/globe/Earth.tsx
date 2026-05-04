@@ -1,131 +1,100 @@
 'use client';
 
+import { useTexture } from '@react-three/drei';
+import { useFrame } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { useSafeTexture } from '@/lib/useSafeTexture';
+import { SUN_DIRECTION } from '@/lib/sun';
 
-type Props = {
-  sunDirection: THREE.Vector3;
+const TEXTURES = {
+  day: '/textures/8k_earth_daymap.jpg',
+  night: '/textures/8k_earth_nightmap.jpg',
+  specular: '/textures/8k_earth_specular_map.png',
 };
 
-const TEXTURE_PATHS = {
-  day: '/textures/earth_day.jpg',
-  normal: '/textures/earth_normal.jpg',
-  specular: '/textures/earth_specular.jpg',
-};
+const vertexShader = /* glsl */ `
+  varying vec2 vUv;
+  varying vec3 vNormal;
 
-function makeFallbackTexture(kind: 'day' | 'normal' | 'specular') {
-  const c = document.createElement('canvas');
-  c.width = 2048;
-  c.height = 1024;
-  const ctx = c.getContext('2d')!;
-  if (kind === 'day') {
-    // Ocean gradient
-    const grad = ctx.createLinearGradient(0, 0, 0, 1024);
-    grad.addColorStop(0.0, '#0a1f3f');
-    grad.addColorStop(0.45, '#0e3a82');
-    grad.addColorStop(0.5, '#1d63c8');
-    grad.addColorStop(0.55, '#0e3a82');
-    grad.addColorStop(1.0, '#0a1f3f');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 2048, 1024);
-
-    // Crude continent blobs (very approximate)
-    ctx.fillStyle = '#2c5a31';
-    const continents = [
-      // [centerX, centerY, radiusX, radiusY]
-      [380, 420, 220, 180], // N. America
-      [420, 700, 130, 220], // S. America
-      [1020, 360, 220, 150], // Europe + N. Africa west
-      [1100, 600, 200, 260], // Africa
-      [1340, 380, 360, 200], // Asia
-      [1500, 760, 130, 90], // Australia
-      [1720, 520, 90, 50], // misc
-    ];
-    for (const [cx, cy, rx, ry] of continents) {
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    // Speckle
-    ctx.fillStyle = '#3d7a44';
-    for (let i = 0; i < 800; i++) {
-      const x = Math.random() * 2048;
-      const y = 80 + Math.random() * 880;
-      const r = 2 + Math.random() * 8;
-      ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    // Polar caps
-    ctx.fillStyle = '#e8f3ff';
-    ctx.fillRect(0, 0, 2048, 60);
-    ctx.fillRect(0, 970, 2048, 54);
-  } else if (kind === 'specular') {
-    // Bright = ocean, dark = land. Mirror the day map roughly.
-    ctx.fillStyle = '#cccccc';
-    ctx.fillRect(0, 0, 2048, 1024);
-    ctx.fillStyle = '#222222';
-    const continents = [
-      [380, 420, 220, 180],
-      [420, 700, 130, 220],
-      [1020, 360, 220, 150],
-      [1100, 600, 200, 260],
-      [1340, 380, 360, 200],
-      [1500, 760, 130, 90],
-    ];
-    for (const [cx, cy, rx, ry] of continents) {
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  } else {
-    // neutral normal map (flat)
-    ctx.fillStyle = '#8080ff';
-    ctx.fillRect(0, 0, 2048, 1024);
+  void main() {
+    vUv = uv;
+    // World-space normal so sunDirection (a world-space vector) lines up.
+    vNormal = normalize(mat3(modelMatrix) * normal);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
-  const tex = new THREE.CanvasTexture(c);
-  tex.colorSpace =
-    kind === 'day' ? THREE.SRGBColorSpace : THREE.NoColorSpace;
-  tex.anisotropy = 8;
-  return tex;
-}
+`;
 
-export default function Earth({ sunDirection: _sunDirection }: Props) {
+const fragmentShader = /* glsl */ `
+  uniform sampler2D dayTexture;
+  uniform sampler2D nightTexture;
+  uniform sampler2D specularMap;
+  uniform vec3 sunDirection;
+
+  varying vec2 vUv;
+  varying vec3 vNormal;
+
+  void main() {
+    vec3 dayColor = texture2D(dayTexture, vUv).rgb;
+    vec3 nightColor = texture2D(nightTexture, vUv).rgb;
+    float specMask = texture2D(specularMap, vUv).r;
+
+    float cosAngle = dot(normalize(vNormal), normalize(sunDirection));
+    // Soft terminator. -0.15..0.25 hides the harsh shadow line.
+    float dayMix = smoothstep(-0.15, 0.25, cosAngle);
+
+    // Boost night side so city lights pop.
+    vec3 color = mix(nightColor * 1.4, dayColor, dayMix);
+
+    // Subtle ocean shine on day side only.
+    float specBoost = specMask * max(0.0, cosAngle) * 0.3;
+    color += vec3(specBoost);
+
+    gl_FragColor = vec4(color, 1.0);
+  }
+`;
+
+export default function Earth() {
   const meshRef = useRef<THREE.Mesh>(null);
 
-  const day = useSafeTexture(TEXTURE_PATHS.day);
-  const normal = useSafeTexture(TEXTURE_PATHS.normal);
-  const specular = useSafeTexture(TEXTURE_PATHS.specular);
+  const [dayMap, nightMap, specMap] = useTexture([
+    TEXTURES.day,
+    TEXTURES.night,
+    TEXTURES.specular,
+  ]);
 
-  const fallback = useMemo(() => {
-    if (typeof document === 'undefined') return null;
-    return {
-      day: makeFallbackTexture('day'),
-      normal: makeFallbackTexture('normal'),
-      specular: makeFallbackTexture('specular'),
-    };
-  }, []);
+  // Color textures need sRGB; specular is data, leave it linear.
+  dayMap.colorSpace = THREE.SRGBColorSpace;
+  nightMap.colorSpace = THREE.SRGBColorSpace;
+  specMap.colorSpace = THREE.NoColorSpace;
+  dayMap.anisotropy = 8;
+  nightMap.anisotropy = 8;
+  specMap.anisotropy = 4;
 
-  const dayMap = day ?? fallback?.day ?? null;
-  const normalMap = normal ?? fallback?.normal ?? null;
-  const specMap = specular ?? fallback?.specular ?? null;
+  const material = useMemo(() => {
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        dayTexture: { value: dayMap },
+        nightTexture: { value: nightMap },
+        specularMap: { value: specMap },
+        sunDirection: { value: SUN_DIRECTION.clone() },
+      },
+      vertexShader,
+      fragmentShader,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dayMap, nightMap, specMap]);
 
-  if (dayMap) dayMap.colorSpace = THREE.SRGBColorSpace;
+  // The earth group rotates on its own axis (auto-rotate), but the sun stays
+  // fixed in world space. The world-space vNormal in the vertex shader handles
+  // that already; nothing to do per-frame except keep the uniform alive.
+  useFrame(() => {
+    material.uniforms.sunDirection.value.copy(SUN_DIRECTION);
+  });
 
   return (
-    <mesh ref={meshRef} castShadow receiveShadow>
+    <mesh ref={meshRef}>
       <sphereGeometry args={[1, 128, 128]} />
-      <meshPhongMaterial
-        map={dayMap ?? undefined}
-        normalMap={normalMap ?? undefined}
-        normalScale={new THREE.Vector2(0.85, 0.85)}
-        specularMap={specMap ?? undefined}
-        specular={new THREE.Color('#3a76b8')}
-        shininess={22}
-        emissive={new THREE.Color('#0a1428')}
-        emissiveIntensity={0.08}
-      />
+      <primitive object={material} attach="material" />
     </mesh>
   );
 }

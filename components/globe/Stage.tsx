@@ -1,14 +1,12 @@
 'use client';
 
 import { Canvas } from '@react-three/fiber';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense } from 'react';
 import { ACESFilmicToneMapping, SRGBColorSpace } from 'three';
 import Globe from './Globe';
+import LoadingScreen from './LoadingScreen';
 
 export default function Stage() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
   return (
     <div className="absolute inset-0">
       <Canvas
@@ -34,7 +32,7 @@ export default function Stage() {
         </Suspense>
       </Canvas>
       <Vignette />
-      {!mounted && <BootOverlay />}
+      <LoadingScreen />
     </div>
   );
 }
@@ -49,18 +47,5 @@ function Vignette() {
           'radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.55) 100%)',
       }}
     />
-  );
-}
-
-function BootOverlay() {
-  return (
-    <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black">
-      <div className="flex flex-col items-center gap-3 font-mono">
-        <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.4em] text-neon-cyan/80">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-neon-cyan" />
-          Initializing MetaMap…
-        </div>
-      </div>
-    </div>
   );
 }

@@ -11,6 +11,7 @@ import {
 import { BlendFunction } from 'postprocessing';
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { SUN_POSITION } from '@/lib/sun';
 import Atmosphere from './Atmosphere';
 import Clouds from './Clouds';
 import Earth from './Earth';
@@ -20,7 +21,6 @@ const AUTO_ROTATE_SPEED = 0.05; // rad/s
 
 export default function Globe() {
   const groupRef = useRef<THREE.Group>(null);
-  const controlsRef = useRef<any>(null);
   const lastInteractionRef = useRef<number>(performance.now());
   const [autoRotate, setAutoRotate] = useState(true);
   const { camera } = useThree();
@@ -29,7 +29,6 @@ export default function Globe() {
     camera.lookAt(0, 0, 0);
   }, [camera]);
 
-  // Auto-rotate the whole earth-clouds group; pause on interaction.
   useFrame((_, delta) => {
     const now = performance.now();
     if (autoRotate && groupRef.current) {
@@ -45,26 +44,17 @@ export default function Globe() {
     if (autoRotate) setAutoRotate(false);
   };
 
-  // Sun direction for the day/night terminator.
-  const sunDir = new THREE.Vector3(-1.2, 0.45, 1.0).normalize();
-
   return (
     <>
-      {/* Lights */}
-      <ambientLight intensity={0.18} color="#9bd6ff" />
+      {/* Lights — keep ambient low so night-side city lights stay visible */}
+      <ambientLight intensity={0.05} color="#9bd6ff" />
       <directionalLight
-        position={sunDir.clone().multiplyScalar(8)}
-        intensity={2.6}
+        position={SUN_POSITION}
+        intensity={1.5}
         color="#fff5e0"
       />
-      {/* Subtle rim fill from opposite side so the night side reads */}
-      <directionalLight
-        position={sunDir.clone().multiplyScalar(-6)}
-        intensity={0.15}
-        color="#3a78ff"
-      />
 
-      {/* Starfield backdrop */}
+      {/* Starfield + nebula backdrop */}
       <Stars
         radius={60}
         depth={40}
@@ -74,21 +64,17 @@ export default function Globe() {
         fade
         speed={0.5}
       />
-
-      {/* Distant nebula glow (cheap radial sprite) */}
       <NebulaBackdrop />
 
-      {/* Earth + clouds rotate together */}
+      {/* Earth + clouds rotate together. Earth renders first so the
+          atmosphere rim composites on top. */}
       <group ref={groupRef}>
-        <Earth sunDirection={sunDir} />
+        <Earth />
         <Clouds />
       </group>
-
-      {/* Atmosphere does NOT rotate (silhouette is camera-relative) */}
       <Atmosphere />
 
       <OrbitControls
-        ref={controlsRef}
         enablePan={false}
         enableZoom
         enableRotate
