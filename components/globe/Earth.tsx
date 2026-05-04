@@ -18,7 +18,7 @@ const vertexShader = /* glsl */ `
 
   void main() {
     vUv = uv;
-    // World-space normal so sunDirection (a world-space vector) lines up.
+    // World-space normal so sunDirection (world-space) lines up.
     vNormal = normalize(mat3(modelMatrix) * normal);
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
@@ -39,15 +39,28 @@ const fragmentShader = /* glsl */ `
     float specMask = texture2D(specularMap, vUv).r;
 
     float cosAngle = dot(normalize(vNormal), normalize(sunDirection));
-    // Soft terminator. -0.15..0.25 hides the harsh shadow line.
-    float dayMix = smoothstep(-0.15, 0.25, cosAngle);
 
-    // Boost night side so city lights pop.
-    vec3 color = mix(nightColor * 1.4, dayColor, dayMix);
+    // Sharper terminator with narrower transition zone
+    float dayMix = smoothstep(-0.1, 0.15, cosAngle);
 
-    // Subtle ocean shine on day side only.
-    float specBoost = specMask * max(0.0, cosAngle) * 0.3;
+    // Boost night lights so they survive bloom + tone mapping
+    vec3 cityLights = nightColor * 2.5;
+    // Sodium-vapor warmth
+    cityLights.r *= 1.1;
+    cityLights.g *= 0.95;
+    cityLights.b *= 0.7;
+
+    vec3 color = mix(cityLights, dayColor, dayMix);
+
+    // Cool color grade on day side
+    color = mix(color, color * vec3(0.85, 0.95, 1.1), 0.3 * dayMix);
+
+    // Sun glint on oceans
+    float specBoost = pow(max(0.0, cosAngle), 4.0) * specMask * 0.5;
     color += vec3(specBoost);
+
+    // Slight overall darkening for cinematic feel
+    color *= 0.85;
 
     gl_FragColor = vec4(color, 1.0);
   }
@@ -62,7 +75,6 @@ export default function Earth() {
     TEXTURES.specular,
   ]);
 
-  // Color textures need sRGB; specular is data, leave it linear.
   dayMap.colorSpace = THREE.SRGBColorSpace;
   nightMap.colorSpace = THREE.SRGBColorSpace;
   specMap.colorSpace = THREE.NoColorSpace;
@@ -84,9 +96,6 @@ export default function Earth() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dayMap, nightMap, specMap]);
 
-  // The earth group rotates on its own axis (auto-rotate), but the sun stays
-  // fixed in world space. The world-space vNormal in the vertex shader handles
-  // that already; nothing to do per-frame except keep the uniform alive.
   useFrame(() => {
     material.uniforms.sunDirection.value.copy(SUN_DIRECTION);
   });

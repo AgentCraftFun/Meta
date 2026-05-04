@@ -2,7 +2,7 @@
 
 import { Canvas } from '@react-three/fiber';
 import { Suspense } from 'react';
-import { ACESFilmicToneMapping, SRGBColorSpace } from 'three';
+import * as THREE from 'three';
 import Globe from './Globe';
 import LoadingScreen from './LoadingScreen';
 
@@ -18,34 +18,18 @@ export default function Stage() {
           stencil: false,
           depth: true,
         }}
-        camera={{ position: [2.2, 0.8, 2.5], fov: 38, near: 0.01, far: 100 }}
-        onCreated={({ gl, scene }) => {
-          gl.setClearColor('#000000', 1);
-          gl.toneMapping = ACESFilmicToneMapping;
-          gl.toneMappingExposure = 1.05;
-          gl.outputColorSpace = SRGBColorSpace;
-          scene.background = null;
+        camera={{ position: [0.5, 0.6, 2.8], fov: 35, near: 0.1, far: 100 }}
+        onCreated={({ gl }) => {
+          gl.toneMapping = THREE.ACESFilmicToneMapping;
+          gl.toneMappingExposure = 0.6;
+          gl.outputColorSpace = THREE.SRGBColorSpace;
         }}
       >
         <Suspense fallback={null}>
           <Globe />
         </Suspense>
       </Canvas>
-      <Vignette />
       <LoadingScreen />
     </div>
-  );
-}
-
-function Vignette() {
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute inset-0"
-      style={{
-        background:
-          'radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.55) 100%)',
-      }}
-    />
   );
 }

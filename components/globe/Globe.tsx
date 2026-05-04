@@ -1,75 +1,53 @@
 'use client';
 
 import { OrbitControls, Stars } from '@react-three/drei';
-import { useFrame, useThree } from '@react-three/fiber';
 import {
   Bloom,
+  BrightnessContrast,
+  ChromaticAberration,
   EffectComposer,
+  HueSaturation,
   Vignette,
 } from '@react-three/postprocessing';
-import { useEffect, useRef, useState } from 'react';
+import { BlendFunction } from 'postprocessing';
 import * as THREE from 'three';
 import { SUN_POSITION } from '@/lib/sun';
 import Atmosphere from './Atmosphere';
 import Clouds from './Clouds';
 import Earth from './Earth';
 
-const IDLE_RESUME_MS = 3000;
-const AUTO_ROTATE_SPEED = 0.05; // rad/s
-
 export default function Globe() {
-  const groupRef = useRef<THREE.Group>(null);
-  const lastInteractionRef = useRef<number>(performance.now());
-  const [autoRotate, setAutoRotate] = useState(true);
-  const { camera } = useThree();
-
-  useEffect(() => {
-    camera.lookAt(0, 0, 0);
-  }, [camera]);
-
-  useFrame((_, delta) => {
-    const now = performance.now();
-    if (autoRotate && groupRef.current) {
-      groupRef.current.rotation.y += AUTO_ROTATE_SPEED * delta;
-    }
-    if (!autoRotate && now - lastInteractionRef.current > IDLE_RESUME_MS) {
-      setAutoRotate(true);
-    }
-  });
-
-  const onUserInteract = () => {
-    lastInteractionRef.current = performance.now();
-    if (autoRotate) setAutoRotate(false);
-  };
-
   return (
     <>
-      {/* Lights — keep ambient low so night-side city lights stay visible */}
-      <ambientLight intensity={0.05} color="#9bd6ff" />
+      {/* Background — barely-blue near-black, not pure black */}
+      <color attach="background" args={['#000308']} />
+
+      {/* 3-point cinematic lighting */}
       <directionalLight
         position={SUN_POSITION}
-        intensity={1.5}
-        color="#fff5e0"
+        intensity={1.8}
+        color="#fff5e6"
+      />
+      <ambientLight intensity={0.02} color="#1a1a2e" />
+      <directionalLight
+        position={[-3, -1, -2]}
+        intensity={0.15}
+        color="#4a90e2"
       />
 
-      {/* Starfield + nebula backdrop */}
+      {/* Sparse, larger stars — fewer but more cinematic */}
       <Stars
-        radius={60}
-        depth={40}
-        count={6000}
+        radius={50}
+        depth={50}
+        count={3000}
         factor={3}
         saturation={0}
         fade
-        speed={0.5}
+        speed={0.3}
       />
-      <NebulaBackdrop />
 
-      {/* Earth + clouds rotate together. Earth renders first so the
-          atmosphere rim composites on top. */}
-      <group ref={groupRef}>
-        <Earth />
-        <Clouds />
-      </group>
+      <Earth />
+      <Clouds />
       <Atmosphere />
 
       <OrbitControls
@@ -77,58 +55,38 @@ export default function Globe() {
         enableZoom
         enableRotate
         enableDamping
-        dampingFactor={0.08}
+        dampingFactor={0.05}
         rotateSpeed={0.55}
         zoomSpeed={0.6}
-        minDistance={1.6}
-        maxDistance={4}
-        onStart={onUserInteract}
-        onChange={onUserInteract}
+        minDistance={1.8}
+        maxDistance={5}
+        autoRotate
+        autoRotateSpeed={0.15}
       />
 
       <EffectComposer multisampling={0}>
+        {/* Aggressive bloom — needed to compensate for 0.6 exposure */}
         <Bloom
-          intensity={1.2}
-          luminanceThreshold={0.2}
-          luminanceSmoothing={0.9}
+          intensity={3.5}
+          luminanceThreshold={0.0}
+          luminanceSmoothing={0.6}
           mipmapBlur
+          radius={0.85}
+          levels={9}
         />
-        <Vignette eskil={false} offset={0.1} darkness={0.6} />
+        {/* Color grading */}
+        <HueSaturation hue={0} saturation={-0.05} />
+        <BrightnessContrast brightness={-0.03} contrast={0.15} />
+        {/* Lens chromatic aberration */}
+        <ChromaticAberration
+          blendFunction={BlendFunction.NORMAL}
+          offset={new THREE.Vector2(0.0008, 0.0008)}
+          radialModulation={false}
+          modulationOffset={0}
+        />
+        {/* Cinematic framing */}
+        <Vignette eskil={false} offset={0.2} darkness={0.85} />
       </EffectComposer>
     </>
-  );
-}
-
-function NebulaBackdrop() {
-  const meshRef = useRef<THREE.Mesh>(null);
-  return (
-    <mesh ref={meshRef} position={[-12, 6, -20]}>
-      <planeGeometry args={[28, 28]} />
-      <shaderMaterial
-        transparent
-        depthWrite={false}
-        depthTest={false}
-        blending={THREE.AdditiveBlending}
-        uniforms={{}}
-        vertexShader={`
-          varying vec2 vUv;
-          void main(){
-            vUv = uv;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
-          }
-        `}
-        fragmentShader={`
-          varying vec2 vUv;
-          void main(){
-            vec2 c = vUv - 0.5;
-            float d = length(c);
-            float g = smoothstep(0.5, 0.0, d);
-            vec3 col = mix(vec3(0.05,0.08,0.18), vec3(0.35,0.55,1.0), g);
-            float alpha = pow(g, 2.5) * 0.25;
-            gl_FragColor = vec4(col, alpha);
-          }
-        `}
-      />
-    </mesh>
   );
 }
