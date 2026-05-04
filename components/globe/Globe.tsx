@@ -63,12 +63,12 @@ export default function Globe() {
 
       <EffectComposer multisampling={0}>
         <Bloom
-          intensity={1.0}
-          luminanceThreshold={0.7}
-          luminanceSmoothing={0.6}
+          intensity={0.8}
+          luminanceThreshold={0.9}
+          luminanceSmoothing={0.5}
           mipmapBlur
-          radius={0.7}
-          levels={8}
+          radius={0.6}
+          levels={7}
         />
         <HueSaturation hue={0} saturation={-0.05} />
         <BrightnessContrast brightness={-0.03} contrast={0.15} />

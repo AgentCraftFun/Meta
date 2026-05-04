@@ -50,6 +50,9 @@ const fragmentShader = /* glsl */ `
     float specBoost = pow(max(0.0, cosAngle), 24.0) * oceanMask * 0.5;
     color += vec3(specBoost);
 
+    // Prevent runaway brightness on snow/ice that triggers bloom blowout.
+    color = min(color, vec3(1.05));
+
     gl_FragColor = vec4(color, 1.0);
   }
 `;

@@ -47,22 +47,36 @@ export default function NebulaBackground() {
           );
         }
 
+        // Fractal brownian motion for fine wispy detail across multiple octaves
+        float fbm(vec3 p) {
+          float total = 0.0;
+          float amplitude = 1.0;
+          float frequency = 1.0;
+          for (int i = 0; i < 5; i++) {
+            total += noise(p * frequency) * amplitude;
+            frequency *= 2.0;
+            amplitude *= 0.5;
+          }
+          return total;
+        }
+
         void main() {
           vec3 dir = normalize(vWorldPosition);
 
-          float n1 = noise(dir * 3.0) * 0.5;
-          float n2 = noise(dir * 6.0) * 0.3;
-          float n3 = noise(dir * 12.0) * 0.2;
-          float nebula = n1 + n2 + n3;
-          nebula = smoothstep(0.4, 0.9, nebula);
+          // High-frequency wispy nebula, not big blobs
+          float nebula = fbm(dir * 8.0);
+          nebula = smoothstep(0.45, 0.85, nebula);
 
-          vec3 color1 = vec3(0.10, 0.05, 0.25); // deep purple
-          vec3 color2 = vec3(0.05, 0.15, 0.35); // deep blue
-          float colorMix = noise(dir * 2.0);
+          float colorMix = noise(dir * 1.5);
+          vec3 color1 = vec3(0.08, 0.04, 0.18); // deeper purple
+          vec3 color2 = vec3(0.03, 0.08, 0.20); // deeper blue
           vec3 nebulaColor = mix(color1, color2, colorMix);
 
-          vec3 spaceColor = vec3(0.01, 0.015, 0.04);
-          vec3 finalColor = spaceColor + nebulaColor * nebula * 0.6;
+          // Pure deep space base
+          vec3 spaceColor = vec3(0.005, 0.008, 0.02);
+
+          // Much more subtle — was 0.6, now 0.25
+          vec3 finalColor = spaceColor + nebulaColor * nebula * 0.25;
 
           gl_FragColor = vec4(finalColor, 1.0);
         }
