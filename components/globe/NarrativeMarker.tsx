@@ -99,9 +99,12 @@ const RING_FRAG = /* glsl */ `
 
     float ring = smoothstep(0.30, 0.50, dist) * (1.0 - smoothstep(0.85, 1.0, dist));
 
-    float alpha = ring * pulse * intensity * 1.8;
-    // HDR colour so bloom catches the ring edge.
-    gl_FragColor = vec4(heatColor * 1.3, alpha);
+    // Clamp before output — keeps the mipmap bloom kernel from cascading
+    // to NaN on saturated frames (which manifests as a one-frame black
+    // canvas on Apple GPUs).
+    float alpha = clamp(ring * pulse * intensity * 1.8, 0.0, 1.0);
+    vec3 col = clamp(heatColor * 1.3, vec3(0.0), vec3(2.0));
+    gl_FragColor = vec4(col, alpha);
   }
 `;
 
@@ -129,7 +132,7 @@ const BEAM_FRAG = /* glsl */ `
     float energyFlow = sin(vUv.y * 20.0 - time * 3.0) * 0.15 + 0.85;
     float pulse = sin(time * pulseSpeed * 0.55) * 0.2 + 0.8;
 
-    float alpha =
+    float rawAlpha =
       verticalFade *
       horizontalFade *
       energyFlow *
@@ -138,8 +141,11 @@ const BEAM_FRAG = /* glsl */ `
       intensityMultiplier *
       3.5;
 
-    // HDR output so bloom captures the beam itself, not just the core.
-    gl_FragColor = vec4(heatColor * 1.5, alpha);
+    // Clamp prevents the bloom mipmap from cascading to NaN when intensity
+    // spikes (hover + click + hot config can otherwise produce alpha > 14).
+    float alpha = clamp(rawAlpha, 0.0, 1.0);
+    vec3 col = clamp(heatColor * 1.5, vec3(0.0), vec3(2.0));
+    gl_FragColor = vec4(col, alpha);
   }
 `;
 
@@ -171,9 +177,9 @@ const FLARE_FRAG = /* glsl */ `
     float cross = max(horiz, vert) * 0.5;
 
     float pulse = sin(time * 5.0) * 0.3 + 0.7;
-    float a = (core + cross) * pulse * intensity;
-
-    gl_FragColor = vec4(color * 2.0, a);
+    float a = clamp((core + cross) * pulse * intensity, 0.0, 1.0);
+    vec3 col = clamp(color * 2.0, vec3(0.0), vec3(2.5));
+    gl_FragColor = vec4(col, a);
   }
 `;
 
@@ -308,13 +314,20 @@ function NarrativeMarkerImpl({ group, selected, dimmed, onClick }: Props) {
       }}
     >
       {/* Surface ring — radar ping at the country centroid */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.001, 0]}>
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, 0.001, 0]}
+        frustumCulled={false}
+      >
         <ringGeometry args={[0.005, 0.018, 32]} />
         <primitive object={ringMat} attach="material" />
       </mesh>
 
       {/* Inner beam — bright, thin, sharp */}
-      <mesh position={[0, config.beamHeight / 2, 0]}>
+      <mesh
+        position={[0, config.beamHeight / 2, 0]}
+        frustumCulled={false}
+      >
         <cylinderGeometry
           args={[
             config.beamRadius * 0.25,
@@ -329,7 +342,10 @@ function NarrativeMarkerImpl({ group, selected, dimmed, onClick }: Props) {
       </mesh>
 
       {/* Outer glow sheath — wider, dimmer, soft */}
-      <mesh position={[0, config.beamHeight / 2, 0]}>
+      <mesh
+        position={[0, config.beamHeight / 2, 0]}
+        frustumCulled={false}
+      >
         <cylinderGeometry
           args={[
             config.beamRadius * 3.5 * 0.25,
@@ -344,7 +360,7 @@ function NarrativeMarkerImpl({ group, selected, dimmed, onClick }: Props) {
       </mesh>
 
       {/* Bright core sphere — bloom emitter */}
-      <mesh position={[0, 0.002, 0]}>
+      <mesh position={[0, 0.002, 0]} frustumCulled={false}>
         <sphereGeometry args={[config.coreSize, 16, 16]} />
         <meshBasicMaterial
           ref={coreMatRef}
@@ -359,7 +375,7 @@ function NarrativeMarkerImpl({ group, selected, dimmed, onClick }: Props) {
       {/* HOT-only lens flare burst at the top of the beam */}
       {config.showFlare && flareMat && (
         <Billboard position={[0, config.beamHeight, 0]}>
-          <mesh>
+          <mesh frustumCulled={false}>
             <planeGeometry args={[0.04, 0.04]} />
             <primitive object={flareMat} attach="material" />
           </mesh>

@@ -10,6 +10,7 @@ import {
   Vignette,
 } from '@react-three/postprocessing';
 import { BlendFunction } from 'postprocessing';
+import { useMemo } from 'react';
 import * as THREE from 'three';
 import { SUN_POSITION } from '@/lib/sun';
 import Atmosphere from './Atmosphere';
@@ -21,6 +22,10 @@ import Markers from './Markers';
 import SpaceGradient from './SpaceGradient';
 
 export default function Globe() {
+  // Stable offset reference so ChromaticAberration doesn't see a "new" prop
+  // each render and re-bind its uniform/effect chain.
+  const caOffset = useMemo(() => new THREE.Vector2(0.0008, 0.0008), []);
+
   return (
     <>
       {/* 1. Background gradient sphere — fills the void */}
@@ -81,7 +86,7 @@ export default function Globe() {
         <BrightnessContrast brightness={-0.03} contrast={0.15} />
         <ChromaticAberration
           blendFunction={BlendFunction.NORMAL}
-          offset={new THREE.Vector2(0.0008, 0.0008)}
+          offset={caOffset}
           radialModulation={false}
           modulationOffset={0}
         />
