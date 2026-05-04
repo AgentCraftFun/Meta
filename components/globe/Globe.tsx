@@ -13,8 +13,10 @@ import { BlendFunction } from 'postprocessing';
 import * as THREE from 'three';
 import { SUN_POSITION } from '@/lib/sun';
 import Atmosphere from './Atmosphere';
+import CameraController from './CameraController';
 import Clouds from './Clouds';
 import Earth from './Earth';
+import Markers from './Markers';
 import NebulaBackground from './NebulaBackground';
 
 export default function Globe() {
@@ -46,8 +48,11 @@ export default function Globe() {
       <Earth />
       <Clouds />
       <Atmosphere />
+      <Markers />
+      <CameraController />
 
       <OrbitControls
+        makeDefault
         enablePan={false}
         enableZoom
         enableRotate
