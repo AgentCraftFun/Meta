@@ -4,8 +4,8 @@ import { useMemo } from 'react';
 import * as THREE from 'three';
 
 /**
- * Cinematic Fresnel atmosphere — back-side sphere slightly larger than earth,
- * additive cyan-white glow strongest at silhouette edge.
+ * Soft halo atmosphere. Backside sphere at 1.15 radius with a wide-falloff
+ * Fresnel that bleeds into space rather than reading as a hard rim line.
  */
 export default function Atmosphere() {
   const material = useMemo(() => {
@@ -14,43 +14,28 @@ export default function Atmosphere() {
       depthWrite: false,
       side: THREE.BackSide,
       blending: THREE.AdditiveBlending,
-      uniforms: {
-        uColorInner: { value: new THREE.Color('#9ee9ff') },
-        uColorOuter: { value: new THREE.Color('#1f6dff') },
-        uPower: { value: 3.2 },
-        uIntensity: { value: 1.55 },
-      },
+      uniforms: {},
       vertexShader: /* glsl */ `
-        varying vec3 vNormalW;
-        varying vec3 vPositionW;
+        varying vec3 vNormal;
         void main() {
-          vec4 worldPos = modelMatrix * vec4(position, 1.0);
-          vPositionW = worldPos.xyz;
-          vNormalW = normalize(mat3(modelMatrix) * normal);
-          gl_Position = projectionMatrix * viewMatrix * worldPos;
+          vNormal = normalize(normalMatrix * normal);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         }
       `,
       fragmentShader: /* glsl */ `
-        varying vec3 vNormalW;
-        varying vec3 vPositionW;
-        uniform vec3 uColorInner;
-        uniform vec3 uColorOuter;
-        uniform float uPower;
-        uniform float uIntensity;
+        varying vec3 vNormal;
         void main() {
-          vec3 viewDir = normalize(cameraPosition - vPositionW);
-          // back-side: invert normal for fresnel at silhouette
-          float rim = pow(1.0 - abs(dot(viewDir, normalize(vNormalW))), uPower);
-          vec3 col = mix(uColorOuter, uColorInner, smoothstep(0.0, 1.0, rim));
-          float alpha = clamp(rim * uIntensity, 0.0, 1.0);
-          gl_FragColor = vec4(col, alpha);
+          // Wider, softer falloff — key to a halo instead of a ring.
+          float intensity = pow(0.65 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.0);
+          vec3 atmosphereColor = vec3(0.3, 0.6, 1.0);
+          gl_FragColor = vec4(atmosphereColor, 1.0) * intensity;
         }
       `,
     });
   }, []);
 
   return (
-    <mesh scale={1.085}>
+    <mesh scale={1.15}>
       <sphereGeometry args={[1, 64, 64]} />
       <primitive object={material} attach="material" />
     </mesh>

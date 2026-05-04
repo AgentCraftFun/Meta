@@ -4,11 +4,9 @@ import { OrbitControls, Stars } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
 import {
   Bloom,
-  ChromaticAberration,
   EffectComposer,
   Vignette,
 } from '@react-three/postprocessing';
-import { BlendFunction } from 'postprocessing';
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { SUN_POSITION } from '@/lib/sun';
@@ -90,18 +88,12 @@ export default function Globe() {
 
       <EffectComposer multisampling={0}>
         <Bloom
-          intensity={0.6}
-          luminanceThreshold={0.8}
-          luminanceSmoothing={0.2}
+          intensity={1.2}
+          luminanceThreshold={0.2}
+          luminanceSmoothing={0.9}
           mipmapBlur
         />
-        <ChromaticAberration
-          blendFunction={BlendFunction.NORMAL}
-          offset={new THREE.Vector2(0.0006, 0.0006)}
-          radialModulation={false}
-          modulationOffset={0}
-        />
-        <Vignette eskil={false} offset={0.25} darkness={0.85} />
+        <Vignette eskil={false} offset={0.1} darkness={0.6} />
       </EffectComposer>
     </>
   );
