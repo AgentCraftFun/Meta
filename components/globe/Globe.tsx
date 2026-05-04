@@ -19,6 +19,7 @@ import CameraController from './CameraController';
 import Clouds from './Clouds';
 import Earth from './Earth';
 import Markers from './Markers';
+import ShootingStar from './ShootingStar';
 import SpaceGradient from './SpaceGradient';
 
 export default function Globe() {
@@ -41,6 +42,9 @@ export default function Globe() {
         fade
         speed={0.3}
       />
+
+      {/* 2b. Occasional shooting star — every 60-90s */}
+      <ShootingStar />
 
       {/* 3. Lights, planet, atmosphere, markers */}
       <directionalLight
