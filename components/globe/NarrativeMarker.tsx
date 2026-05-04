@@ -369,7 +369,6 @@ function NarrativeMarkerImpl({ group, selected, dimmed, onClick }: Props) {
       {showCard && (
         <Html
           position={[0, config.beamHeight + 0.015, 0]}
-          distanceFactor={1.2}
           zIndexRange={[40, 0]}
           occlude={false}
           center={false}
