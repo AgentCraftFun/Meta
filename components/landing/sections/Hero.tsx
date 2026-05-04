@@ -39,7 +39,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: 'easeOut', delay: 0.1 }}
-              className="font-sans text-[100px] font-black leading-[0.92] tracking-[-0.04em] text-white md:text-[120px]"
+              className="font-display text-[100px] font-bold leading-[0.92] tracking-[-0.05em] text-white md:text-[124px]"
             >
               MetaMap
             </motion.h1>

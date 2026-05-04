@@ -23,6 +23,13 @@ const config: Config = {
           'Roboto',
           'sans-serif',
         ],
+        display: [
+          'Space Grotesk',
+          'Inter',
+          'ui-sans-serif',
+          'system-ui',
+          'sans-serif',
+        ],
         mono: [
           'JetBrains Mono',
           'ui-monospace',
