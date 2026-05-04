@@ -13,6 +13,7 @@ import { BlendFunction } from 'postprocessing';
 import * as THREE from 'three';
 import { SUN_POSITION } from '@/lib/sun';
 import Atmosphere from './Atmosphere';
+import BreakingShake from './BreakingShake';
 import CameraController from './CameraController';
 import Clouds from './Clouds';
 import Earth from './Earth';
@@ -49,6 +50,7 @@ export default function Globe() {
       <Atmosphere />
       <Markers />
       <CameraController />
+      <BreakingShake />
 
       <OrbitControls
         makeDefault

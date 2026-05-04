@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import centroidsRaw from '@/public/data/country-centroids.json';
+import { playTick } from '@/lib/sound';
 import { useMetaStore } from '@/lib/store';
 import { useNarratives } from '@/lib/useNarratives';
 import NarrativeMarker, { type CountryGroup } from './NarrativeMarker';
@@ -12,11 +13,9 @@ const CENTROIDS = centroidsRaw as Record<string, Centroid>;
 export default function Markers() {
   const window = useMetaStore((s) => s.timeWindow);
   const selectedCountry = useMetaStore((s) => s.selectedCountry);
-  const setSelectedCountry = useMetaStore((s) => s.setSelectedCountry);
 
   const { data } = useNarratives(window);
 
-  // Group narratives by country, keep top by rank, count totals.
   const groups = useMemo<CountryGroup[]>(() => {
     if (!data?.narratives.length) return [];
     const byCountry = new Map<
@@ -47,6 +46,17 @@ export default function Markers() {
     return out;
   }, [data?.narratives]);
 
+  // Stable click callback so memoised markers don't churn on every render.
+  const onClick = useCallback((iso: string) => {
+    const {
+      muted,
+      selectedCountry: current,
+      setSelectedCountry,
+    } = useMetaStore.getState();
+    if (!muted) playTick();
+    setSelectedCountry(current === iso ? null : iso);
+  }, []);
+
   return (
     <group>
       {groups.map((g) => (
@@ -55,9 +65,7 @@ export default function Markers() {
           group={g}
           selected={selectedCountry === g.iso}
           dimmed={selectedCountry !== null && selectedCountry !== g.iso}
-          onClick={(iso) =>
-            setSelectedCountry(selectedCountry === iso ? null : iso)
-          }
+          onClick={onClick}
         />
       ))}
     </group>

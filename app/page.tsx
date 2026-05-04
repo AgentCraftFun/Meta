@@ -1,6 +1,9 @@
 import dynamic from 'next/dynamic';
-import SourceModeBadge from '@/components/hud/SourceModeBadge';
+import KeyboardShortcuts from '@/components/hud/KeyboardShortcuts';
+import MobileGate from '@/components/hud/MobileGate';
 import SidePanel from '@/components/hud/SidePanel';
+import SourceModeBadge from '@/components/hud/SourceModeBadge';
+import SpeakerToggle from '@/components/hud/SpeakerToggle';
 import Ticker from '@/components/hud/Ticker';
 import TimeToggle from '@/components/hud/TimeToggle';
 import TopBar from '@/components/hud/TopBar';
@@ -28,10 +31,13 @@ export default function Page() {
     <main className="relative h-screen w-screen overflow-hidden bg-black">
       <Stage />
       <TopBar />
+      <SpeakerToggle />
       <TimeToggle />
       <SidePanel />
       <Ticker />
       <SourceModeBadge />
+      <KeyboardShortcuts />
+      <MobileGate />
     </main>
   );
 }

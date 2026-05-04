@@ -2,7 +2,7 @@
 
 import { Html } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
-import { useMemo, useRef, useState } from 'react';
+import { memo, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { latLngToVec3, surfaceQuaternion } from '@/lib/geo';
 import type { Narrative, NarrativeCategory } from '@/lib/types';
@@ -33,7 +33,7 @@ type Props = {
 const STEM_HEIGHT = 0.04;
 const HEAD_RADIUS = 0.012;
 
-export default function NarrativeMarker({
+function NarrativeMarkerImpl({
   group,
   selected,
   dimmed,
@@ -171,3 +171,23 @@ export default function NarrativeMarker({
     </group>
   );
 }
+
+const NarrativeMarker = memo(NarrativeMarkerImpl, (prev, next) => {
+  // Skip re-render unless visible state, dim state, or the underlying
+  // top-narrative changes (id + volume + category + momentum cover the
+  // visual surface).
+  if (prev.selected !== next.selected) return false;
+  if (prev.dimmed !== next.dimmed) return false;
+  if (prev.onClick !== next.onClick) return false;
+  const a = prev.group;
+  const b = next.group;
+  if (a.iso !== b.iso) return false;
+  if (a.total !== b.total) return false;
+  if (a.top.id !== b.top.id) return false;
+  if (a.top.volume !== b.top.volume) return false;
+  if (a.top.category !== b.top.category) return false;
+  if (a.top.momentum !== b.top.momentum) return false;
+  return true;
+});
+
+export default NarrativeMarker;
