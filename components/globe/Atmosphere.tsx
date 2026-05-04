@@ -27,7 +27,7 @@ export default function Atmosphere() {
         varying vec3 vNormal;
         void main() {
           float intensity = pow(0.72 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 5.0);
-          vec3 rimColor = vec3(0.4, 0.7, 1.0);
+          vec3 rimColor = vec3(0.35, 0.65, 1.0);
           gl_FragColor = vec4(rimColor, 1.0) * intensity * 2.0;
         }
       `,

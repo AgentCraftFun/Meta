@@ -17,33 +17,32 @@ import CameraController from './CameraController';
 import Clouds from './Clouds';
 import Earth from './Earth';
 import Markers from './Markers';
-import NebulaBackground from './NebulaBackground';
+import SpaceGradient from './SpaceGradient';
 
 export default function Globe() {
   return (
     <>
-      {/* Procedural nebula sphere fills the background */}
-      <NebulaBackground />
+      {/* 1. Background gradient sphere — fills the void */}
+      <SpaceGradient />
 
-      {/* Sun from upper-right */}
+      {/* 2. Sparse, lonely starfield in front of the gradient */}
+      <Stars
+        radius={300}
+        depth={60}
+        count={4000}
+        factor={2}
+        saturation={0.3}
+        fade
+        speed={0.3}
+      />
+
+      {/* 3. Lights, planet, atmosphere, markers */}
       <directionalLight
         position={SUN_POSITION}
         intensity={2.0}
         color="#fffaf0"
       />
-      {/* Just enough ambient to lift true black */}
       <ambientLight intensity={0.05} color="#1a2540" />
-
-      {/* Denser, more varied stars */}
-      <Stars
-        radius={300}
-        depth={60}
-        count={8000}
-        factor={4}
-        saturation={0.5}
-        fade
-        speed={0.5}
-      />
 
       <Earth />
       <Clouds />
@@ -66,13 +65,14 @@ export default function Globe() {
         autoRotateSpeed={0.15}
       />
 
+      {/* 4. Postprocessing — tight bloom + cool grade */}
       <EffectComposer multisampling={0}>
         <Bloom
-          intensity={0.8}
-          luminanceThreshold={0.9}
+          intensity={0.9}
+          luminanceThreshold={0.85}
           luminanceSmoothing={0.5}
           mipmapBlur
-          radius={0.6}
+          radius={0.65}
           levels={7}
         />
         <HueSaturation hue={0} saturation={-0.05} />

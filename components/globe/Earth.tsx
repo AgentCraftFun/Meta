@@ -7,6 +7,7 @@ import { SUN_DIRECTION } from '@/lib/sun';
 
 const TEXTURES = {
   day: '/textures/8k_earth_daymap.jpg',
+  night: '/textures/8k_earth_nightmap.jpg',
   specular: '/textures/8k_earth_specular_map.png',
 };
 
@@ -16,7 +17,6 @@ const vertexShader = /* glsl */ `
 
   void main() {
     vUv = uv;
-    // World-space normal so the static sunDirection lines up.
     vNormal = normalize(mat3(modelMatrix) * normal);
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
@@ -24,6 +24,7 @@ const vertexShader = /* glsl */ `
 
 const fragmentShader = /* glsl */ `
   uniform sampler2D dayTexture;
+  uniform sampler2D nightTexture;
   uniform sampler2D specularMap;
   uniform vec3 sunDirection;
 
@@ -31,26 +32,43 @@ const fragmentShader = /* glsl */ `
   varying vec3 vNormal;
 
   void main() {
-    vec3 surfaceColor = texture2D(dayTexture, vUv).rgb;
+    vec3 dayColor = texture2D(dayTexture, vUv).rgb;
+    vec3 nightColor = texture2D(nightTexture, vUv).rgb;
     float specMask = texture2D(specularMap, vUv).r;
 
     float cosAngle = dot(normalize(vNormal), normalize(sunDirection));
 
-    // 0.25 floor keeps the unlit side readable for markers.
-    float lighting = mix(0.25, 1.4, smoothstep(-0.3, 0.6, cosAngle));
+    // Lambert with deep shadow
+    float lighting = mix(0.15, 1.3, smoothstep(-0.2, 0.5, cosAngle));
+    vec3 dayLit = dayColor * lighting;
 
-    vec3 color = surfaceColor * lighting;
+    // Subtle city lights — only on the genuinely dark side, dimmed so they
+    // don't compete with the markers.
+    float nightFactor = 1.0 - smoothstep(-0.3, 0.0, cosAngle);
+    vec3 cityLights = nightColor * 0.6 * nightFactor;
+    cityLights.r *= 1.0;
+    cityLights.g *= 0.85;
+    cityLights.b *= 0.6;
 
-    // Cool atmospheric scattering on the shadow side — never pure dark.
+    vec3 color = dayLit + cityLights;
+
+    // Monochromatic blue grade — the signature of the new look. Push toward
+    // cool blue, leaving bright highlights closer to original.
+    vec3 blueGrade = color * vec3(0.75, 0.9, 1.15);
+    float luma = dot(color, vec3(0.299, 0.587, 0.114));
+    float gradeMix = 1.0 - smoothstep(0.3, 0.8, luma);
+    color = mix(color, blueGrade, gradeMix * 0.7);
+
+    // Cool ambient on the shadow side.
     float shadowAmount = 1.0 - smoothstep(-0.3, 0.3, cosAngle);
-    color = mix(color, color * vec3(0.5, 0.7, 1.0), shadowAmount * 0.4);
+    color = mix(color, color * vec3(0.4, 0.6, 0.95), shadowAmount * 0.5);
 
-    // Sun glint ONLY on water and only at tight angles.
+    // Tight ocean-only specular, tinted cool.
     float oceanMask = step(0.5, specMask);
-    float specBoost = pow(max(0.0, cosAngle), 24.0) * oceanMask * 0.5;
-    color += vec3(specBoost);
+    float specBoost = pow(max(0.0, cosAngle), 32.0) * oceanMask * 0.4;
+    color += vec3(specBoost) * vec3(0.7, 0.85, 1.0);
 
-    // Prevent runaway brightness on snow/ice that triggers bloom blowout.
+    // Brightness clamp to prevent bloom blowout.
     color = min(color, vec3(1.05));
 
     gl_FragColor = vec4(color, 1.0);
@@ -60,18 +78,24 @@ const fragmentShader = /* glsl */ `
 export default function Earth() {
   const meshRef = useRef<THREE.Mesh>(null);
 
-  const [dayMap, specMap] = useTexture([TEXTURES.day, TEXTURES.specular]);
+  const [dayMap, nightMap, specMap] = useTexture([
+    TEXTURES.day,
+    TEXTURES.night,
+    TEXTURES.specular,
+  ]);
 
   dayMap.colorSpace = THREE.SRGBColorSpace;
+  nightMap.colorSpace = THREE.SRGBColorSpace;
   specMap.colorSpace = THREE.NoColorSpace;
   dayMap.anisotropy = 8;
+  nightMap.anisotropy = 8;
   specMap.anisotropy = 4;
 
-  // Sun is static — calculate once, no per-frame uniform sync needed.
   const material = useMemo(() => {
     return new THREE.ShaderMaterial({
       uniforms: {
         dayTexture: { value: dayMap },
+        nightTexture: { value: nightMap },
         specularMap: { value: specMap },
         sunDirection: { value: SUN_DIRECTION.clone() },
       },
@@ -79,7 +103,7 @@ export default function Earth() {
       fragmentShader,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dayMap, specMap]);
+  }, [dayMap, nightMap, specMap]);
 
   return (
     <mesh ref={meshRef}>
