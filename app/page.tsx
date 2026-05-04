@@ -1,5 +1,9 @@
 import dynamic from 'next/dynamic';
 import SourceModeBadge from '@/components/hud/SourceModeBadge';
+import SidePanel from '@/components/hud/SidePanel';
+import Ticker from '@/components/hud/Ticker';
+import TimeToggle from '@/components/hud/TimeToggle';
+import TopBar from '@/components/hud/TopBar';
 
 const Stage = dynamic(() => import('@/components/globe/Stage'), {
   ssr: false,
@@ -14,9 +18,6 @@ function Loader() {
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-neon-cyan" />
           Initializing MetaMap…
         </div>
-        <div className="h-px w-48 overflow-hidden bg-white/5">
-          <div className="h-full w-1/3 animate-pulse bg-neon-cyan/60" />
-        </div>
       </div>
     </div>
   );
@@ -26,6 +27,10 @@ export default function Page() {
   return (
     <main className="relative h-screen w-screen overflow-hidden bg-black">
       <Stage />
+      <TopBar />
+      <TimeToggle />
+      <SidePanel />
+      <Ticker />
       <SourceModeBadge />
     </main>
   );
