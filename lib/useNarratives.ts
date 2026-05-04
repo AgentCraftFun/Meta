@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { Narrative, SourceMode, TimeWindow } from './types';
 
 type NarrativesResponse = {
@@ -24,6 +24,11 @@ export function useNarratives(window: TimeWindow) {
     queryFn: () => fetchNarratives(window),
     refetchInterval: 60_000,
     staleTime: 30_000,
+    // Keep showing the previous window's data while the new window loads.
+    // Without this, switching windows briefly returns undefined and every
+    // marker / ticker chip / panel row unmounts + remounts → a one-frame
+    // visual flash on the globe.
+    placeholderData: keepPreviousData,
   });
 }
 
