@@ -21,7 +21,7 @@ export default function Stage() {
         camera={{ position: [0.5, 0.6, 2.8], fov: 35, near: 0.1, far: 100 }}
         onCreated={({ gl }) => {
           gl.toneMapping = THREE.ACESFilmicToneMapping;
-          gl.toneMappingExposure = 0.6;
+          gl.toneMappingExposure = 0.85;
           gl.outputColorSpace = THREE.SRGBColorSpace;
         }}
       >

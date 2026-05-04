@@ -40,19 +40,10 @@ const fragmentShader = /* glsl */ `
 
     float cosAngle = dot(normalize(vNormal), normalize(sunDirection));
 
-    // Wide, soft terminator so the day/night transition reads like a band,
-    // not a line.
-    float dayMix = smoothstep(-0.25, 0.35, cosAngle);
+    // Smoother, narrower terminator transition
+    float dayMix = smoothstep(-0.15, 0.25, cosAngle);
 
-    // Twilight scattering band — peaks right at the boundary and falls off
-    // on both sides, painting warm sunset colors across the terminator.
-    float twilight =
-      smoothstep(-0.3, 0.0, cosAngle) *
-      (1.0 - smoothstep(0.0, 0.4, cosAngle));
-    vec3 twilightColor = vec3(1.0, 0.5, 0.3);
-
-    // City lights — boosted with sodium-vapor warmth so they survive bloom
-    // and tone mapping.
+    // City lights — sodium-vapor warmth, kept strong
     vec3 cityLights = nightColor * 2.5;
     cityLights.r *= 1.1;
     cityLights.g *= 0.95;
@@ -60,23 +51,28 @@ const fragmentShader = /* glsl */ `
 
     vec3 color = mix(cityLights, dayColor, dayMix);
 
-    // Warm twilight glow at the terminator.
-    color += twilightColor * twilight * 0.25;
-
-    // Cool color grade on day side.
-    color = mix(color, color * vec3(0.85, 0.95, 1.1), 0.3 * dayMix);
-
-    // Sun glint ONLY on oceans (specMask high). Land never speculars,
-    // so the Sahara, snow, and deserts stop blowing out under bloom.
+    // Sun glint ONLY on oceans — land never speculars
     float oceanMask = step(0.5, specMask);
     float specBoost = pow(max(0.0, cosAngle), 8.0) * oceanMask * 0.3;
     color += vec3(specBoost);
 
-    // Dim bright land slightly to prevent blowout under bloom.
-    color = mix(color, color * 0.85, dayMix * 0.5);
+    // Subtle warm rim — Gaussian peak right at the terminator edge, not a
+    // wide band. exp(-x^2) makes a narrow lobe centered at cosAngle=0.
+    float terminatorEdge = exp(-pow(cosAngle * 8.0, 2.0)) * 0.15;
+    vec3 warmRim = vec3(1.0, 0.6, 0.4) * terminatorEdge;
+    color += warmRim;
 
-    // Filmic crush.
-    color *= 0.85;
+    // Cool atmospheric scattering on the day side limb (Rayleigh tint near
+    // the silhouette edge — gives the "earth from space" feel without
+    // painting bands).
+    float fresnel = 1.0 - abs(dot(normalize(vNormal), vec3(0.0, 0.0, 1.0)));
+    vec3 atmosphericTint =
+      vec3(0.4, 0.6, 1.0) * pow(fresnel, 3.0) * dayMix * 0.2;
+    color += atmosphericTint;
+
+    // 15% saturation boost — rich documentary look without going cartoony
+    vec3 luma = vec3(dot(color, vec3(0.299, 0.587, 0.114)));
+    color = mix(luma, color, 1.15);
 
     gl_FragColor = vec4(color, 1.0);
   }
