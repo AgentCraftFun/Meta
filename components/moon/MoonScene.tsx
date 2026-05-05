@@ -123,6 +123,8 @@ export default function MoonScene() {
         zoomSpeed={0.6}
         minDistance={1.6}
         maxDistance={6}
+        autoRotate
+        autoRotateSpeed={0.15}
         target={[MOON_X_CLOSED, 0, 0]}
       />
 

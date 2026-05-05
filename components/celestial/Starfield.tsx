@@ -13,14 +13,16 @@ type Props = {
 };
 
 /**
- * Thin wrapper around drei's <Stars /> that locks in the project's "sparse,
- * lonely" defaults. Override any prop per-scene as needed.
+ * Thin wrapper around drei's <Stars />. Defaults render visible-but-subtle
+ * pinpoints across the whole hemisphere — bigger and slightly more
+ * numerous than the original "sparse, lonely" tuning, which were dim
+ * enough that the dithered space gradient swallowed them.
  */
 export default function Starfield({
-  radius = 300,
+  radius = 220,
   depth = 60,
-  count = 4000,
-  factor = 2,
+  count = 6000,
+  factor = 4,
   saturation = 0.3,
   speed = 0.3,
   fade = true,

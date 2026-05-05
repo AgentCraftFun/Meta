@@ -57,10 +57,13 @@ export default function MoonCameraController() {
     endTarget: THREE.Vector3;
     t0: number;
   } | null>(null);
+  const wasAutoRotating = useRef<boolean>(true);
 
   useEffect(() => {
     if (!selectedTokenId) {
       tween.current = null;
+      // Restore autoRotate to whatever it was before the click tween.
+      if (controls && wasAutoRotating.current) controls.autoRotate = true;
       return;
     }
     const entry = activeTokens.find((e) => e.token.id === selectedTokenId);
@@ -93,7 +96,11 @@ export default function MoonCameraController() {
       endTarget: moonCenter.clone(),
       t0: performance.now(),
     };
-  }, [selectedTokenId, activeTokens, scene, camera, controls]);
+    if (controls) {
+      wasAutoRotating.current = !!controls.autoRotate;
+      controls.autoRotate = false;
+    }
+  }, [selectedTokenId, activeTokens, scene, camera, controls, filter]);
 
   useFrame(() => {
     if (!tween.current) return;
