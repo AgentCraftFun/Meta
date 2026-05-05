@@ -137,7 +137,7 @@ export default function MoonScene() {
       <EffectComposer multisampling={0}>
         <Bloom
           intensity={1.0}
-          luminanceThreshold={0.78}
+          luminanceThreshold={0.6}
           luminanceSmoothing={0.6}
           mipmapBlur
           radius={0.75}

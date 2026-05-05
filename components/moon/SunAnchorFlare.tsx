@@ -1,58 +1,38 @@
 'use client';
 
-import { useFrame, useThree } from '@react-three/fiber';
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import * as THREE from 'three';
+
+interface Props {
+  /** World-space direction of the key directional light. Anchor sits at
+   *  1.04× the normalized direction so it floats just past the moon's
+   *  silhouette where the sun would visually meet the rim. */
+  sunDirection?: [number, number, number];
+}
 
 /**
  * Tiny HDR sphere placed just past the moon's silhouette in the sun
- * direction. The HDR colour (components > 1) trips the bloom pass and
- * blooms into a soft cinematic anchor where the directional key light
- * meets the rim — visually grounding the sun even though there's no
- * actual sun mesh in the scene.
+ * direction. Components > 1 with toneMapped=false survive the
+ * tone-mapping stage and feed the bloom pass directly, blooming into a
+ * soft cinematic flare that visually anchors the directional key light.
  *
- * The anchor tracks the moon group's WORLD POSITION each frame (so it
- * follows the panel-open X-lerp) but ignores the moon's Y-axis spin,
- * which is why it lives outside ClaimedSurface and looks the moon up
- * by name through the scene graph.
+ * Lives at a fixed world position (not parented to the rotating moon
+ * group) so it doesn't sweep around with the moon's spin.
  */
-export default function SunAnchorFlare() {
-  const ref = useRef<THREE.Mesh>(null);
-  const { scene } = useThree();
-
-  const sunOffset = useMemo(
-    () => new THREE.Vector3(5, 2, 3).normalize().multiplyScalar(1.04),
-    []
-  );
-
-  // HDR white-warm — components > 1 with toneMapped=false survive the
-  // tone-mapping stage and feed the bloom pass directly.
-  const color = useMemo(() => new THREE.Color(2.5, 2.5, 2.2), []);
-
-  useFrame(() => {
-    if (!ref.current) return;
-    const surface = scene.getObjectByName('claimed-surface');
-    if (!surface) return;
-    surface.updateMatrixWorld(true);
-    const center = new THREE.Vector3();
-    surface.getWorldPosition(center);
-    ref.current.position.set(
-      center.x + sunOffset.x,
-      center.y + sunOffset.y,
-      center.z + sunOffset.z
-    );
-  });
+export default function SunAnchorFlare({
+  sunDirection = [5, 2, 3],
+}: Props) {
+  const position = useMemo(() => {
+    const v = new THREE.Vector3(...sunDirection)
+      .normalize()
+      .multiplyScalar(1.04);
+    return [v.x, v.y, v.z] as [number, number, number];
+  }, [sunDirection]);
 
   return (
-    <mesh ref={ref}>
-      <sphereGeometry args={[0.025, 16, 16]} />
-      <meshBasicMaterial
-        color={color}
-        toneMapped={false}
-        transparent
-        opacity={0.85}
-        depthWrite={false}
-      />
+    <mesh position={position}>
+      <sphereGeometry args={[0.04, 24, 24]} />
+      <meshBasicMaterial color={[2.5, 2.5, 2.2]} toneMapped={false} />
     </mesh>
   );
 }

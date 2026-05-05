@@ -1,105 +1,99 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
-const VERTEX = /* glsl */ `
-  varying vec3 vNormal;
+const vertexShader = `
+  varying vec3 vNormalWorld;
   varying vec3 vViewDir;
-  varying vec3 vWorldNormal;
 
   void main() {
-    vNormal = normalize(normalMatrix * normal);
-    // w=0 strips translation; world-space normal accounts for any rotation
-    // applied by parent groups so the sun-alignment dot product stays
-    // correct as the moon spins.
-    vWorldNormal = normalize((modelMatrix * vec4(normal, 0.0)).xyz);
-    vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
-    vViewDir = normalize(-mvPos.xyz);
-    gl_Position = projectionMatrix * mvPos;
+    vec4 worldPos = modelMatrix * vec4(position, 1.0);
+    vNormalWorld = normalize(mat3(modelMatrix) * normal);
+    vViewDir = normalize(cameraPosition - worldPos.xyz);
+    gl_Position = projectionMatrix * viewMatrix * worldPos;
   }
 `;
 
-const FRAGMENT = /* glsl */ `
-  varying vec3 vNormal;
-  varying vec3 vViewDir;
-  varying vec3 vWorldNormal;
+const fragmentShader = `
   uniform vec3 uSunDirection;
+  varying vec3 vNormalWorld;
+  varying vec3 vViewDir;
 
   void main() {
-    // Silhouette mask — concentrates the glow at the rim, dies quickly
-    // toward the centre of the projected disc.
-    float fresnel = 1.0 - abs(dot(vNormal, vViewDir));
-    float silhouette = pow(fresnel, 4.0);
+    // BackSide rendering: at the silhouette the back-face normal is
+    // perpendicular to the view direction, so abs(dot) → 0 there. Inverting
+    // and raising to a soft power gives a wide halo that's strongest at
+    // the rim and dies gradually inward.
+    float fresnel = abs(dot(vNormalWorld, vViewDir));
+    float halo = pow(1.0 - fresnel, 2.5);
 
-    // Sun alignment: +1 = facing sun, 0 = terminator, -1 = facing away.
-    float sunFacing = dot(vWorldNormal, uSunDirection);
+    // Sun alignment in world space. The halo sphere lives inside the
+    // rotating moon group; modelMatrix carries the rotation, but the
+    // sun direction is a fixed world vector — so as the moon spins, the
+    // bright/dark sides stay locked to the actual key-light direction.
+    float sunDot = dot(normalize(vNormalWorld), normalize(uSunDirection));
+    float sunSide = smoothstep(-0.3, 0.6, sunDot);
 
-    // Brightness multiplier: bright on the lit rim, medium at the
-    // terminator, near-zero on the shadow rim.
-    float sunlitMult = smoothstep(-0.4, 0.7, sunFacing);
-    float rimBrightness = mix(0.15, 1.4, sunlitMult);
+    vec3 shadowColor = vec3(0.05, 0.10, 0.25);
+    vec3 terminColor = vec3(0.25, 0.45, 0.70);
+    vec3 sunColor    = vec3(0.85, 0.95, 1.20);
 
-    // Colour gradient mirrors how light scatters through atmosphere:
-    //   sun-facing  → cool white with a touch of blue
-    //   terminator  → cyan-blue
-    //   shadow      → deep navy (almost invisible)
-    vec3 hotColor  = vec3(0.85, 0.92, 1.05);
-    vec3 termColor = vec3(0.45, 0.60, 0.85);
-    vec3 coldColor = vec3(0.08, 0.12, 0.25);
-
-    vec3 rimColor;
-    if (sunFacing > 0.0) {
-      rimColor = mix(termColor, hotColor, smoothstep(0.0, 0.7, sunFacing));
+    vec3 color;
+    if (sunSide < 0.5) {
+      color = mix(shadowColor, terminColor, sunSide * 2.0);
     } else {
-      rimColor = mix(coldColor, termColor, smoothstep(-0.7, 0.0, sunFacing));
+      color = mix(terminColor, sunColor, (sunSide - 0.5) * 2.0);
     }
 
-    float intensity = silhouette * rimBrightness;
-    float alpha = intensity * 0.55;
-
-    gl_FragColor = vec4(rimColor * rimBrightness, alpha);
+    float alpha = halo * 0.85;
+    gl_FragColor = vec4(color * halo, alpha);
   }
 `;
 
-type Props = {
-  /** Glow shell radius. Wider radius = more falloff room into space. */
-  radius?: number;
-  segments?: number;
-};
+interface Props {
+  /** World-space direction of the key directional light. Defaults to the
+   *  Moon scene's [5, 2, 3] sun position. The vector is normalized inside
+   *  the component, so passing the unnormalized light position is fine. */
+  sunDirection?: [number, number, number];
+}
 
 /**
- * Directional, asymmetric atmospheric scatter around the moon. The
- * sun-facing silhouette gets a bright cool-white halo, the terminator
- * shifts to cyan-blue, and the shadow rim fades to deep navy — like
- * light refracting through a real atmosphere instead of a uniform
- * sticker outline. uSunDirection is locked to the key directional
- * light's world direction (5, 2, 3) so the gradient stays anchored
- * to the actual lighting setup as the moon rotates.
+ * Wide directional atmospheric scatter around the moon. A backside-rendered
+ * sphere at radius 1.18 with additive blending paints a soft halo that
+ * extends ~18% of the moon's radius into space. The shader gates colour
+ * against the sun direction so the halo asymmetrically grades from cool
+ * white (sun rim) → cyan-blue (terminator) → deep navy (shadow rim).
+ *
+ * No depth write — the moon body still occludes the halo correctly via
+ * depth test, so the halo only shows beyond the silhouette.
  */
 export default function MoonAtmosphericGlow({
-  radius = 1.06,
-  segments = 96,
+  sunDirection = [5, 2, 3],
 }: Props) {
-  const material = useMemo(() => {
-    const sunDirection = new THREE.Vector3(5, 2, 3).normalize();
-    return new THREE.ShaderMaterial({
-      vertexShader: VERTEX,
-      fragmentShader: FRAGMENT,
-      transparent: true,
-      side: THREE.BackSide,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-      uniforms: {
-        uSunDirection: { value: sunDirection },
+  const meshRef = useRef<THREE.Mesh>(null);
+
+  const uniforms = useMemo(
+    () => ({
+      uSunDirection: {
+        value: new THREE.Vector3(...sunDirection).normalize(),
       },
-    });
-  }, []);
+    }),
+    [sunDirection]
+  );
 
   return (
-    <mesh>
-      <sphereGeometry args={[radius, segments, segments]} />
-      <primitive object={material} attach="material" />
+    <mesh ref={meshRef} scale={1}>
+      <sphereGeometry args={[1.18, 96, 96]} />
+      <shaderMaterial
+        vertexShader={vertexShader}
+        fragmentShader={fragmentShader}
+        uniforms={uniforms}
+        side={THREE.BackSide}
+        blending={THREE.AdditiveBlending}
+        transparent
+        depthWrite={false}
+      />
     </mesh>
   );
 }
