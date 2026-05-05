@@ -23,7 +23,6 @@ import { useEffectiveTokens } from '@/lib/useEffectiveTokens';
 import Moon from './Moon';
 import MoonAtmosphericGlow from './MoonAtmosphericGlow';
 import MoonCameraController from './MoonCameraController';
-import SunAnchorFlare from './SunAnchorFlare';
 import TokenCraters from './TokenCraters';
 
 const MOON_ROTATION_RAD_S = 0.005;
@@ -110,11 +109,6 @@ export default function MoonScene() {
         filter={filter}
       />
 
-      {/* HDR sun-anchor flare just past the silhouette in the key light's
-          direction — bloom catches it as a soft directional highlight.
-          Lives outside ClaimedSurface so it doesn't spin with the moon. */}
-      <SunAnchorFlare />
-
       {/* Camera tween on flag click */}
       <MoonCameraController />
 
@@ -137,7 +131,7 @@ export default function MoonScene() {
       <EffectComposer multisampling={0}>
         <Bloom
           intensity={1.0}
-          luminanceThreshold={0.6}
+          luminanceThreshold={0.78}
           luminanceSmoothing={0.6}
           mipmapBlur
           radius={0.75}
