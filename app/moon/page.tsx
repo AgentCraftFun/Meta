@@ -9,6 +9,7 @@ import SpeakerToggle from '@/components/hud/SpeakerToggle';
 import SurfaceToggle from '@/components/hud/SurfaceToggle';
 import TimeToggle from '@/components/hud/TimeToggle';
 import TopBar from '@/components/hud/TopBar';
+import TokenSidePanel from '@/components/moon/TokenSidePanel';
 
 const MoonScene = dynamic(() => import('@/components/moon/MoonScene'), {
   ssr: false,
@@ -43,6 +44,7 @@ export default function MoonPage() {
       <SpeakerToggle />
       <TimeToggle />
       <SurfaceToggle />
+      <TokenSidePanel />
       <MoonModeBadge />
       <KeyboardShortcuts />
       <MobileGate />

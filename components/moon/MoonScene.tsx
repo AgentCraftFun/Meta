@@ -16,16 +16,25 @@ import ShootingStar from '@/components/celestial/ShootingStar';
 import SpaceGradient from '@/components/celestial/SpaceGradient';
 import Stage from '@/components/celestial/Stage';
 import Starfield from '@/components/celestial/Starfield';
+import { useMetaStore } from '@/lib/store';
+import { useTokens } from '@/lib/useTokens';
 import Moon from './Moon';
+import OrbitTrails from './OrbitTrails';
+import SelectionRing from './SelectionRing';
+import TokenSatellites from './TokenSatellites';
 
 /**
- * Phase B: hyperrealistic 3D moon. One harsh key light and a faint cool
- * ambient — no rim fill, no atmosphere — so the moon reads as a lonely
- * dusty body in deep space. Bloom is dialled way back vs Earth since
- * there are no city lights or specular oceans for it to catch.
+ * Phase D: hyperrealistic moon body + orbiting token satellites. The moon
+ * setup (body, lights, backdrop) is unchanged from Phase B+C — satellites
+ * are added alongside. Bloom is bumped to catch the HDR satellite spheres;
+ * OrbitControls maxDistance is widened so the user can zoom out to the
+ * full halo.
  */
 export default function MoonScene() {
   const caOffset = useMemo(() => new THREE.Vector2(0.0008, 0.0008), []);
+  const window = useMetaStore((s) => s.timeWindow);
+  const { data } = useTokens(window);
+  const tokens = data?.tokens ?? [];
 
   return (
     <Stage
@@ -43,6 +52,11 @@ export default function MoonScene() {
       {/* Moon body */}
       <Moon />
 
+      {/* Token halo */}
+      <OrbitTrails tokens={tokens} />
+      <TokenSatellites tokens={tokens} />
+      <SelectionRing tokens={tokens} />
+
       <OrbitControls
         makeDefault
         enablePan={false}
@@ -53,21 +67,21 @@ export default function MoonScene() {
         rotateSpeed={0.55}
         zoomSpeed={0.6}
         minDistance={1.6}
-        maxDistance={6}
+        maxDistance={16}
         autoRotate
         autoRotateSpeed={0.12}
       />
 
-      {/* Postprocessing — Bloom dialled way back, same colour grade as
-          Earth so the surfaces feel like one universe */}
+      {/* Postprocessing — bloom bumped so HDR satellites bloom; same colour
+          grade as Earth so the surfaces feel like one universe. */}
       <EffectComposer multisampling={0}>
         <Bloom
-          intensity={0.5}
-          luminanceThreshold={0.85}
-          luminanceSmoothing={0.5}
+          intensity={1.2}
+          luminanceThreshold={0.7}
+          luminanceSmoothing={0.6}
           mipmapBlur
-          radius={0.6}
-          levels={6}
+          radius={0.7}
+          levels={7}
         />
         <HueSaturation hue={0} saturation={-0.05} />
         <BrightnessContrast brightness={-0.03} contrast={0.15} />
