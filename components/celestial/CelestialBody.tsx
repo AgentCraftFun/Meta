@@ -2,7 +2,7 @@
 
 import { useTexture } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
-import { useEffect, useMemo, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
 export type CelestialTextures = {
@@ -68,8 +68,6 @@ export default function CelestialBody({
   const meshRef = useRef<THREE.Mesh>(null);
 
   // Build a stable URL list ordered: day, night, normal, specular.
-  // Indices below map back to that order. useTexture won't change shape
-  // unless the props themselves change.
   const urls = [
     textures.day,
     textures.night ?? '',
@@ -78,46 +76,39 @@ export default function CelestialBody({
   ].filter(Boolean) as string[];
   const loaded = useTexture(urls) as THREE.Texture[];
 
-  // Map back to slot names by walking urls in the same order.
-  const maps = useMemo(() => {
-    const out: {
-      day?: THREE.Texture;
-      night?: THREE.Texture;
-      normal?: THREE.Texture;
-      specular?: THREE.Texture;
-    } = {};
-    let i = 0;
-    if (textures.day) out.day = loaded[i++];
-    if (textures.night) out.night = loaded[i++];
-    if (textures.normal) out.normal = loaded[i++];
-    if (textures.specular) out.specular = loaded[i++];
-    return out;
-    // loaded is a stable array reference unless urls change.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [textures.day, textures.night, textures.normal, textures.specular, loaded]);
+  // Pull out individual texture refs by walking urls in known order.
+  // Using individual refs (not the loaded array) as deps keeps the material
+  // stable across renders — drei's useTexture can return a fresh array
+  // reference each render even when the underlying Textures are the same.
+  let i = 0;
+  const dayMap = textures.day ? loaded[i++] : undefined;
+  const nightMap = textures.night ? loaded[i++] : undefined;
+  const normalMap = textures.normal ? loaded[i++] : undefined;
+  const specularMap = textures.specular ? loaded[i++] : undefined;
 
-  // Configure colour spaces + anisotropy.
-  useEffect(() => {
-    if (maps.day) {
-      maps.day.colorSpace = THREE.SRGBColorSpace;
-      maps.day.anisotropy = 8;
-    }
-    if (maps.night) {
-      maps.night.colorSpace = THREE.SRGBColorSpace;
-      maps.night.anisotropy = 8;
-    }
-    if (maps.normal) {
-      maps.normal.colorSpace = THREE.NoColorSpace;
-      maps.normal.anisotropy = 8;
-    }
-    if (maps.specular) {
-      maps.specular.colorSpace = THREE.NoColorSpace;
-      maps.specular.anisotropy = 4;
-    }
-  }, [maps]);
-
-  // Build the material once based on the chosen path.
+  // Build the material once. Texture colour-space + anisotropy are set
+  // synchronously here, BEFORE the material is constructed, so the first
+  // GL upload happens with the correct sRGB / linear flags. Doing this in
+  // useEffect (post-commit) creates a race where Three uploads textures
+  // as linear and the day/night blend looks washed out.
   const mat = useMemo(() => {
+    if (dayMap) {
+      dayMap.colorSpace = THREE.SRGBColorSpace;
+      dayMap.anisotropy = 8;
+    }
+    if (nightMap) {
+      nightMap.colorSpace = THREE.SRGBColorSpace;
+      nightMap.anisotropy = 8;
+    }
+    if (normalMap) {
+      normalMap.colorSpace = THREE.NoColorSpace;
+      normalMap.anisotropy = 8;
+    }
+    if (specularMap) {
+      specularMap.colorSpace = THREE.NoColorSpace;
+      specularMap.anisotropy = 4;
+    }
+
     if (material === 'shader') {
       if (!shader) {
         throw new Error('CelestialBody: material="shader" requires a shader prop');
@@ -125,10 +116,10 @@ export default function CelestialBody({
       const uniforms: Record<string, THREE.IUniform> = {
         ...(shader.uniforms ?? {}),
       };
-      if (maps.day) uniforms.dayTexture = { value: maps.day };
-      if (maps.night) uniforms.nightTexture = { value: maps.night };
-      if (maps.normal) uniforms.normalMap = { value: maps.normal };
-      if (maps.specular) uniforms.specularMap = { value: maps.specular };
+      if (dayMap) uniforms.dayTexture = { value: dayMap };
+      if (nightMap) uniforms.nightTexture = { value: nightMap };
+      if (normalMap) uniforms.normalMap = { value: normalMap };
+      if (specularMap) uniforms.specularMap = { value: specularMap };
       return new THREE.ShaderMaterial({
         uniforms,
         vertexShader: shader.vertex,
@@ -137,16 +128,26 @@ export default function CelestialBody({
     }
 
     return new THREE.MeshStandardMaterial({
-      map: maps.day,
-      normalMap: maps.normal ?? null,
-      roughnessMap: maps.specular ?? null,
+      map: dayMap,
+      normalMap: normalMap ?? null,
+      roughnessMap: specularMap ?? null,
       metalness: standardProps?.metalness ?? 0,
       roughness: standardProps?.roughness ?? 0.9,
-      bumpMap: standardProps?.useBumpFromDay ? maps.day ?? null : null,
+      bumpMap: standardProps?.useBumpFromDay ? dayMap ?? null : null,
       bumpScale: standardProps?.bumpScale ?? 0,
     });
+    // Individual texture refs are stable across renders; deps deliberately
+    // exclude the wrapping `loaded` array reference.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [material, shader, maps, standardProps]);
+  }, [
+    material,
+    shader,
+    standardProps,
+    dayMap,
+    nightMap,
+    normalMap,
+    specularMap,
+  ]);
 
   useFrame((_, delta) => {
     if (rotationSpeed && meshRef.current) {
