@@ -4,8 +4,9 @@ import dynamic from 'next/dynamic';
 import { useEffect } from 'react';
 import KeyboardShortcuts from '@/components/hud/KeyboardShortcuts';
 import MobileGate from '@/components/hud/MobileGate';
-import SourceModeBadge from '@/components/hud/SourceModeBadge';
+import SpeakerToggle from '@/components/hud/SpeakerToggle';
 import SurfaceToggle from '@/components/hud/SurfaceToggle';
+import TimeToggle from '@/components/hud/TimeToggle';
 import TopBar from '@/components/hud/TopBar';
 
 const MoonScene = dynamic(() => import('@/components/moon/MoonScene'), {
@@ -26,6 +27,21 @@ function Loader() {
   );
 }
 
+function MoonModeBadge() {
+  return (
+    <div className="pointer-events-none fixed bottom-3 left-3 z-30 flex items-center gap-2 rounded-sm border border-white/10 bg-black/55 px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.3em] backdrop-blur">
+      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-neon-amber" />
+      <span className="text-neon-amber">Mock</span>
+      <span className="text-white/30">/</span>
+      <span className="text-white/60">24h</span>
+      <span className="text-white/30">/</span>
+      <span className="text-white/60">0 tokens</span>
+      <span className="text-white/30">/</span>
+      <span className="text-white/40">OK</span>
+    </div>
+  );
+}
+
 export default function MoonPage() {
   useEffect(() => {
     document.body.classList.add('viewer-mode');
@@ -37,26 +53,11 @@ export default function MoonPage() {
   return (
     <main className="relative h-screen w-screen overflow-hidden bg-black">
       <MoonScene />
-      <TopBar />
+      <TopBar suffix="Moon" />
+      <SpeakerToggle />
+      <TimeToggle />
       <SurfaceToggle />
-
-      {/* Phase A scaffolding banner */}
-      <div className="pointer-events-none fixed inset-0 z-20 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4 font-mono text-center">
-          <span className="flex items-center gap-2 text-[10px] uppercase tracking-[0.45em] text-neon-cyan/85">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-neon-cyan shadow-neon-cyan" />
-            Moon · Scaffolding · Phase A
-          </span>
-          <h1 className="font-display text-[64px] font-bold uppercase tracking-[0.04em] text-white/85">
-            Moon
-          </h1>
-          <p className="max-w-[420px] text-[12px] uppercase tracking-[0.32em] text-white/45">
-            Token galaxy / arrives Phase B
-          </p>
-        </div>
-      </div>
-
-      <SourceModeBadge />
+      <MoonModeBadge />
       <KeyboardShortcuts />
       <MobileGate />
     </main>

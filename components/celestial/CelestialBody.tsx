@@ -19,11 +19,28 @@ export type CelestialShader = {
   uniforms?: Record<string, THREE.IUniform>;
 };
 
+export type StandardMaterialProps = {
+  /** Default 0.9 */
+  roughness?: number;
+  /** Default 0.0 */
+  metalness?: number;
+  /**
+   * When true, the day texture is also bound as bumpMap so the surface gets
+   * crater / terrain depth without a separate height map. Useful for the
+   * moon and other dust-bodies whose albedo doubles as elevation cue.
+   */
+  useBumpFromDay?: boolean;
+  /** Default 0 (no bump). Typical values 0.01–0.05. */
+  bumpScale?: number;
+};
+
 type Props = {
   textures: CelestialTextures;
   /** 'shader' uses a custom ShaderMaterial; 'standard' uses MeshStandardMaterial. */
   material?: 'standard' | 'shader';
   shader?: CelestialShader;
+  /** Tuning for the standard MeshStandardMaterial path. Ignored in shader mode. */
+  standardProps?: StandardMaterialProps;
   radius?: number;
   segments?: number;
   /** Y-axis rotation in rad/s. 0 = static. */
@@ -43,6 +60,7 @@ export default function CelestialBody({
   textures,
   material = 'standard',
   shader,
+  standardProps,
   radius = 1,
   segments = 128,
   rotationSpeed = 0,
@@ -122,11 +140,13 @@ export default function CelestialBody({
       map: maps.day,
       normalMap: maps.normal ?? null,
       roughnessMap: maps.specular ?? null,
-      metalness: 0,
-      roughness: 0.9,
+      metalness: standardProps?.metalness ?? 0,
+      roughness: standardProps?.roughness ?? 0.9,
+      bumpMap: standardProps?.useBumpFromDay ? maps.day ?? null : null,
+      bumpScale: standardProps?.bumpScale ?? 0,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [material, shader, maps]);
+  }, [material, shader, maps, standardProps]);
 
   useFrame((_, delta) => {
     if (rotationSpeed && meshRef.current) {

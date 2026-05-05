@@ -3,7 +3,12 @@
 import { useEffect, useState } from 'react';
 import { formatUtcClock } from '@/lib/time';
 
-export default function TopBar() {
+type Props = {
+  /** Optional surface label appended after the wordmark, e.g. "MOON". */
+  suffix?: string;
+};
+
+export default function TopBar({ suffix }: Props) {
   const [clock, setClock] = useState('');
   useEffect(() => {
     setClock(formatUtcClock());
@@ -17,6 +22,16 @@ export default function TopBar() {
         <span className="text-[15px] font-semibold uppercase tracking-[0.45em] text-white">
           MetaMap
         </span>
+        {suffix && (
+          <>
+            <span aria-hidden className="text-[15px] text-white/30">
+              /
+            </span>
+            <span className="text-[15px] font-semibold uppercase tracking-[0.45em] text-white">
+              {suffix}
+            </span>
+          </>
+        )}
         <span className="flex items-center gap-1.5 text-[9px] uppercase tracking-[0.4em] text-neon-cyan/85">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-neon-cyan shadow-neon-cyan" />
           Live
