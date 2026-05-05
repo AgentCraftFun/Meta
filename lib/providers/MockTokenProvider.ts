@@ -181,19 +181,24 @@ function seedToToken(seed: Seed, window: TimeWindow): Token {
 }
 
 /**
- * Filter the seed universe per window so the count visibly changes when the
- * user toggles BREAKING NOW / 24H / 7D in the HUD. 24h is the full set.
+ * Filter + sort the seed universe per window so the count and ordering
+ * visibly change when the user toggles BREAKING NOW / 24H / 7D in the HUD.
+ *
+ *   BREAKING NOW (1h) — tokens with strong momentum (>0.6) or just-launched
+ *                       (age <1h). Sorted by momentum desc.
+ *   24H              — full set, sorted by 24h change desc.
+ *   7D               — full set, sorted by 7d change. We don't have a 7d
+ *                       column yet so we use 24h change as a proxy until
+ *                       the real provider lands.
  */
 function filterForWindow(tokens: Token[], window: TimeWindow): Token[] {
   if (window === '1h') {
-    // Recent breakouts: launched in last 24h OR strong momentum.
-    return tokens.filter((t) => t.age < 24 || t.momentum > 0.5);
+    return tokens
+      .filter((t) => t.momentum > 0.6 || t.age < 1)
+      .sort((a, b) => b.momentum - a.momentum);
   }
-  if (window === '7d') {
-    // Established signal: skip dust caps + dead tape.
-    return tokens.filter((t) => t.marketCap > 5e6 && t.priceChange24h > 0);
-  }
-  return tokens;
+  // 24h + 7d both sort by 24h change desc until real 7d data exists.
+  return tokens.slice().sort((a, b) => b.priceChange24h - a.priceChange24h);
 }
 
 export class MockTokenProvider implements TokenProvider {

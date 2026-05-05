@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import SurfaceTransition from '@/components/celestial/SurfaceTransition';
 import './globals.css';
 import Providers from './providers';
 
@@ -34,7 +35,10 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-[#05080F] text-slate-100 antialiased">
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <SurfaceTransition />
+        </Providers>
       </body>
     </html>
   );

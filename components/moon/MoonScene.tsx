@@ -39,6 +39,7 @@ export default function MoonScene() {
   return (
     <Stage
       camera={{ position: [0, 0, 3.5], fov: 35, near: 0.1, far: 600 }}
+      loadingTitle="Initializing / Moon / Lunar orbit scan"
     >
       {/* Backdrop — same starfield as Earth so the universe feels continuous */}
       <SpaceGradient />

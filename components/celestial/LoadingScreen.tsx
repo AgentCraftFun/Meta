@@ -3,12 +3,21 @@
 import { useProgress } from '@react-three/drei';
 import { useEffect, useState } from 'react';
 
+type Props = {
+  /** Headline text (uppercased + tracking applied via styling). */
+  title?: string;
+};
+
+const DEFAULT_TITLE = 'Initializing MetaMap…';
+
 /**
  * Full-viewport boot overlay. Reads drei's loading manager via useProgress and
  * shows real loading percentage. Fades out smoothly once active flips false
- * AND progress hits 100, then unmounts so canvas events go through.
+ * AND progress hits 100, then unmounts so canvas events go through. The
+ * headline is configurable so each surface (Earth, Moon …) can announce
+ * its own boot string.
  */
-export default function LoadingScreen() {
+export default function LoadingScreen({ title = DEFAULT_TITLE }: Props) {
   const { progress, active } = useProgress();
   const [visible, setVisible] = useState(true);
   const [opacity, setOpacity] = useState(1);
@@ -38,7 +47,7 @@ export default function LoadingScreen() {
       <div className="flex flex-col items-center gap-3.5 font-mono">
         <div className="flex items-center gap-2.5 text-[10px] uppercase tracking-[0.4em] text-neon-cyan/85">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-neon-cyan shadow-neon-cyan" />
-          Initializing MetaMap…
+          {title}
         </div>
         <div className="h-px w-60 overflow-hidden bg-white/8">
           <div

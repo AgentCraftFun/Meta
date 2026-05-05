@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import KeyboardShortcuts from '@/components/hud/KeyboardShortcuts';
 import MobileGate from '@/components/hud/MobileGate';
 import MoonModeBadge from '@/components/hud/MoonModeBadge';
+import MoonStatusOverlay from '@/components/hud/MoonStatusOverlay';
 import SpeakerToggle from '@/components/hud/SpeakerToggle';
 import SurfaceToggle from '@/components/hud/SurfaceToggle';
 import TimeToggle from '@/components/hud/TimeToggle';
@@ -45,6 +46,7 @@ export default function MoonPage() {
       <TimeToggle />
       <SurfaceToggle />
       <TokenSidePanel />
+      <MoonStatusOverlay />
       <MoonModeBadge />
       <KeyboardShortcuts />
       <MobileGate />

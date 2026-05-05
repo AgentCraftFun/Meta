@@ -18,6 +18,8 @@ type Props = {
   exposure?: number;
   /** When false, the LoadingScreen overlay is suppressed. Default true. */
   showLoadingScreen?: boolean;
+  /** Custom title for the boot overlay. Default: "Initializing MetaMap…". */
+  loadingTitle?: string;
 };
 
 const DEFAULT_CAMERA: Required<CameraConfig> = {
@@ -42,6 +44,7 @@ export default function Stage({
   camera,
   exposure = DEFAULT_EXPOSURE,
   showLoadingScreen = true,
+  loadingTitle,
 }: Props) {
   const cam = { ...DEFAULT_CAMERA, ...(camera ?? {}) };
   return (
@@ -64,7 +67,7 @@ export default function Stage({
       >
         <Suspense fallback={null}>{children}</Suspense>
       </Canvas>
-      {showLoadingScreen && <LoadingScreen />}
+      {showLoadingScreen && <LoadingScreen title={loadingTitle} />}
     </div>
   );
 }
