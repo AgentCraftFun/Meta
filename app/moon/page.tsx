@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { useEffect } from 'react';
 import KeyboardShortcuts from '@/components/hud/KeyboardShortcuts';
 import MobileGate from '@/components/hud/MobileGate';
+import MoonModeBadge from '@/components/hud/MoonModeBadge';
 import SpeakerToggle from '@/components/hud/SpeakerToggle';
 import SurfaceToggle from '@/components/hud/SurfaceToggle';
 import TimeToggle from '@/components/hud/TimeToggle';
@@ -23,21 +24,6 @@ function Loader() {
           Initializing MetaMap…
         </div>
       </div>
-    </div>
-  );
-}
-
-function MoonModeBadge() {
-  return (
-    <div className="pointer-events-none fixed bottom-3 left-3 z-30 flex items-center gap-2 rounded-sm border border-white/10 bg-black/55 px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.3em] backdrop-blur">
-      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-neon-amber" />
-      <span className="text-neon-amber">Mock</span>
-      <span className="text-white/30">/</span>
-      <span className="text-white/60">24h</span>
-      <span className="text-white/30">/</span>
-      <span className="text-white/60">0 tokens</span>
-      <span className="text-white/30">/</span>
-      <span className="text-white/40">OK</span>
     </div>
   );
 }

@@ -38,7 +38,7 @@ export default function MoonScene() {
 
       {/* Lighting — harsh key, almost no fill */}
       <directionalLight position={[5, 2, 3]} intensity={2.5} color="#fffaf0" />
-      <ambientLight intensity={0.02} color="#1a2540" />
+      <ambientLight intensity={0.08} color="#2a3550" />
 
       {/* Moon body */}
       <Moon />
