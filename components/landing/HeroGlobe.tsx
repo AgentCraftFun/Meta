@@ -14,12 +14,12 @@ import { BlendFunction } from 'postprocessing';
 import { Suspense, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { ACESFilmicToneMapping, SRGBColorSpace } from 'three';
-import Atmosphere from '@/components/globe/Atmosphere';
-import Clouds from '@/components/globe/Clouds';
-import Earth from '@/components/globe/Earth';
-import LoadingScreen from '@/components/globe/LoadingScreen';
-import ShootingStar from '@/components/globe/ShootingStar';
-import SpaceGradient from '@/components/globe/SpaceGradient';
+import Atmosphere from '@/components/celestial/Atmosphere';
+import LoadingScreen from '@/components/celestial/LoadingScreen';
+import ShootingStar from '@/components/celestial/ShootingStar';
+import SpaceGradient from '@/components/celestial/SpaceGradient';
+import Clouds from '@/components/earth/Clouds';
+import Earth from '@/components/earth/Earth';
 import { SUN_POSITION } from '@/lib/sun';
 
 /**

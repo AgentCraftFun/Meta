@@ -1,6 +1,6 @@
 'use client';
 
-import { OrbitControls, Stars } from '@react-three/drei';
+import { OrbitControls } from '@react-three/drei';
 import {
   Bloom,
   BrightnessContrast,
@@ -12,36 +12,35 @@ import {
 import { BlendFunction } from 'postprocessing';
 import { useMemo } from 'react';
 import * as THREE from 'three';
+import Atmosphere from '@/components/celestial/Atmosphere';
+import ShootingStar from '@/components/celestial/ShootingStar';
+import SpaceGradient from '@/components/celestial/SpaceGradient';
+import Stage from '@/components/celestial/Stage';
+import Starfield from '@/components/celestial/Starfield';
 import { SUN_POSITION } from '@/lib/sun';
-import Atmosphere from './Atmosphere';
 import BreakingShake from './BreakingShake';
 import CameraController from './CameraController';
 import Clouds from './Clouds';
 import Earth from './Earth';
 import Markers from './Markers';
-import ShootingStar from './ShootingStar';
-import SpaceGradient from './SpaceGradient';
 
-export default function Globe() {
+/**
+ * Full Earth scene: backdrop layers, lighting, planet + atmosphere, narrative
+ * markers, OrbitControls, and the post-processing chain. Wraps everything in
+ * the generic <Stage /> so the page just imports this one component.
+ */
+export default function EarthScene() {
   // Stable offset reference so ChromaticAberration doesn't see a "new" prop
   // each render and re-bind its uniform/effect chain.
   const caOffset = useMemo(() => new THREE.Vector2(0.0008, 0.0008), []);
 
   return (
-    <>
+    <Stage>
       {/* 1. Background gradient sphere — fills the void */}
       <SpaceGradient />
 
       {/* 2. Sparse, lonely starfield in front of the gradient */}
-      <Stars
-        radius={300}
-        depth={60}
-        count={4000}
-        factor={2}
-        saturation={0.3}
-        fade
-        speed={0.3}
-      />
+      <Starfield />
 
       {/* 2b. Occasional shooting star — every 60-90s */}
       <ShootingStar />
@@ -96,6 +95,6 @@ export default function Globe() {
         />
         <Vignette eskil={false} offset={0.2} darkness={0.85} />
       </EffectComposer>
-    </>
+    </Stage>
   );
 }

@@ -14,7 +14,7 @@ export default function TimeToggle() {
   const setWindow = useMetaStore((s) => s.setTimeWindow);
 
   return (
-    <div className="pointer-events-auto fixed right-5 top-5 z-30 flex items-center gap-1.5 rounded-sm border border-white/10 bg-black/40 p-1 font-mono backdrop-blur-xl">
+    <div className="pointer-events-auto fixed right-[210px] top-5 z-30 flex items-center gap-1.5 rounded-sm border border-white/10 bg-black/40 p-1 font-mono backdrop-blur-xl">
       {OPTIONS.map((opt) => {
         const active = window === opt.value;
         return (

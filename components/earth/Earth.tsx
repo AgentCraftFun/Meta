@@ -1,9 +1,10 @@
 'use client';
 
-import { useTexture } from '@react-three/drei';
-import { useMemo, useRef } from 'react';
-import * as THREE from 'three';
+import { useMemo } from 'react';
 import { SUN_DIRECTION } from '@/lib/sun';
+import CelestialBody, {
+  type CelestialShader,
+} from '@/components/celestial/CelestialBody';
 
 const TEXTURES = {
   day: '/textures/8k_earth_daymap.jpg',
@@ -11,7 +12,7 @@ const TEXTURES = {
   specular: '/textures/8k_earth_specular_map.png',
 };
 
-const vertexShader = /* glsl */ `
+const VERTEX = /* glsl */ `
   varying vec2 vUv;
   varying vec3 vNormal;
 
@@ -22,7 +23,7 @@ const vertexShader = /* glsl */ `
   }
 `;
 
-const fragmentShader = /* glsl */ `
+const FRAGMENT = /* glsl */ `
   uniform sampler2D dayTexture;
   uniform sampler2D nightTexture;
   uniform sampler2D specularMap;
@@ -76,39 +77,24 @@ const fragmentShader = /* glsl */ `
 `;
 
 export default function Earth() {
-  const meshRef = useRef<THREE.Mesh>(null);
-
-  const [dayMap, nightMap, specMap] = useTexture([
-    TEXTURES.day,
-    TEXTURES.night,
-    TEXTURES.specular,
-  ]);
-
-  dayMap.colorSpace = THREE.SRGBColorSpace;
-  nightMap.colorSpace = THREE.SRGBColorSpace;
-  specMap.colorSpace = THREE.NoColorSpace;
-  dayMap.anisotropy = 8;
-  nightMap.anisotropy = 8;
-  specMap.anisotropy = 4;
-
-  const material = useMemo(() => {
-    return new THREE.ShaderMaterial({
+  const shader: CelestialShader = useMemo(
+    () => ({
+      vertex: VERTEX,
+      fragment: FRAGMENT,
       uniforms: {
-        dayTexture: { value: dayMap },
-        nightTexture: { value: nightMap },
-        specularMap: { value: specMap },
         sunDirection: { value: SUN_DIRECTION.clone() },
       },
-      vertexShader,
-      fragmentShader,
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dayMap, nightMap, specMap]);
+    }),
+    []
+  );
 
   return (
-    <mesh ref={meshRef}>
-      <sphereGeometry args={[1, 128, 128]} />
-      <primitive object={material} attach="material" />
-    </mesh>
+    <CelestialBody
+      textures={TEXTURES}
+      material="shader"
+      shader={shader}
+      radius={1}
+      segments={128}
+    />
   );
 }
