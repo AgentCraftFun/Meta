@@ -2,14 +2,15 @@
 
 import dynamic from 'next/dynamic';
 import { useEffect } from 'react';
+import EarthLeftHud from '@/components/earth/EarthLeftHud';
+import NarrativeFeedSimulator from '@/components/earth/NarrativeFeedSimulator';
+import NarrativeRankList from '@/components/earth/NarrativeRankList';
 import KeyboardShortcuts from '@/components/hud/KeyboardShortcuts';
 import MobileGate from '@/components/hud/MobileGate';
 import SidePanel from '@/components/hud/SidePanel';
 import SourceModeBadge from '@/components/hud/SourceModeBadge';
 import SpeakerToggle from '@/components/hud/SpeakerToggle';
 import SurfaceToggle from '@/components/hud/SurfaceToggle';
-import Ticker from '@/components/hud/Ticker';
-import TimeToggle from '@/components/hud/TimeToggle';
 import TopBar from '@/components/hud/TopBar';
 
 const EarthScene = dynamic(() => import('@/components/earth/EarthScene'), {
@@ -43,13 +44,16 @@ export default function Page() {
       <EarthScene />
       <TopBar />
       <SpeakerToggle />
-      <TimeToggle />
       <SurfaceToggle />
+      <EarthLeftHud />
+      <NarrativeRankList />
       <SidePanel />
-      <Ticker />
       <SourceModeBadge />
       <KeyboardShortcuts />
       <MobileGate />
+      {/* Headless — fabricates new-story / momentum-shift / cross-country
+          events on a 4-8s interval, pauses while the tab is hidden. */}
+      <NarrativeFeedSimulator />
     </main>
   );
 }

@@ -21,17 +21,27 @@ function easeInOutCubic(t: number) {
  * country faces the viewer over ~1.2s with easeInOutCubic. While the tween is
  * running, OrbitControls' autoRotate is paused; user input still works after
  * the tween finishes.
+ *
+ * The earth-group is itself sliding leftward when the side panel opens, so
+ * the camera target is recomputed each frame from the group's CURRENT world
+ * position — chasing a moving earth instead of aiming at where it was when
+ * the click landed.
  */
 export default function CameraController() {
-  const { camera, controls } = useThree() as {
+  const { camera, controls, scene } = useThree() as {
     camera: THREE.PerspectiveCamera;
     controls: any | null;
+    scene: THREE.Scene;
   };
   const selectedCountry = useMetaStore((s) => s.selectedCountry);
 
   const tween = useRef<{
-    start: THREE.Vector3;
-    end: THREE.Vector3;
+    startCam: THREE.Vector3;
+    startTarget: THREE.Vector3;
+    /** Direction from earth centre to the country surface, in world space.
+     *  Multiplied by `camDistance` each frame to compute a moving endCam. */
+    surfaceNormal: THREE.Vector3;
+    camDistance: number;
     t0: number;
   } | null>(null);
   const wasAutoRotating = useRef<boolean>(true);
@@ -45,33 +55,58 @@ export default function CameraController() {
     const c = CENTROIDS[selectedCountry];
     if (!c) return;
 
-    const normal = latLngToVec3(c.lat, c.lng, 1).normalize();
-    const distance = Math.max(2.2, camera.position.length());
-    const end = normal.multiplyScalar(distance);
+    const earthGroup = scene.getObjectByName('earth-group');
+    const earthCenter = new THREE.Vector3();
+    if (earthGroup) {
+      earthGroup.updateMatrixWorld(true);
+      earthGroup.getWorldPosition(earthCenter);
+    }
+
+    const surfaceNormal = latLngToVec3(c.lat, c.lng, 1).normalize();
+    const camDistance = Math.max(
+      2.2,
+      camera.position.distanceTo(earthCenter)
+    );
 
     tween.current = {
-      start: camera.position.clone(),
-      end,
+      startCam: camera.position.clone(),
+      startTarget: controls?.target?.clone() ?? new THREE.Vector3(),
+      surfaceNormal,
+      camDistance,
       t0: performance.now(),
     };
     if (controls) {
       wasAutoRotating.current = !!controls.autoRotate;
       controls.autoRotate = false;
     }
-  }, [selectedCountry, camera, controls]);
+  }, [selectedCountry, camera, controls, scene]);
 
   useFrame(() => {
     if (!tween.current) return;
-    const { start, end, t0 } = tween.current;
+    const { startCam, startTarget, surfaceNormal, camDistance, t0 } =
+      tween.current;
     const elapsed = performance.now() - t0;
     const t = Math.min(1, elapsed / TWEEN_MS);
     const k = easeInOutCubic(t);
 
-    camera.position.lerpVectors(start, end, k);
-    camera.lookAt(0, 0, 0);
+    // Read earth's CURRENT world position so the camera chases it as the
+    // earth-group slides leftward in parallel.
+    const earthCenter = new THREE.Vector3();
+    const earthGroup = scene.getObjectByName('earth-group');
+    if (earthGroup) {
+      earthGroup.updateMatrixWorld(true);
+      earthGroup.getWorldPosition(earthCenter);
+    }
+    const endCam = earthCenter
+      .clone()
+      .add(surfaceNormal.clone().multiplyScalar(camDistance));
+
+    camera.position.lerpVectors(startCam, endCam, k);
     if (controls) {
-      controls.target.set(0, 0, 0);
+      controls.target.lerpVectors(startTarget, earthCenter, k);
       controls.update();
+    } else {
+      camera.lookAt(earthCenter);
     }
     if (t >= 1) {
       tween.current = null;

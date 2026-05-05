@@ -5,6 +5,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { latLngToVec3, surfaceQuaternion } from '@/lib/geo';
+import { useMetaStore } from '@/lib/store';
 import type { Narrative } from '@/lib/types';
 import MarkerCard from './MarkerCard';
 
@@ -188,6 +189,14 @@ const CLICK_SPIKE_MS = 500;
 function NarrativeMarkerImpl({ group, selected, dimmed, onClick }: Props) {
   const { iso, name, lat, lng, top } = group;
   const [hovered, setHovered] = useState(false);
+  const externallyHovered = useMetaStore(
+    (s) => s.hoveredCountry === iso
+  );
+  const setHoveredCountry = useMetaStore((s) => s.setHoveredCountry);
+  // Effective hover: this marker is hovered if either the pointer is
+  // physically over it or another HUD element (right list, left feed)
+  // pinged this country. Bidirectional highlighting.
+  const effectiveHovered = hovered || externallyHovered;
   const clickSpikeAt = useRef(0);
   const { camera } = useThree();
 
@@ -268,7 +277,7 @@ function NarrativeMarkerImpl({ group, selected, dimmed, onClick }: Props) {
       spike = 1 + (1 - since / CLICK_SPIKE_MS);
     }
 
-    const hoverMul = hovered ? 1.5 : 1;
+    const hoverMul = effectiveHovered ? 1.5 : 1;
     const dimMul = dimmed && !selected ? 0.4 : 1;
 
     const i = config.intensity * hoverMul * spike * dimMul * visibility;
@@ -291,7 +300,7 @@ function NarrativeMarkerImpl({ group, selected, dimmed, onClick }: Props) {
     }
   });
 
-  const showCard = hovered || selected;
+  const showCard = effectiveHovered || selected;
 
   return (
     <group
@@ -300,11 +309,15 @@ function NarrativeMarkerImpl({ group, selected, dimmed, onClick }: Props) {
       onPointerOver={(e) => {
         e.stopPropagation();
         setHovered(true);
+        setHoveredCountry(iso);
         document.body.style.cursor = 'pointer';
       }}
       onPointerOut={(e) => {
         e.stopPropagation();
         setHovered(false);
+        if (useMetaStore.getState().hoveredCountry === iso) {
+          setHoveredCountry(null);
+        }
         document.body.style.cursor = 'auto';
       }}
       onClick={(e) => {
