@@ -2,6 +2,7 @@
 
 import { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 import { formatPercent, formatUsd } from '@/lib/format';
+import { computeActivity } from '@/lib/tokenActivity';
 import {
   FILTER_ACCENT,
   MOON_FILTERS,
@@ -152,6 +153,8 @@ const Row = forwardRef<HTMLLIElement, RowProps>(function Row(
 ) {
   const heat = HEAT_HEX[token.category];
   const up = token.priceChange24h >= 0;
+  const activity = computeActivity(token);
+  const activityPct = Math.round(activity * 100);
 
   return (
     <li
@@ -193,6 +196,28 @@ const Row = forwardRef<HTMLLIElement, RowProps>(function Row(
           style={{ color: up ? '#86efac' : '#fda4af' }}
         >
           {up ? '▲' : '▼'} {formatPercent(token.priceChange24h, 1)}
+        </span>
+      </div>
+      {/* Activity bar — visually correlates with crater size on the moon */}
+      <div className="mt-1.5 flex items-center gap-2 pl-7">
+        <span className="text-[8px] uppercase tracking-[0.32em] text-white/30">
+          ACT
+        </span>
+        <div className="h-[3px] flex-1 overflow-hidden bg-white/8">
+          <div
+            className="h-full transition-[width] duration-500"
+            style={{
+              width: `${activityPct}%`,
+              background: heat,
+              boxShadow: `0 0 6px ${heat}`,
+            }}
+          />
+        </div>
+        <span
+          className="w-6 text-right text-[9px] tabular-nums"
+          style={{ color: heat }}
+        >
+          {activityPct}
         </span>
       </div>
     </li>

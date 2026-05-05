@@ -22,7 +22,7 @@ import { useMetaStore } from '@/lib/store';
 import { useTokens } from '@/lib/useTokens';
 import Moon from './Moon';
 import MoonCameraController from './MoonCameraController';
-import TokenFlags from './TokenFlags';
+import TokenCraters from './TokenCraters';
 
 const MOON_ROTATION_RAD_S = 0.005;
 const HOVER_RESUME_DELAY_MS = 2000;
@@ -92,12 +92,8 @@ export default function MoonScene() {
       <directionalLight position={[5, 2, 3]} intensity={2.5} color="#fffaf0" />
       <ambientLight intensity={0.12} color="#3a4570" />
 
-      {/* Claimed surface: moon body + flags rotate together, offset left */}
-      <ClaimedSurface
-        paused={paused}
-        filteredTokens={filteredTokens}
-        filter={filter}
-      />
+      {/* Claimed surface: moon body + craters rotate together, offset left */}
+      <ClaimedSurface paused={paused} filteredTokens={filteredTokens} />
 
       {/* Camera tween on flag click */}
       <MoonCameraController />
@@ -116,15 +112,15 @@ export default function MoonScene() {
         target={MOON_OFFSET}
       />
 
-      {/* Postprocessing — bloom catches HDR caps + filter accents */}
+      {/* Postprocessing — bloom catches HDR craters + light shafts */}
       <EffectComposer multisampling={0}>
         <Bloom
-          intensity={0.9}
-          luminanceThreshold={0.7}
+          intensity={1.5}
+          luminanceThreshold={0.6}
           luminanceSmoothing={0.6}
           mipmapBlur
-          radius={0.6}
-          levels={6}
+          radius={0.7}
+          levels={7}
         />
         <HueSaturation hue={0} saturation={-0.05} />
         <BrightnessContrast brightness={-0.03} contrast={0.15} />
@@ -148,11 +144,9 @@ export default function MoonScene() {
 function ClaimedSurface({
   paused,
   filteredTokens,
-  filter,
 }: {
   paused: boolean;
   filteredTokens: ReturnType<typeof applyMoonFilter>;
-  filter: ReturnType<typeof useMetaStore.getState>['moonFilter'];
 }) {
   const groupRef = useRef<THREE.Group>(null);
 
@@ -164,7 +158,7 @@ function ClaimedSurface({
   return (
     <group ref={groupRef} name="claimed-surface" position={MOON_OFFSET}>
       <Moon rotationSpeed={0} />
-      <TokenFlags tokens={filteredTokens} filter={filter} />
+      <TokenCraters tokens={filteredTokens} />
     </group>
   );
 }
