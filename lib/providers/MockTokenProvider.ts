@@ -27,13 +27,71 @@ const DAY = 24 * HOUR;
 const MONTH = 30 * DAY;
 const YEAR = 365 * DAY;
 
-// 5 majors — large cap, slow-moving.
+// 5 majors — large cap, slow-moving. Real-looking dummy contract addresses
+// so the side-panel DexScreener iframe has something to point at; the
+// embeds will only render an actual chart when the address resolves to a
+// known pair on DexScreener's side.
 const MAJORS: Seed[] = [
-  { symbol: 'BTC', name: 'Bitcoin', category: 'warm', marketCap: 1.2e12, priceUsd: 110_000, priceChange24h: 2.3, age: 15 * YEAR, chain: 'other', tags: ['L1', 'store-of-value'] },
-  { symbol: 'ETH', name: 'Ethereum', category: 'warm', marketCap: 410e9, priceUsd: 3500, priceChange24h: 3.1, age: 10 * YEAR, chain: 'ethereum', tags: ['L1', 'DeFi'] },
-  { symbol: 'SOL', name: 'Solana', category: 'warm', marketCap: 80e9, priceUsd: 172, priceChange24h: 5.2, age: 5 * YEAR, chain: 'solana', tags: ['L1', 'meme', 'DeFi'] },
-  { symbol: 'BNB', name: 'BNB', category: 'emerging', marketCap: 90e9, priceUsd: 620, priceChange24h: 0.8, age: 8 * YEAR, chain: 'other', tags: ['L1', 'DeFi'] },
-  { symbol: 'XRP', name: 'XRP', category: 'emerging', marketCap: 35e9, priceUsd: 0.62, priceChange24h: 1.5, age: 12 * YEAR, chain: 'other', tags: ['L1', 'payments'] },
+  {
+    symbol: 'BTC',
+    name: 'Bitcoin',
+    category: 'warm',
+    marketCap: 1.2e12,
+    priceUsd: 110_000,
+    priceChange24h: 2.3,
+    age: 15 * YEAR,
+    chain: 'other',
+    tags: ['L1', 'store-of-value'],
+    contractAddress: 'bitcoin-native',
+  },
+  {
+    symbol: 'ETH',
+    name: 'Ethereum',
+    category: 'warm',
+    marketCap: 410e9,
+    priceUsd: 3500,
+    priceChange24h: 3.1,
+    age: 10 * YEAR,
+    chain: 'ethereum',
+    tags: ['L1', 'DeFi'],
+    contractAddress: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+  },
+  {
+    symbol: 'SOL',
+    name: 'Solana',
+    category: 'warm',
+    marketCap: 80e9,
+    priceUsd: 172,
+    priceChange24h: 5.2,
+    age: 5 * YEAR,
+    chain: 'solana',
+    tags: ['L1', 'meme', 'DeFi'],
+    contractAddress: 'So11111111111111111111111111111111111111112',
+  },
+  {
+    symbol: 'BNB',
+    name: 'BNB',
+    category: 'emerging',
+    marketCap: 90e9,
+    priceUsd: 620,
+    priceChange24h: 0.8,
+    age: 8 * YEAR,
+    chain: 'other',
+    tags: ['L1', 'DeFi'],
+    contractAddress: 'bnb-native',
+  },
+  {
+    symbol: 'XRP',
+    name: 'XRP',
+    category: 'emerging',
+    marketCap: 35e9,
+    priceUsd: 0.62,
+    priceChange24h: 1.5,
+    age: 12 * YEAR,
+    chain: 'other',
+    tags: ['L1', 'payments'],
+    contractAddress: 'xrp-native',
+  },
 ];
 
 // 20 memecoins — 5 hot, 12 warm, 3 emerging.

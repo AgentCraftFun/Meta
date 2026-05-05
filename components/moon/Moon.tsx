@@ -31,6 +31,8 @@ export default function Moon({ rotationSpeed = 0.005 }: Props) {
         metalness: 0.0,
         useBumpFromDay: true,
         bumpScale: 0.02,
+        emissive: '#1a2540',
+        emissiveIntensity: 0.05,
       }}
     />
   );

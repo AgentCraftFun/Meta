@@ -4,11 +4,11 @@ import dynamic from 'next/dynamic';
 import { useEffect } from 'react';
 import KeyboardShortcuts from '@/components/hud/KeyboardShortcuts';
 import MobileGate from '@/components/hud/MobileGate';
-import MoonFilterToggle from '@/components/hud/MoonFilterToggle';
 import MoonModeBadge from '@/components/hud/MoonModeBadge';
 import MoonStatusOverlay from '@/components/hud/MoonStatusOverlay';
 import SurfaceToggle from '@/components/hud/SurfaceToggle';
 import TopBar from '@/components/hud/TopBar';
+import MoonLeftHud from '@/components/moon/MoonLeftHud';
 import TokenList from '@/components/moon/TokenList';
 import TokenSidePanel from '@/components/moon/TokenSidePanel';
 
@@ -42,8 +42,8 @@ export default function MoonPage() {
     <main className="relative h-screen w-screen overflow-hidden bg-black">
       <MoonScene />
       <TopBar suffix="Moon" />
-      <MoonFilterToggle />
       <SurfaceToggle />
+      <MoonLeftHud />
       <TokenList />
       <TokenSidePanel />
       <MoonStatusOverlay />

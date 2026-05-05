@@ -26,7 +26,7 @@ export default function MoonModeBadge() {
   else if (count > 0) status = 'OK';
 
   return (
-    <div className="pointer-events-none fixed bottom-3 left-3 z-30 flex items-center gap-2 rounded-sm border border-white/10 bg-black/55 px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.3em] backdrop-blur">
+    <div className="pointer-events-none fixed bottom-3 left-[296px] z-30 flex items-center gap-2 rounded-sm border border-white/10 bg-black/55 px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.3em] backdrop-blur">
       <span className={`h-1.5 w-1.5 rounded-full ${dot} animate-pulse`} />
       <span className={color}>{label}</span>
       <span className="text-white/30">/</span>

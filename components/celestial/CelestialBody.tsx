@@ -32,6 +32,11 @@ export type StandardMaterialProps = {
   useBumpFromDay?: boolean;
   /** Default 0 (no bump). Typical values 0.01–0.05. */
   bumpScale?: number;
+  /** Hex emissive colour applied to MeshStandardMaterial. */
+  emissive?: string;
+  /** Default 0. Use a tiny value (~0.05) to lift the shadow side without
+   *  flooding the lit hemisphere. */
+  emissiveIntensity?: number;
 };
 
 type Props = {
@@ -135,6 +140,10 @@ export default function CelestialBody({
       roughness: standardProps?.roughness ?? 0.9,
       bumpMap: standardProps?.useBumpFromDay ? dayMap ?? null : null,
       bumpScale: standardProps?.bumpScale ?? 0,
+      emissive: standardProps?.emissive
+        ? new THREE.Color(standardProps.emissive)
+        : new THREE.Color(0x000000),
+      emissiveIntensity: standardProps?.emissiveIntensity ?? 0,
     });
     // Individual texture refs are stable across renders; deps deliberately
     // exclude the wrapping `loaded` array reference.

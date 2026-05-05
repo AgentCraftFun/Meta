@@ -93,6 +93,10 @@ function PanelBody({
         </button>
       </div>
 
+      {/* Chart — DexScreener iframe when we have a viable address; mock
+          placeholder otherwise. */}
+      <DexscreenerChart token={token} />
+
       {/* Stats grid */}
       <div className="grid grid-cols-2 gap-px border-b border-white/8 bg-white/5">
         <Stat label="Market Cap" value={formatUsd(token.marketCap)} />
@@ -220,6 +224,46 @@ function Section({
         {title}
       </div>
       {children}
+    </div>
+  );
+}
+
+/** DexScreener URL slugs the public site recognises today. */
+const DEX_CHAIN_SLUG: Record<Token['chain'], string | null> = {
+  ethereum: 'ethereum',
+  solana: 'solana',
+  base: 'base',
+  other: null,
+};
+
+/**
+ * Embeds DexScreener's pair widget at the top of the panel when we have
+ * both a chain slug and a contract address. Mock data won't always
+ * resolve to a real pair — DexScreener returns its own empty state in
+ * that case. When chain is 'other' or no address, render the project
+ * placeholder so the layout never collapses.
+ */
+function DexscreenerChart({ token }: { token: Token }) {
+  const slug = DEX_CHAIN_SLUG[token.chain];
+  const canEmbed = slug && token.contractAddress;
+  return (
+    <div className="border-b border-white/8 bg-[#06090F] px-3 pb-3 pt-3">
+      <div className="mb-2 flex items-center justify-between text-[9px] uppercase tracking-[0.4em] text-white/35">
+        <span>Live chart</span>
+        <span className="text-white/25">DEXScreener</span>
+      </div>
+      {canEmbed ? (
+        <iframe
+          src={`https://dexscreener.com/${slug}/${token.contractAddress}?embed=1&theme=dark&info=0&trades=0`}
+          title={`${token.symbol} chart`}
+          className="block h-[280px] w-full rounded-sm border border-[#1E293B]"
+          loading="lazy"
+        />
+      ) : (
+        <div className="flex h-[280px] w-full items-center justify-center rounded-sm border border-[#1E293B] bg-[#0B1220] text-center text-[10px] uppercase tracking-[0.36em] text-white/35">
+          Chart unavailable · Mock data
+        </div>
+      )}
     </div>
   );
 }
