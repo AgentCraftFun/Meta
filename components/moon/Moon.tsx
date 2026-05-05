@@ -27,12 +27,15 @@ export default function Moon({ rotationSpeed = 0.005 }: Props) {
       segments={128}
       rotationSpeed={rotationSpeed}
       standardProps={{
-        roughness: 0.95,
+        roughness: 0.92,
         metalness: 0.0,
         useBumpFromDay: true,
-        bumpScale: 0.02,
-        emissive: '#1a2540',
-        emissiveIntensity: 0.05,
+        bumpScale: 0.025,
+        // Tiny baseline glow so even deep-shadow craters sit on visible
+        // surface instead of a void. 0.08 is barely perceptible on the
+        // lit side; lifts the shadow side just enough to read terrain.
+        emissive: '#2a3550',
+        emissiveIntensity: 0.08,
       }}
     />
   );

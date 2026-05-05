@@ -95,9 +95,19 @@ export default function MoonScene() {
       <Starfield />
       <ShootingStar />
 
-      {/* Lighting — harsh key, gentle cool fill so the dark side reads */}
-      <directionalLight position={[-5, 2, 3]} intensity={2.5} color="#fffaf0" />
-      <ambientLight intensity={0.12} color="#3a4570" />
+      {/*
+       * Three-light setup. Required: every part of the moon must be
+       * readable so a trader can see crater positions even on the
+       * "back" side after rotating.
+       *
+       *   key  — warm directional from upper-right, primary shape
+       *   fill — cool directional from the opposite side, lifts the
+       *          back hemisphere out of pure black
+       *   ambient — moderate baseline so no pixel goes pitch dark
+       */}
+      <directionalLight position={[5, 2, 3]} intensity={2.0} color="#fffaf0" />
+      <directionalLight position={[-4, -1, -3]} intensity={0.6} color="#4a90e2" />
+      <ambientLight intensity={0.25} color="#3a4570" />
 
       {/* Claimed surface: moon body + craters rotate together, offset left */}
       <ClaimedSurface paused={paused} filteredTokens={filteredTokens} />
