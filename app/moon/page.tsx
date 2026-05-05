@@ -8,6 +8,7 @@ import MoonModeBadge from '@/components/hud/MoonModeBadge';
 import MoonStatusOverlay from '@/components/hud/MoonStatusOverlay';
 import SurfaceToggle from '@/components/hud/SurfaceToggle';
 import TopBar from '@/components/hud/TopBar';
+import LiveFeedSimulator from '@/components/moon/LiveFeedSimulator';
 import MoonLeftHud from '@/components/moon/MoonLeftHud';
 import TokenList from '@/components/moon/TokenList';
 import TokenSidePanel from '@/components/moon/TokenSidePanel';
@@ -50,6 +51,9 @@ export default function MoonPage() {
       <MoonModeBadge />
       <KeyboardShortcuts />
       <MobileGate />
+      {/* Headless — fabricates new-pair / volume-spike / new-high events
+          on a random interval, pauses while tab is hidden. */}
+      <LiveFeedSimulator />
     </main>
   );
 }

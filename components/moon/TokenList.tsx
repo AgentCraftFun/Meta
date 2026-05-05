@@ -10,7 +10,7 @@ import {
 } from '@/lib/moonFlags';
 import { useMetaStore } from '@/lib/store';
 import type { HeatLevel, Token } from '@/lib/types/token';
-import { useTokens } from '@/lib/useTokens';
+import { useEffectiveTokens } from '@/lib/useEffectiveTokens';
 
 const HEAT_HEX: Record<HeatLevel, string> = {
   hot: '#ef4444',
@@ -34,11 +34,11 @@ export default function TokenList() {
   const setHoveredToken = useMetaStore((s) => s.setHoveredToken);
   const setSelectedToken = useMetaStore((s) => s.setSelectedToken);
   const selectedTokenId = useMetaStore((s) => s.selectedTokenId);
-  const { data } = useTokens(window);
+  const universe = useEffectiveTokens(window);
 
   const filtered = useMemo(
-    () => applyMoonFilter(data?.tokens ?? [], filter),
-    [data, filter]
+    () => applyMoonFilter(universe, filter),
+    [universe, filter]
   );
 
   const [collapsed, setCollapsed] = useState(false);

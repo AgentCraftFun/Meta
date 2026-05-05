@@ -8,8 +8,9 @@ import {
   shortAddress,
 } from '@/lib/format';
 import { useMetaStore } from '@/lib/store';
+import type { LiveEvent } from '@/lib/types/liveEvent';
 import type { HeatLevel, Token } from '@/lib/types/token';
-import { useTokens } from '@/lib/useTokens';
+import { useEffectiveTokens } from '@/lib/useEffectiveTokens';
 
 const HEAT_HEX: Record<HeatLevel, string> = {
   hot: '#ef4444',
@@ -28,12 +29,18 @@ export default function TokenSidePanel() {
   const window = useMetaStore((s) => s.timeWindow);
   const selectedTokenId = useMetaStore((s) => s.selectedTokenId);
   const setSelectedToken = useMetaStore((s) => s.setSelectedToken);
-  const { data } = useTokens(window);
+  const universe = useEffectiveTokens(window);
+  const liveEvents = useMetaStore((s) => s.liveEvents);
 
   const token = useMemo(() => {
-    if (!selectedTokenId || !data) return null;
-    return data.tokens.find((t) => t.id === selectedTokenId) ?? null;
-  }, [data, selectedTokenId]);
+    if (!selectedTokenId) return null;
+    return universe.find((t) => t.id === selectedTokenId) ?? null;
+  }, [universe, selectedTokenId]);
+
+  const recentEvents = useMemo(() => {
+    if (!selectedTokenId) return [] as LiveEvent[];
+    return liveEvents.filter((e) => e.tokenId === selectedTokenId).slice(0, 5);
+  }, [liveEvents, selectedTokenId]);
 
   const open = !!token;
 
@@ -46,16 +53,24 @@ export default function TokenSidePanel() {
       ].join(' ')}
       style={{ boxShadow: open ? '0 0 60px rgba(94,240,255,0.06)' : 'none' }}
     >
-      {token && <PanelBody token={token} onClose={() => setSelectedToken(null)} />}
+      {token && (
+        <PanelBody
+          token={token}
+          recentEvents={recentEvents}
+          onClose={() => setSelectedToken(null)}
+        />
+      )}
     </aside>
   );
 }
 
 function PanelBody({
   token,
+  recentEvents,
   onClose,
 }: {
   token: Token;
+  recentEvents: LiveEvent[];
   onClose: () => void;
 }) {
   const heat = HEAT_HEX[token.category];
@@ -92,6 +107,9 @@ function PanelBody({
           ×
         </button>
       </div>
+
+      {/* Recent events — live timeline of activity for this token */}
+      <RecentEvents events={recentEvents} />
 
       {/* Chart — DexScreener iframe when we have a viable address; mock
           placeholder otherwise. */}
@@ -243,6 +261,67 @@ const DEX_CHAIN_SLUG: Record<Token['chain'], string | null> = {
  * that case. When chain is 'other' or no address, render the project
  * placeholder so the layout never collapses.
  */
+const EVENT_LABEL_SHORT: Record<LiveEvent['type'], string> = {
+  'new-pair': 'New Pair',
+  'volume-spike': 'Vol Spike',
+  'new-high': 'New High',
+};
+const EVENT_ACCENT_SHORT: Record<LiveEvent['type'], string> = {
+  'new-pair': '#fbbf24',
+  'volume-spike': '#22D3EE',
+  'new-high': '#34d399',
+};
+
+function RecentEvents({ events }: { events: LiveEvent[] }) {
+  return (
+    <div className="border-b border-white/8 bg-[#06090F] px-5 pb-3 pt-4">
+      <div className="mb-2 flex items-center justify-between text-[9px] uppercase tracking-[0.4em] text-white/35">
+        <span>Recent Events</span>
+        <span className="text-white/25">{events.length}</span>
+      </div>
+      {events.length === 0 ? (
+        <div className="text-[10px] uppercase tracking-[0.32em] text-white/30">
+          — none yet —
+        </div>
+      ) : (
+        <ol className="flex flex-col gap-1">
+          {events.map((e) => {
+            const accent = EVENT_ACCENT_SHORT[e.type];
+            const seconds = Math.max(0, Math.floor((Date.now() - e.timestamp) / 1000));
+            const ago =
+              seconds < 60
+                ? `${seconds}s`
+                : seconds < 3600
+                  ? `${Math.floor(seconds / 60)}m`
+                  : `${Math.floor(seconds / 3600)}h`;
+            return (
+              <li
+                key={e.id}
+                className="flex items-center gap-2 rounded-sm border-l-2 bg-black/30 px-2 py-1.5"
+                style={{ borderLeftColor: accent }}
+              >
+                <span
+                  className="h-1 w-1 rounded-full"
+                  style={{ background: accent }}
+                />
+                <span
+                  className="text-[9px] uppercase tracking-[0.32em]"
+                  style={{ color: accent }}
+                >
+                  {EVENT_LABEL_SHORT[e.type]}
+                </span>
+                <span className="ml-auto text-[9px] tracking-[0.2em] text-white/35 tabular-nums">
+                  {ago} ago
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+      )}
+    </div>
+  );
+}
+
 function DexscreenerChart({ token }: { token: Token }) {
   const slug = DEX_CHAIN_SLUG[token.chain];
   const canEmbed = slug && token.contractAddress;

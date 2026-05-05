@@ -17,7 +17,7 @@ type Props = {
   onClick: (e: ThreeEvent<MouseEvent>) => void;
 };
 
-const SHAFT_HEIGHT = 0.05;
+const SHAFT_HEIGHT = 0.07;
 
 /**
  * A single crater on the moon's surface. Three additive layers, all
@@ -49,7 +49,7 @@ const TokenCrater = forwardRef<THREE.Group, Props>(function TokenCrater(
 
   const ringOpacity = 0.6 + activity * 0.4;
   const disqOpacity = 0.15 + activity * 0.25;
-  const shaftOpacity = 0.5 + activity * 0.3;
+  const shaftOpacity = 0.7 + activity * 0.25;
 
   return (
     <group
@@ -87,9 +87,10 @@ const TokenCrater = forwardRef<THREE.Group, Props>(function TokenCrater(
         />
       </mesh>
 
-      {/* Vertical light shaft */}
+      {/* Vertical light shaft — slightly tapered, additive HDR. The base
+          is wider so it reads as a flare rooted in the surface. */}
       <mesh position={[0, SHAFT_HEIGHT / 2, 0]}>
-        <cylinderGeometry args={[0.0008, 0.0015, SHAFT_HEIGHT, 8]} />
+        <cylinderGeometry args={[0.0012, 0.0022, SHAFT_HEIGHT, 8]} />
         <meshBasicMaterial
           color={colour}
           transparent

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { formatPercent, formatUsd } from '@/lib/format';
 import {
   FILTER_ACCENT,
   MOON_FILTERS,
@@ -9,32 +8,45 @@ import {
 } from '@/lib/moonFlags';
 import { useMetaStore } from '@/lib/store';
 import { formatUtcClock } from '@/lib/time';
-import type { Token } from '@/lib/types/token';
-import { useTokens } from '@/lib/useTokens';
+import { computeActivity } from '@/lib/tokenActivity';
+import { useEffectiveTokens } from '@/lib/useEffectiveTokens';
+import ChainSelector from './ChainSelector';
+import LiveFeedPanel from './LiveFeedPanel';
+
+const MAX_CRATERS = 40;
 
 /**
- * Left-side HUD column for /moon. Replaces the top-right filter toggle
- * with a vertical stack:
+ * Left-side HUD column for /moon. Sections from top to bottom:
+ *   1. Chain selector (segmented ALL / SOL / ETH / BASE)
+ *   2. Filter pills (Trending / Hot / New / Gainers / Losers)
+ *   3. Live feed (cards, tallest section, expands when filter = 'new')
+ *   4. Status pill — LIVE/MOCK + active vs faded count
  *
- *   1. Filter pills (vertical, full-width, mono uppercase)
- *   2. Global stats — total mcap, top gainer, top loser of the visible set
- *   3. Status — LIVE/MOCK pill with last-sync UTC clock
- *
- * Mirrors the right-side TokenList in width (280px) so the moon sits
- * visually between two equal sidebars.
+ * The whole column is fixed at width 280px with top padding clearing
+ * the TopBar wordmark.
  */
 export default function MoonLeftHud() {
   const filter = useMetaStore((s) => s.moonFilter);
   const setFilter = useMetaStore((s) => s.setMoonFilter);
   const timeWindow = useMetaStore((s) => s.timeWindow);
-  const { data, isFetching, isError } = useTokens(timeWindow);
+  const universe = useEffectiveTokens(timeWindow);
 
-  const visibleTokens = useMemo(
-    () => applyMoonFilter(data?.tokens ?? [], filter),
-    [data, filter]
+  const filtered = useMemo(
+    () => applyMoonFilter(universe, filter),
+    [universe, filter]
   );
 
-  const stats = useMemo(() => computeStats(visibleTokens), [visibleTokens]);
+  // Active = top 40 by activity (the moon caps at this); faded = the rest
+  // of the filter slice. Mirrors the rule in TokenCraters.pickTopByActivity.
+  const counts = useMemo(() => {
+    const active = Math.min(MAX_CRATERS, filtered.length);
+    const faded = Math.max(0, filtered.length - MAX_CRATERS);
+    return { active, faded };
+  }, [filtered]);
+
+  // Dummy use of computeActivity to keep the import live for downstream
+  // consumers; calling it on the top item is essentially free.
+  void (filtered[0] && computeActivity(filtered[0]));
 
   const [clock, setClock] = useState('');
   useEffect(() => {
@@ -43,8 +55,7 @@ export default function MoonLeftHud() {
     return () => clearInterval(id);
   }, []);
 
-  const liveLabel = data?.source ? data.source.toUpperCase() : 'MOCK';
-  const isLive = data?.source === 'dexscreener' || data?.source === 'birdeye';
+  const isNewMode = filter === 'new';
 
   return (
     <aside
@@ -52,7 +63,10 @@ export default function MoonLeftHud() {
       className="pointer-events-auto fixed left-0 top-0 z-20 flex h-full w-[280px] flex-col gap-4 border-r border-white/8 bg-black/50 px-4 font-mono backdrop-blur-xl"
       style={{ paddingTop: 80, paddingBottom: 16 }}
     >
-      {/* Section 1 — Filter pills */}
+      {/* 1 — Chain selector */}
+      <ChainSelector />
+
+      {/* 2 — Filter pills */}
       <section>
         <div className="mb-2 flex items-center gap-2 text-[9px] uppercase tracking-[0.42em] text-cyan-300/80">
           <span className="h-1 w-1 rounded-full bg-cyan-300" />
@@ -69,7 +83,7 @@ export default function MoonLeftHud() {
                 onClick={() => setFilter(f.id)}
                 aria-pressed={active}
                 className={[
-                  'group flex items-center justify-between rounded-sm border px-3 py-2.5 text-left text-[11px] uppercase tracking-[0.32em] transition-all',
+                  'group flex items-center justify-between rounded-sm border px-3 py-2 text-left text-[11px] uppercase tracking-[0.32em] transition-all',
                   active
                     ? 'border-transparent text-black'
                     : 'border-white/10 bg-[#0B1220] text-white/55 hover:border-white/25 hover:text-white/85',
@@ -93,65 +107,28 @@ export default function MoonLeftHud() {
         </div>
       </section>
 
-      {/* Section 2 — Global stats */}
-      <section>
-        <div className="mb-2 flex items-center gap-2 text-[9px] uppercase tracking-[0.42em] text-cyan-300/80">
-          <span className="h-1 w-1 rounded-full bg-cyan-300" />
-          Global Stats
-        </div>
-        <div className="flex flex-col gap-2">
-          <Stat label="Total MCAP" value={formatUsd(stats.totalMcap)} />
-          {stats.topGainer ? (
-            <StatRow
-              label="Top Gainer"
-              symbol={stats.topGainer.symbol}
-              value={formatPercent(stats.topGainer.priceChange24h, 1)}
-              tone="pos"
-            />
-          ) : (
-            <Stat label="Top Gainer" value="—" />
-          )}
-          {stats.topLoser ? (
-            <StatRow
-              label="Top Loser"
-              symbol={stats.topLoser.symbol}
-              value={formatPercent(stats.topLoser.priceChange24h, 1)}
-              tone="neg"
-            />
-          ) : (
-            <Stat label="Top Loser" value="—" />
-          )}
-        </div>
-      </section>
+      {/* 3 — Live feed (takes the remaining vertical space) */}
+      <div className="flex-1 overflow-y-auto pr-1">
+        <LiveFeedPanel
+          newPairsOnly={isNewMode}
+          maxItems={isNewMode ? 16 : 10}
+        />
+      </div>
 
-      {/* Section 3 — Status (anchored to bottom via mt-auto) */}
-      <section className="mt-auto">
+      {/* 4 — Status — anchored to bottom */}
+      <section>
         <div className="flex items-center gap-2 rounded-sm border border-white/8 bg-black/40 px-3 py-2">
           <span
-            className={[
-              'h-1.5 w-1.5 rounded-full animate-pulse',
-              isLive ? 'bg-cyan-300' : 'bg-amber-300',
-            ].join(' ')}
-            style={{
-              boxShadow: isLive
-                ? '0 0 8px rgba(34,211,238,0.85)'
-                : '0 0 8px rgba(252,191,36,0.85)',
-            }}
+            className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-300"
+            style={{ boxShadow: '0 0 8px rgba(252,191,36,0.85)' }}
           />
-          <span
-            className={[
-              'text-[10px] uppercase tracking-[0.32em]',
-              isLive ? 'text-cyan-300' : 'text-amber-300',
-            ].join(' ')}
-          >
-            Live
+          <span className="text-[10px] uppercase tracking-[0.32em] text-amber-300">
+            Mock
           </span>
-          <span className="text-white/30">·</span>
-          <span className="text-[10px] uppercase tracking-[0.32em] text-white/55">
-            {liveLabel}
-          </span>
-          <span className="ml-auto text-[9px] tracking-[0.2em] text-white/30">
-            {isError ? 'ERR' : isFetching ? 'SYNC' : 'OK'}
+          <span className="ml-auto flex items-center gap-1 text-[9px] uppercase tracking-[0.32em] text-white/50">
+            <span className="text-cyan-300">{counts.active}</span>
+            <span className="text-white/25">/</span>
+            <span>{counts.faded} faded</span>
           </span>
         </div>
         <div className="mt-2 text-center text-[9px] tracking-[0.32em] text-white/30 tabular-nums">
@@ -159,69 +136,5 @@ export default function MoonLeftHud() {
         </div>
       </section>
     </aside>
-  );
-}
-
-type Stats = {
-  totalMcap: number;
-  topGainer: Token | null;
-  topLoser: Token | null;
-};
-
-function computeStats(tokens: Token[]): Stats {
-  if (tokens.length === 0) {
-    return { totalMcap: 0, topGainer: null, topLoser: null };
-  }
-  let totalMcap = 0;
-  let topGainer: Token | null = null;
-  let topLoser: Token | null = null;
-  for (const t of tokens) {
-    totalMcap += t.marketCap;
-    if (!topGainer || t.priceChange24h > topGainer.priceChange24h) topGainer = t;
-    if (!topLoser || t.priceChange24h < topLoser.priceChange24h) topLoser = t;
-  }
-  return { totalMcap, topGainer, topLoser };
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-sm border border-white/8 bg-black/40 px-3 py-2.5">
-      <div className="text-[9px] uppercase tracking-[0.36em] text-white/35">
-        {label}
-      </div>
-      <div className="mt-1 font-display text-[18px] font-bold tabular-nums tracking-[-0.01em] text-white">
-        {value}
-      </div>
-    </div>
-  );
-}
-
-function StatRow({
-  label,
-  symbol,
-  value,
-  tone,
-}: {
-  label: string;
-  symbol: string;
-  value: string;
-  tone: 'pos' | 'neg';
-}) {
-  const colour = tone === 'pos' ? '#86efac' : '#fda4af';
-  const arrow = tone === 'pos' ? '▲' : '▼';
-  return (
-    <div className="rounded-sm border border-white/8 bg-black/40 px-3 py-2.5">
-      <div className="text-[9px] uppercase tracking-[0.36em] text-white/35">
-        {label}
-      </div>
-      <div className="mt-1 flex items-baseline justify-between">
-        <span className="font-display text-[15px] font-bold uppercase tracking-[0.06em] text-white">
-          {symbol}
-        </span>
-        <span className="text-[12px] tabular-nums" style={{ color: colour }}>
-          {arrow} {value}
-        </span>
-      </div>
-    </div>
   );
 }

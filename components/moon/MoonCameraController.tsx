@@ -5,9 +5,9 @@ import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { getCraterPosition } from '@/lib/craterPlacement';
 import { applyMoonFilter } from '@/lib/moonFlags';
-import { computeActivity } from '@/lib/tokenActivity';
 import { useMetaStore } from '@/lib/store';
-import { useTokens } from '@/lib/useTokens';
+import { computeActivity } from '@/lib/tokenActivity';
+import { useEffectiveTokens } from '@/lib/useEffectiveTokens';
 
 const TWEEN_MS = 1200;
 const MAX_CRATERS = 40;
@@ -32,17 +32,17 @@ export default function MoonCameraController() {
   const selectedTokenId = useMetaStore((s) => s.selectedTokenId);
   const filter = useMetaStore((s) => s.moonFilter);
   const timeWindow = useMetaStore((s) => s.timeWindow);
-  const { data } = useTokens(timeWindow);
+  const universe = useEffectiveTokens(timeWindow);
 
   // Reproduce the moon's "top by activity" ranking so we can find the
   // crater's local position from a token id.
   const activeTokens = useMemo(() => {
-    const filtered = applyMoonFilter(data?.tokens ?? [], filter);
+    const filtered = applyMoonFilter(universe, filter);
     return filtered
       .map((t) => ({ token: t, activity: computeActivity(t) }))
       .sort((a, b) => b.activity - a.activity)
       .slice(0, MAX_CRATERS);
-  }, [data, filter]);
+  }, [universe, filter]);
 
   const { camera, controls, scene } = useThree() as {
     camera: THREE.PerspectiveCamera;
