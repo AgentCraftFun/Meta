@@ -5,6 +5,7 @@ import { useFrame, type ThreeEvent } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { HEAT_HDR, getCraterPosition } from '@/lib/craterPlacement';
+import type { MoonFilter } from '@/lib/moonFlags';
 import { computeActivity } from '@/lib/tokenActivity';
 import { playTick } from '@/lib/sound';
 import { useMetaStore } from '@/lib/store';
@@ -52,6 +53,7 @@ function pickTopByActivity(tokens: Token[]): Array<Token & { activity: number }>
 
 type Props = {
   tokens: Token[];
+  filter: MoonFilter;
 };
 
 /**
@@ -60,7 +62,7 @@ type Props = {
  * top N tokens by activity score are eligible at any time — that score
  * is recomputed when the underlying token list changes.
  */
-export default function TokenCraters({ tokens }: Props) {
+export default function TokenCraters({ tokens, filter }: Props) {
   const setSelectedToken = useMetaStore((s) => s.setSelectedToken);
   const setHoveredToken = useMetaStore((s) => s.setHoveredToken);
   const hoveredTokenId = useMetaStore((s) => s.hoveredTokenId);
@@ -91,7 +93,7 @@ export default function TokenCraters({ tokens }: Props) {
     let needsDisplay = false;
     for (const [id, { token, rank }] of incoming) {
       const existing = states.current.get(id);
-      const position = getCraterPosition(token);
+      const position = getCraterPosition(token, filter);
       const activity = token.activity;
       if (existing) {
         if (existing.phase === 'leaving') {
@@ -127,7 +129,7 @@ export default function TokenCraters({ tokens }: Props) {
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible]);
+  }, [visible, filter]);
 
   useFrame((_, delta) => {
     const now = performance.now();

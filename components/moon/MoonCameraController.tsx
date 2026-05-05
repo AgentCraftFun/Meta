@@ -70,7 +70,7 @@ export default function MoonCameraController() {
     if (!surface) return;
     surface.updateMatrixWorld(true);
 
-    const localPos = getCraterPosition(entry.token);
+    const localPos = getCraterPosition(entry.token, filter);
     const worldPos = localPos.clone().applyMatrix4(surface.matrixWorld);
 
     const moonCenter = new THREE.Vector3();

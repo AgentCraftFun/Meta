@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
+import { forwardRef, useEffect, useMemo, useRef } from 'react';
 import { formatPercent, formatUsd } from '@/lib/format';
 import { computeActivity } from '@/lib/tokenActivity';
 import {
@@ -24,8 +24,8 @@ const HEAT_HEX: Record<HeatLevel, string> = {
  * flag pings + auto-scrolls the row. Clicking either opens the existing
  * TokenSidePanel from Phase D.
  *
- * Sits at the right edge with top padding to clear the HUD pills above it.
- * A header chevron collapses the panel so the moon goes full-screen.
+ * Always-expanded — the previous collapse chevron overlapped the filter
+ * header at narrow widths and was redundant with the SidePanel close.
  */
 export default function TokenList() {
   const window = useMetaStore((s) => s.timeWindow);
@@ -40,8 +40,6 @@ export default function TokenList() {
     () => applyMoonFilter(universe, filter),
     [universe, filter]
   );
-
-  const [collapsed, setCollapsed] = useState(false);
 
   // Auto-scroll the hovered row into view (when the hover originated from
   // the moon, not from this list itself).
@@ -59,79 +57,62 @@ export default function TokenList() {
 
   return (
     <aside
-      className={[
-        'pointer-events-auto fixed right-0 top-0 z-20 flex h-full flex-col border-l border-white/8 bg-black/50 font-mono backdrop-blur-xl transition-[width,transform] duration-300 ease-out',
-        collapsed ? 'w-[44px]' : 'w-[360px]',
-      ].join(' ')}
+      className="pointer-events-auto fixed right-0 top-0 z-20 flex h-full w-[360px] flex-col border-l border-white/8 bg-black/50 font-mono backdrop-blur-xl"
       style={{ paddingTop: 80 }}
     >
-      {/* Collapse toggle — always visible at right edge */}
-      <button
-        type="button"
-        onClick={() => setCollapsed((c) => !c)}
-        aria-label={collapsed ? 'Expand list' : 'Collapse list'}
-        className="absolute left-3 top-[88px] z-10 flex h-8 w-8 items-center justify-center rounded-sm border border-white/10 bg-black/55 text-white/55 transition-colors hover:border-white/30 hover:text-white"
-      >
-        <span aria-hidden>{collapsed ? '‹' : '›'}</span>
-      </button>
+      <div className="flex items-center gap-3 px-5 pb-4 pt-2">
+        <span
+          className="h-1.5 w-1.5 rounded-full"
+          style={{ background: accent, boxShadow: `0 0 10px ${accent}` }}
+        />
+        <span
+          className="text-[11px] uppercase tracking-[0.42em]"
+          style={{ color: accent }}
+        >
+          {filterMeta.label}
+        </span>
+        <span className="ml-auto text-[10px] uppercase tracking-[0.32em] text-white/40">
+          {filtered.length} tokens
+        </span>
+      </div>
 
-      {!collapsed && (
-        <>
-          <div className="flex items-center gap-3 px-5 pb-4 pt-2">
-            <span
-              className="h-1.5 w-1.5 rounded-full"
-              style={{ background: accent, boxShadow: `0 0 10px ${accent}` }}
+      <ol className="flex-1 overflow-y-auto pb-6">
+        {filtered.length === 0 ? (
+          <li className="px-5 py-6 text-[10px] uppercase tracking-[0.36em] text-white/35">
+            No tokens for this filter
+          </li>
+        ) : (
+          filtered.map((token, i) => (
+            <Row
+              key={token.id}
+              ref={(el) => {
+                if (el) itemRefs.current.set(token.id, el);
+                else itemRefs.current.delete(token.id);
+              }}
+              rank={i + 1}
+              token={token}
+              highlighted={hoveredTokenId === token.id}
+              selected={selectedTokenId === token.id}
+              accent={accent}
+              onPointerEnter={() => {
+                lastHoverFromList.current = token.id;
+                setHoveredToken(token.id);
+              }}
+              onPointerLeave={() => {
+                if (useMetaStore.getState().hoveredTokenId === token.id) {
+                  setHoveredToken(null);
+                }
+                lastHoverFromList.current = null;
+              }}
+              onClick={() =>
+                setSelectedToken(
+                  selectedTokenId === token.id ? null : token.id
+                )
+              }
             />
-            <span
-              className="text-[11px] uppercase tracking-[0.42em]"
-              style={{ color: accent }}
-            >
-              {filterMeta.label}
-            </span>
-            <span className="ml-auto text-[10px] uppercase tracking-[0.32em] text-white/40">
-              {filtered.length} tokens
-            </span>
-          </div>
-
-          <ol className="flex-1 overflow-y-auto pb-6">
-            {filtered.length === 0 ? (
-              <li className="px-5 py-6 text-[10px] uppercase tracking-[0.36em] text-white/35">
-                No tokens for this filter
-              </li>
-            ) : (
-              filtered.map((token, i) => (
-                <Row
-                  key={token.id}
-                  ref={(el) => {
-                    if (el) itemRefs.current.set(token.id, el);
-                    else itemRefs.current.delete(token.id);
-                  }}
-                  rank={i + 1}
-                  token={token}
-                  highlighted={hoveredTokenId === token.id}
-                  selected={selectedTokenId === token.id}
-                  accent={accent}
-                  onPointerEnter={() => {
-                    lastHoverFromList.current = token.id;
-                    setHoveredToken(token.id);
-                  }}
-                  onPointerLeave={() => {
-                    if (useMetaStore.getState().hoveredTokenId === token.id) {
-                      setHoveredToken(null);
-                    }
-                    lastHoverFromList.current = null;
-                  }}
-                  onClick={() =>
-                    setSelectedToken(
-                      selectedTokenId === token.id ? null : token.id
-                    )
-                  }
-                />
-              ))
-            )}
-          </ol>
-        </>
-      )}
+          ))
+        )}
+      </ol>
     </aside>
   );
 }

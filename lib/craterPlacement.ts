@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import type { MoonFilter } from './moonFlags';
 import { hashString } from './tokenActivity';
 import type { HeatLevel, Token } from './types/token';
 
@@ -27,8 +28,12 @@ export { computeActivity, hashString } from './tokenActivity';
  * Azimuth is deterministic from the token symbol so the crater stays put
  * across reloads. Polar angle gets a token-stable jitter so tokens within
  * the same age bucket don't pile on top of each other.
+ *
+ * When filter='losers' the front/back hemisphere flips (Z negates) so the
+ * losers face the dark side of the moon — a small narrative tell that the
+ * "good stuff" is on the lit hemisphere only.
  */
-export function getCraterPosition(token: Token): THREE.Vector3 {
+export function getCraterPosition(token: Token, filter?: MoonFilter): THREE.Vector3 {
   const ageHours = token.age;
   const symbolHash = hashString(token.symbol);
   /** Stable [0, 1) value derived from the symbol — used for jitter. */
@@ -55,7 +60,8 @@ export function getCraterPosition(token: Token): THREE.Vector3 {
   const y = radius * Math.sin(polarAngle) * Math.sin(azimuth);
   const z = radius * Math.cos(polarAngle);
 
-  return new THREE.Vector3(x, y, z);
+  const facingZ = filter === 'losers' ? -1 : 1;
+  return new THREE.Vector3(x, y, z * facingZ);
 }
 
 /**

@@ -2,7 +2,7 @@
 
 import { useTexture } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, type MutableRefObject } from 'react';
 import * as THREE from 'three';
 
 export type CelestialTextures = {
@@ -50,6 +50,10 @@ type Props = {
   segments?: number;
   /** Y-axis rotation in rad/s. 0 = static. */
   rotationSpeed?: number;
+  /** Optional ref filled with the constructed material so callers can tween
+   *  emissive / uniforms each frame. Currently used by the moon for filter-
+   *  driven lighting. */
+  materialRef?: MutableRefObject<THREE.Material | null>;
 };
 
 /**
@@ -69,6 +73,7 @@ export default function CelestialBody({
   radius = 1,
   segments = 128,
   rotationSpeed = 0,
+  materialRef,
 }: Props) {
   const meshRef = useRef<THREE.Mesh>(null);
 
@@ -157,6 +162,13 @@ export default function CelestialBody({
     normalMap,
     specularMap,
   ]);
+
+  useEffect(() => {
+    if (materialRef) materialRef.current = mat;
+    return () => {
+      if (materialRef) materialRef.current = null;
+    };
+  }, [mat, materialRef]);
 
   useFrame((_, delta) => {
     if (rotationSpeed && meshRef.current) {

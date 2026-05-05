@@ -32,10 +32,10 @@ export default function TopBar({ suffix }: Props) {
             </span>
           </>
         )}
-        <span className="flex items-center gap-1.5 text-[9px] uppercase tracking-[0.4em] text-neon-cyan/85">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-neon-cyan shadow-neon-cyan" />
-          Live
-        </span>
+      </div>
+      <div className="flex items-center gap-1.5 text-[9px] uppercase tracking-[0.4em] text-neon-cyan/85">
+        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-neon-cyan shadow-neon-cyan" />
+        Live
       </div>
       <div className="text-[10px] tracking-[0.3em] text-white/50 tabular-nums">
         {clock || '—— : —— : —— UTC'}
