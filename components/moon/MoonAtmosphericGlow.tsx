@@ -23,7 +23,7 @@ const fragmentShader = `
     float halo = pow(fresnel, 3.0);
 
     vec3 color = vec3(0.35, 0.55, 0.85);
-    float alpha = halo * 0.45;
+    float alpha = halo * 0.3;
 
     gl_FragColor = vec4(color * halo, alpha);
   }
@@ -31,13 +31,15 @@ const fragmentShader = `
 
 /**
  * Minimal cool-blue rim glow around the moon. BackSide additive sphere
- * just outside the moon surface (radius 1.04) — no asymmetry, no HDR,
- * no sun-direction logic. Bloom is reserved for craters.
+ * just outside the moon surface (radius 1.025) — no asymmetry, no HDR,
+ * no sun-direction logic. The 2.5% shell + 0.3 alpha multiplier are the
+ * "barely there" values that prevent the donut/ring artifact a wider
+ * shell or higher alpha produces. Bloom is reserved for craters.
  */
 export default function MoonAtmosphericGlow() {
   return (
     <mesh>
-      <sphereGeometry args={[1.04, 64, 64]} />
+      <sphereGeometry args={[1.025, 64, 64]} />
       <shaderMaterial
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}
