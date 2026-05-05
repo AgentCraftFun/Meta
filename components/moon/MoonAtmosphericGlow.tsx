@@ -19,27 +19,34 @@ const fragmentShader = `
   varying vec3 vViewDir;
 
   void main() {
-    float fresnel = 1.0 - abs(dot(vNormal, vViewDir));
-    float halo = pow(fresnel, 3.0);
+    // A standard fresnel ( pow(1 - abs(dot), N) ) on a backside shell puts
+    // the peak right AT the shell's own silhouette — that reads as a hard
+    // boundary ring against deep space. Invert the polarity so the peak
+    // sits at the INNER edge of the visible annulus (touching the moon's
+    // own silhouette) and decays to ~zero at the shell silhouette. The
+    // halo dissolves smoothly into space; only the moon's body provides
+    // an "edge", which is what we want.
+    float depth = abs(dot(vNormal, vViewDir));
+    float halo = pow(depth, 2.5);
 
     vec3 color = vec3(0.35, 0.55, 0.85);
-    float alpha = halo * 0.3;
+    float alpha = halo * 0.55;
 
     gl_FragColor = vec4(color * halo, alpha);
   }
 `;
 
 /**
- * Minimal cool-blue rim glow around the moon. BackSide additive sphere
- * just outside the moon surface (radius 1.025) — no asymmetry, no HDR,
- * no sun-direction logic. The 2.5% shell + 0.3 alpha multiplier are the
- * "barely there" values that prevent the donut/ring artifact a wider
- * shell or higher alpha produces. Bloom is reserved for craters.
+ * Soft cool-blue atmospheric scatter around the moon. BackSide additive
+ * sphere at radius 1.10 so the visible halo annulus has ~10% of moon
+ * radius worth of falloff room. The shader peaks at the moon's
+ * silhouette and fades to ~0 at the shell silhouette, which is the only
+ * way fresnel-on-shell stops producing a discrete ring band.
  */
 export default function MoonAtmosphericGlow() {
   return (
     <mesh>
-      <sphereGeometry args={[1.025, 64, 64]} />
+      <sphereGeometry args={[1.1, 64, 64]} />
       <shaderMaterial
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}
