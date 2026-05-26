@@ -1,33 +1,27 @@
 import { NextResponse } from 'next/server';
 import { cacheSet } from '@/lib/cache';
+import { inverseLink, tagTokens } from '@/lib/narrativeTagger';
 import { getActiveSourceMode, getProvider } from '@/lib/providers';
 import {
   getActiveTokenSource,
   getTokenProvider,
 } from '@/lib/providers/tokenProviders';
 import type { Narrative, TimeWindow } from '@/lib/types';
-import type {
-  Token,
-  TokenChainFilter,
-  TokenFilter,
-} from '@/lib/types/token';
+import type { Token } from '@/lib/types/token';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300; // long-running refresh
 
 const WINDOWS: TimeWindow[] = ['1h', '24h', '7d'];
-const FILTERS: TokenFilter[] = ['trending', 'gainers', 'losers', 'new'];
-const CHAINS: TokenChainFilter[] = ['all', 'solana', 'ethereum', 'base'];
 
 /**
- * Cache TTL strategy. Token windows match the API route's TTLs so warm
- * + cold reads converge. Narrative TTLs are wider since X data moves
- * slower at the country aggregate level.
+ * TTL by window. Linked caches use the token-side TTLs since they
+ * absorb both narrative + token movement.
  *
- *   1h  → 5 min   (token + narrative)
- *   24h → 15 min  (token), 1h (narrative)
- *   7d  → 1 h     (token), 6 h (narrative)
+ *   1h  → 5 min
+ *   24h → 15 min   (narratives use 1h instead — slower aggregate)
+ *   7d  → 1 h      (narratives use 6 h)
  */
 const NARRATIVE_TTL: Record<TimeWindow, number> = {
   '1h': 5 * 60,
@@ -42,22 +36,28 @@ const TOKEN_TTL: Record<TimeWindow, number> = {
 
 function authorised(req: Request): boolean {
   const secret = process.env.CRON_SECRET;
-  if (!secret) return true; // unauthenticated allowed in dev
+  if (!secret) return true;
   const header = req.headers.get('authorization');
   return header === `Bearer ${secret}`;
 }
 
 /**
- * DESIGN NOTE — why one cron endpoint, not two:
+ * DESIGN NOTE — single cron, link-aware:
  *
- * The DexScreener provider memoises an enriched universe in-process for
- * 60s, so warming the 3×4×4 = 48 token cache permutations triggers ~2
- * boost calls + ~2 token-batch calls TOTAL, not 192. Folding token
- * warming into the existing narrative cron also keeps the Vercel cron
- * surface single-tab and the 5-min schedule shared.
+ * The link layer collapses what used to be 48 token cache permutations
+ * into 3 linked-universe entries (one per window). The cron now warms:
  *
- * If token warming ever needs a different cadence (e.g. 1-min for
- * breakout discovery), split into /api/cron/refresh-tokens then.
+ *   linked:tokens:<tokenSrc>:<narrativeSrc>:<window>      ×3
+ *   linked:narratives:<narrativeSrc>:<tokenSrc>:<window>  ×3
+ *
+ * Both routes pull the linked entry on hot reads and slice in memory.
+ * Upstream cost per tick is dominated by the DexScreener provider's
+ * single boost-list call + batched token lookup (memoised for 60s
+ * across the 3 windows of warming inside one tick).
+ *
+ * Splitting into /api/cron/refresh-tokens stays optional — only worth
+ * it if token warming needs a different cadence (e.g. 1-min for
+ * breakout discovery). For now: one endpoint, one schedule.
  */
 export async function GET(req: Request) {
   if (!authorised(req)) {
@@ -68,77 +68,81 @@ export async function GET(req: Request) {
   }
 
   const started = Date.now();
+  const narrativeSource = getActiveSourceMode();
+  const tokenSource = getActiveTokenSource();
+  const narrativeProvider = getProvider();
+  const tokenProvider = getTokenProvider();
 
-  const [narratives, tokens] = await Promise.all([
-    refreshNarratives(),
-    refreshTokens(),
-  ]);
+  // 1h narratives drive tagging for every token window — fetch once.
+  let liveNarratives: Narrative[] = [];
+  try {
+    liveNarratives = await narrativeProvider.fetch('1h');
+  } catch (err) {
+    console.error('[cron] 1h narratives fetch failed', err);
+  }
+
+  const tokenSummary: Record<TimeWindow, number> = {
+    '1h': 0,
+    '24h': 0,
+    '7d': 0,
+  };
+  const narrativeSummary: Record<TimeWindow, number> = {
+    '1h': 0,
+    '24h': 0,
+    '7d': 0,
+  };
+
+  for (const window of WINDOWS) {
+    // Tokens for this window, tagged against live narratives.
+    let rawTokens: Token[] = [];
+    try {
+      rawTokens = await tokenProvider.fetch({
+        window,
+        filter: 'trending',
+        chain: 'all',
+        limit: 200,
+      });
+    } catch (err) {
+      console.error(`[cron] tokens ${window} fetch failed`, err);
+    }
+
+    const taggedTokens = tagTokens(rawTokens, liveNarratives);
+    if (taggedTokens.length > 0) {
+      await cacheSet(
+        `linked:tokens:${tokenSource}:${narrativeSource}:${window}`,
+        JSON.stringify(taggedTokens),
+        TOKEN_TTL[window]
+      );
+      tokenSummary[window] = taggedTokens.length;
+    }
+
+    // Narratives for this window, inverse-linked against same-window
+    // tokens. We tag separately per window so relatedTokenIds reflects
+    // each window's token universe (1h is breakouts, 7d is established).
+    let narrativesForWindow: Narrative[] = [];
+    try {
+      narrativesForWindow = await narrativeProvider.fetch(window);
+    } catch (err) {
+      console.error(`[cron] narratives ${window} fetch failed`, err);
+    }
+
+    if (narrativesForWindow.length > 0) {
+      const tokensForInverse = tagTokens(rawTokens, narrativesForWindow);
+      const linked = inverseLink(narrativesForWindow, tokensForInverse);
+      await cacheSet(
+        `linked:narratives:${narrativeSource}:${tokenSource}:${window}`,
+        JSON.stringify(linked),
+        NARRATIVE_TTL[window]
+      );
+      narrativeSummary[window] = linked.length;
+    }
+  }
 
   return NextResponse.json({
     ok: true,
     durationMs: Date.now() - started,
-    narratives,
-    tokens,
+    sources: { narrative: narrativeSource, token: tokenSource },
+    tokens: tokenSummary,
+    narratives: narrativeSummary,
   });
-}
-
-async function refreshNarratives() {
-  const source = getActiveSourceMode();
-  const provider = getProvider();
-  const counts: Record<TimeWindow, number> = { '1h': 0, '24h': 0, '7d': 0 };
-
-  for (const window of WINDOWS) {
-    try {
-      const ns: Narrative[] = await provider.fetch(window);
-      if (ns.length > 0) {
-        await cacheSet(
-          `narratives:${source}:${window}`,
-          JSON.stringify(ns),
-          NARRATIVE_TTL[window]
-        );
-      }
-      counts[window] = ns.length;
-    } catch (err) {
-      console.error(`[cron] narratives ${window} failed`, err);
-    }
-  }
-  return { source, counts };
-}
-
-async function refreshTokens() {
-  const source = getActiveTokenSource();
-  const provider = getTokenProvider();
-  let written = 0;
-  let failed = 0;
-
-  for (const window of WINDOWS) {
-    for (const filter of FILTERS) {
-      for (const chain of CHAINS) {
-        try {
-          const set: Token[] = await provider.fetch({
-            window,
-            filter,
-            chain,
-            limit: 200,
-          });
-          if (set.length > 0) {
-            await cacheSet(
-              `tokens:${source}:${window}:${filter}:${chain}`,
-              JSON.stringify(set),
-              TOKEN_TTL[window]
-            );
-            written += 1;
-          }
-        } catch (err) {
-          failed += 1;
-          console.error(
-            `[cron] tokens ${window}/${filter}/${chain} failed`,
-            err
-          );
-        }
-      }
-    }
-  }
-
-  return { source, written, failed };
 }

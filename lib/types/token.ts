@@ -1,4 +1,4 @@
-import type { TimeWindow } from '../types';
+import type { NarrativeTag, TimeWindow } from '../types';
 
 export type HeatLevel = 'hot' | 'warm' | 'emerging';
 
@@ -21,8 +21,10 @@ export type Token = {
   /** -1 .. 1, derived from priceChange + volume velocity. */
   momentum: number;
   category: HeatLevel;
-  /** Theme tags used later for Moon→Earth narrative connections. */
-  narrativeTags: string[];
+  /** Narratives this token matched against the current 1h news window.
+   *  Empty array means "untagged" — not an error condition. Populated
+   *  server-side by the narrativeTagger before the cache write. */
+  narrativeTags: NarrativeTag[];
   chain: TokenChain;
   /** Hours since launch. */
   age: number;

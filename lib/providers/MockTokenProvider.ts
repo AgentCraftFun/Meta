@@ -237,7 +237,9 @@ function seedToToken(seed: Seed, window: TimeWindow): Token {
     priceChange24h: seed.priceChange24h,
     momentum,
     category: seed.category,
-    narrativeTags: seed.tags,
+    // Link-layer tags are populated by the narrativeTagger downstream;
+    // start empty and let the API route fill them in.
+    narrativeTags: [],
     chain: seed.chain,
     age: seed.age,
     contractAddress: seed.contractAddress,

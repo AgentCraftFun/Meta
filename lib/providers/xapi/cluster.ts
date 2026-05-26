@@ -127,6 +127,7 @@ export function clustersToNarratives(
     const volume = Math.max(1, Math.round((c.score / max) * 100));
     const category = categoriseCluster(c);
     const summary = summarise(c.tweets);
+    const keywords = deriveKeywords(c);
     return {
       id: `${c.iso}-${slug(c.trend)}-${i}`,
       country: c.iso,
@@ -145,8 +146,34 @@ export function clustersToNarratives(
       firstSeen: c.firstSeen.toISOString(),
       lastUpdated: c.lastUpdated.toISOString(),
       timeWindow,
+      // Link-layer fields. Keywords pull from the trend term plus any
+      // cashtags / hashtags surfaced in the clustered tweets — that's
+      // the cheapest signal we have and lines up with how memecoin
+      // tickers propagate on X.
+      keywords,
+      themes: [],
+      tagLabel: c.trend,
+      relatedTokenIds: [],
     } satisfies Narrative;
   });
+}
+
+/** Pull matching candidates from the trend term, cashtags, and the
+ *  most-repeated hashtags in the cluster. Lowercased + deduped. */
+function deriveKeywords(c: Cluster): string[] {
+  const out = new Set<string>();
+  // Trend term — strip leading $/#.
+  const trendBase = c.trend.replace(/^[$#]/, '').toLowerCase();
+  if (trendBase) out.add(trendBase);
+  for (const t of c.tweets) {
+    for (const tag of t.entities?.cashtags ?? []) {
+      if (tag.tag) out.add(tag.tag.toLowerCase());
+    }
+    for (const tag of t.entities?.hashtags ?? []) {
+      if (tag.tag) out.add(tag.tag.toLowerCase());
+    }
+  }
+  return Array.from(out).slice(0, 12);
 }
 
 function slug(s: string) {

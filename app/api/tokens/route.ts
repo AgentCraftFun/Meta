@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
 import { cacheGet, cacheSet } from '@/lib/cache';
+import { linkAll } from '@/lib/narrativeTagger';
+import { getActiveSourceMode, getProvider } from '@/lib/providers';
 import {
   getActiveTokenSource,
   getTokenProvider,
 } from '@/lib/providers/tokenProviders';
-import type { TimeWindow } from '@/lib/types';
+import type { Narrative, TimeWindow } from '@/lib/types';
 import type {
   Token,
   TokenChainFilter,
@@ -15,9 +17,9 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 /**
- * Cache TTL per window — tighter for short windows since the data moves
- * faster. The cron warmer (/api/cron/refresh) repopulates all permutations
- * every 5 min so cold-reads off the cache stay snappy.
+ * Cache TTL per window. Linked universe lives at
+ *   linked:tokens:<tokenSource>:<narrativeSource>:<window>
+ * and we slice it on serve. Filter + chain + limit don't touch upstream.
  */
 const WINDOW_TTL_SECONDS: Record<TimeWindow, number> = {
   '1h': 5 * 60,
@@ -41,6 +43,10 @@ const VALID_CHAINS: readonly TokenChainFilter[] = [
 
 const DEFAULT_LIMIT = 100;
 const MAX_LIMIT = 200;
+/** Narrative window used to tag tokens. Always 1h — the link layer
+ *  follows the freshest news, regardless of which token window the
+ *  caller asks for. */
+const TAG_NARRATIVE_WINDOW: TimeWindow = '1h';
 
 function parseEnum<T extends string>(
   raw: string | null,
@@ -56,6 +62,11 @@ function parseLimit(raw: string | null): number {
   const n = Number.parseInt(raw, 10);
   if (!Number.isFinite(n) || n <= 0) return DEFAULT_LIMIT;
   return Math.min(n, MAX_LIMIT);
+}
+
+function applyChain(tokens: Token[], chain: TokenChainFilter): Token[] {
+  if (chain === 'all') return tokens;
+  return tokens.filter((t) => t.chain === chain);
 }
 
 export async function GET(request: Request) {
@@ -76,48 +87,104 @@ export async function GET(request: Request) {
     'all'
   );
   const limit = parseLimit(url.searchParams.get('limit'));
-  const source = getActiveTokenSource();
 
-  // Cache key intentionally excludes `limit` — we cache the full ranked
-  // result (up to MAX_LIMIT) and slice on the way out so different limits
-  // share the same upstream cost.
-  const cacheKey = `tokens:${source}:${window}:${filter}:${chain}`;
+  const tokenSource = getActiveTokenSource();
+  const narrativeSource = getActiveSourceMode();
+  const linkedKey = `linked:tokens:${tokenSource}:${narrativeSource}:${window}`;
 
-  const cached = await cacheGet(cacheKey);
+  // Hot path — cached linked universe; only the slice step runs here.
+  const cached = await cacheGet(linkedKey);
   if (cached) {
-    const tokens = (JSON.parse(cached) as Token[]).slice(0, limit);
+    const universe = JSON.parse(cached) as Token[];
+    const sliced = sliceUniverse(universe, filter, chain, window, limit);
     return NextResponse.json(
-      { source, window, filter, chain, cached: true, tokens },
+      {
+        source: tokenSource,
+        window,
+        filter,
+        chain,
+        cached: true,
+        tokens: sliced,
+      },
       { headers: { 'Cache-Control': 'no-store' } }
     );
   }
 
+  // Cold path — pull raw token universe and the 1h narratives in
+  // parallel, then run the tagger. One narrative fetch + one token
+  // fetch per cold-start; subsequent permutations share the cache.
   const provider = getTokenProvider();
-  let tokens: Token[] = [];
+  const narrativeProvider = getProvider();
+
+  let rawTokens: Token[] = [];
+  let narratives: Narrative[] = [];
   try {
-    tokens = await provider.fetch({ window, filter, chain, limit: MAX_LIMIT });
+    [rawTokens, narratives] = await Promise.all([
+      provider.fetch({ window, filter: 'trending', chain: 'all', limit: MAX_LIMIT }),
+      narrativeProvider.fetch(TAG_NARRATIVE_WINDOW),
+    ]);
   } catch (err) {
-    console.error('[tokens] provider error', err);
-    tokens = [];
+    console.error('[tokens] cold-path fetch failed', err);
   }
 
-  if (tokens.length > 0) {
+  const { tokens: tagged } = linkAll(rawTokens, narratives);
+
+  if (tagged.length > 0) {
     await cacheSet(
-      cacheKey,
-      JSON.stringify(tokens),
+      linkedKey,
+      JSON.stringify(tagged),
       WINDOW_TTL_SECONDS[window]
     );
   }
 
+  const sliced = sliceUniverse(tagged, filter, chain, window, limit);
+
   return NextResponse.json(
     {
-      source,
+      source: tokenSource,
       window,
       filter,
       chain,
       cached: false,
-      tokens: tokens.slice(0, limit),
+      tokens: sliced,
     },
     { headers: { 'Cache-Control': 'no-store' } }
   );
+}
+
+/** Apply chain + filter + limit on a linked universe. Mirrors the
+ *  ranking logic baked into each provider; running here lets us share
+ *  one cache entry across many request permutations. */
+function sliceUniverse(
+  tokens: Token[],
+  filter: TokenFilter,
+  chain: TokenChainFilter,
+  window: TimeWindow,
+  limit: number
+): Token[] {
+  const chained = applyChain(tokens, chain);
+  const working = chained.slice();
+  switch (filter) {
+    case 'gainers':
+      working.sort((a, b) => priceChange(b, window) - priceChange(a, window));
+      break;
+    case 'losers':
+      working.sort((a, b) => priceChange(a, window) - priceChange(b, window));
+      break;
+    case 'new':
+      return working
+        .filter((t) => t.age > 0 && t.age < 24)
+        .sort((a, b) => a.age - b.age)
+        .slice(0, limit);
+    case 'trending':
+    default:
+      // Provider returned the universe already sorted by activity.
+      break;
+  }
+  return working.slice(0, limit);
+}
+
+function priceChange(t: Token, window: TimeWindow): number {
+  if (window === '1h') return t.priceChange1h ?? t.priceChange24h;
+  return t.priceChange24h;
 }

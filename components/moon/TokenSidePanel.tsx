@@ -136,10 +136,15 @@ function PanelBody({
             ) : (
               token.narrativeTags.map((tag) => (
                 <span
-                  key={tag}
+                  key={tag.id}
+                  title={
+                    tag.countryISO
+                      ? `${tag.label} · ${tag.countryISO}`
+                      : tag.label
+                  }
                   className="rounded-sm border border-cyan-400/30 bg-cyan-400/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-cyan-300"
                 >
-                  {tag}
+                  {tag.label}
                 </span>
               ))
             )}

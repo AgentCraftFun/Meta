@@ -74,7 +74,9 @@ function fabricateNewPair(): Token {
     priceChange24h: Number(priceChange.toFixed(1)),
     momentum: Number(momentum.toFixed(2)),
     category: HEAT_BY_ACTIVITY(priceChange, momentum),
-    narrativeTags: ['meme', 'live'],
+    // Simulated pairs ride the narrativeTagger downstream once they
+    // hit the moon scene; empty array keeps the type honest here.
+    narrativeTags: [],
     chain,
     age: Math.random() * 0.5,
     contractAddress: undefined,

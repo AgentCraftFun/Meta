@@ -20,6 +20,471 @@ type Seed = {
 };
 
 /**
+ * Per-narrative link metadata. Kept in a side map so the 32 seed
+ * literals above stay readable; merged into the Narrative object inside
+ * shapeForWindow(). Keywords are deliberately broad — the rules tagger
+ * matches word-boundary case-insensitive, so we want to catch ticker
+ * variants and theme words that show up in random DEX-promoted token
+ * names (e.g. 'pepe', 'doge', 'cat', 'pump').
+ */
+type SeedTag = {
+  keywords: string[];
+  themes: string[];
+  tagLabel: string;
+};
+
+const SEED_TAG: Record<string, SeedTag> = {
+  'us-eth-etf': {
+    keywords: ['eth', 'ether', 'ethereum', 'etf', 'etha', 'blackrock'],
+    themes: ['etf', 'institutional', 'eth'],
+    tagLabel: 'ETH ETF',
+  },
+  'us-fomc-leak': {
+    keywords: ['fomc', 'fed', 'powell', 'rate', 'rates', 'dotplot'],
+    themes: ['macro', 'rates'],
+    tagLabel: 'Fed / FOMC',
+  },
+  'us-nvidia-earnings': {
+    keywords: ['nvda', 'nvidia', 'gpu', 'earnings'],
+    themes: ['equities', 'ai'],
+    tagLabel: 'NVDA earnings',
+  },
+  'cn-pboc-rrr': {
+    keywords: ['pboc', 'rrr', 'china', 'yuan', 'cny'],
+    themes: ['macro', 'china'],
+    tagLabel: 'PBOC RRR',
+  },
+  'cn-deepseek-v4': {
+    keywords: ['deepseek', 'llm', 'ai', 'gpt', 'multimodal'],
+    themes: ['ai', 'china'],
+    tagLabel: 'DeepSeek v4',
+  },
+  'jp-yen-intervention': {
+    keywords: ['yen', 'jpy', 'usdjpy', 'mof', 'kanda', 'boj'],
+    themes: ['fx', 'macro'],
+    tagLabel: 'Yen FX',
+  },
+  'jp-sony-ai-chip': {
+    keywords: ['sony', 'imx', 'robotics', 'chip', 'edge'],
+    themes: ['ai', 'hardware'],
+    tagLabel: 'Sony AI chip',
+  },
+  'kr-upbit-listing': {
+    keywords: ['upbit', 'krw', 'korea', 'listing'],
+    themes: ['exchange', 'listings'],
+    tagLabel: 'Upbit listing',
+  },
+  'kr-samsung-hbm': {
+    keywords: ['samsung', 'hbm', 'hbm4', 'nvidia'],
+    themes: ['ai', 'hardware'],
+    tagLabel: 'Samsung HBM',
+  },
+  'gb-fca-stable': {
+    keywords: ['fca', 'gbp', 'stable', 'stablecoin', 'sterling'],
+    themes: ['regulation', 'stablecoins'],
+    tagLabel: 'FCA stables',
+  },
+  'gb-arm-takeover': {
+    keywords: ['arm', 'silicon', 'inference', 'accelerator'],
+    themes: ['ai', 'hardware'],
+    tagLabel: 'Arm M&A',
+  },
+  'de-bafin-pump': {
+    keywords: ['memecoin', 'meme', 'pump', 'shill', 'bafin', 'pumpfun'],
+    themes: ['memes', 'regulation'],
+    tagLabel: 'BaFin memecoins',
+  },
+  'de-vw-ev-deal': {
+    keywords: ['vw', 'volkswagen', 'rivian', 'ev', 'van'],
+    themes: ['equities', 'ev'],
+    tagLabel: 'VW × Rivian',
+  },
+  'fr-ai-act-impl': {
+    keywords: ['cnil', 'ai', 'gpai', 'redteam'],
+    themes: ['ai', 'regulation'],
+    tagLabel: 'EU AI Act',
+  },
+  'ae-vara-license': {
+    keywords: ['vara', 'dubai', 'vasp', 'license'],
+    themes: ['regulation', 'mena'],
+    tagLabel: 'VARA license',
+  },
+  'ae-adq-ai': {
+    keywords: ['adq', 'g42', 'compute', 'gpu', 'arabic'],
+    themes: ['ai', 'mena'],
+    tagLabel: 'ADQ AI fund',
+  },
+  'in-rbi-cbdc': {
+    keywords: ['rbi', 'rupee', 'cbdc', 'erupee', 'india'],
+    themes: ['cbdc', 'india'],
+    tagLabel: 'Digital rupee',
+  },
+  'in-zomato-blink': {
+    keywords: ['zomato', 'blinkit', 'nse', 'ipo'],
+    themes: ['equities', 'india'],
+    tagLabel: 'Blinkit spin',
+  },
+  'sg-mas-tokenize': {
+    keywords: ['mas', 'tokenized', 'guardian', 'singapore'],
+    themes: ['tokenization', 'asia'],
+    tagLabel: 'MAS Guardian',
+  },
+  'hk-spot-eth-etf': {
+    keywords: ['eth', 'ether', 'ethereum', 'etf', 'staking'],
+    themes: ['etf', 'asia'],
+    tagLabel: 'HK ETH ETF',
+  },
+  'au-asx-block': {
+    keywords: ['asx', 'chess', 'dlt', 'settlement'],
+    themes: ['tokenization', 'apac'],
+    tagLabel: 'ASX DLT',
+  },
+  'br-pix-stable': {
+    keywords: ['pix', 'usdc', 'brl', 'bcb', 'brazil'],
+    themes: ['stablecoins', 'payments'],
+    tagLabel: 'PIX stables',
+  },
+  'br-petr-buyback': {
+    keywords: ['petrobras', 'buyback', 'brazil'],
+    themes: ['equities', 'energy'],
+    tagLabel: 'Petrobras BB',
+  },
+  'ar-milei-dolar': {
+    keywords: ['milei', 'argentina', 'peso', 'dolar', 'usd', 'libra'],
+    themes: ['politics', 'macro'],
+    tagLabel: 'Argentina USD',
+  },
+  'mx-banxico-hold': {
+    keywords: ['banxico', 'peso', 'mxn', 'mexico'],
+    themes: ['macro', 'rates'],
+    tagLabel: 'Banxico hold',
+  },
+  'ru-mining-tax': {
+    keywords: ['mining', 'russia', 'duma', 'tariff'],
+    themes: ['mining', 'regulation'],
+    tagLabel: 'RU mining tax',
+  },
+  'tr-cbrt-rate': {
+    keywords: ['cbrt', 'turkey', 'lira', 'try'],
+    themes: ['macro', 'rates'],
+    tagLabel: 'CBRT hike',
+  },
+  'ng-binance-suit': {
+    keywords: ['binance', 'gambaryan', 'nigeria', 'exchange'],
+    themes: ['exchange', 'regulation'],
+    tagLabel: 'Binance NG',
+  },
+  'za-rand-bond': {
+    keywords: ['sarb', 'rand', 'zar', 'south africa'],
+    themes: ['macro', 'rates'],
+    tagLabel: 'SARB cuts',
+  },
+  'ca-boc-cut': {
+    keywords: ['boc', 'macklem', 'cad', 'canada'],
+    themes: ['macro', 'rates'],
+    tagLabel: 'BoC cut',
+  },
+  'ca-shopify-ai': {
+    keywords: ['shopify', 'sidekick', 'ai', 'storefront'],
+    themes: ['ai', 'equities'],
+    tagLabel: 'Shopify AI',
+  },
+  'ch-finma-stake': {
+    keywords: ['finma', 'staking', 'validator', 'custody'],
+    themes: ['staking', 'regulation'],
+    tagLabel: 'FINMA staking',
+  },
+  'nl-asml-litho': {
+    keywords: ['asml', 'euv', 'litho', 'highna'],
+    themes: ['ai', 'hardware'],
+    tagLabel: 'ASML EUV',
+  },
+  'it-bitpanda-eu': {
+    keywords: ['bitpanda', 'emi', 'mica', 'italy'],
+    themes: ['exchange', 'regulation'],
+    tagLabel: 'Bitpanda EMI',
+  },
+  'es-cnmv-mica': {
+    keywords: ['cnmv', 'mica', 'spain', 'rulebook'],
+    themes: ['regulation', 'europe'],
+    tagLabel: 'CNMV MiCA',
+  },
+  'se-spotify-h2': {
+    keywords: ['spotify', 'superfan', 'arpu'],
+    themes: ['equities', 'streaming'],
+    tagLabel: 'Spotify superfan',
+  },
+  'sa-pif-aramco': {
+    keywords: ['pif', 'aramco', 'saudi', 'vision2030'],
+    themes: ['energy', 'mena'],
+    tagLabel: 'PIF Aramco',
+  },
+  'il-cyber-pump': {
+    keywords: ['cyber', 'telaviv', 'israel', 'consolidation'],
+    themes: ['cybersec', 'equities'],
+    tagLabel: 'Tel Aviv cyber',
+  },
+  'vn-axie-rebound': {
+    keywords: ['axie', 'ronin', 'gaming', 'p2e', 'origins'],
+    themes: ['gaming', 'memes'],
+    tagLabel: 'Axie origins',
+  },
+};
+
+/**
+ * Broad theme narratives — added so the rules tagger has natural hooks
+ * for random DexScreener-promoted tokens (which skew heavily to dogs /
+ * cats / pepe / AI / pump-fun memes). Without these the link layer
+ * would underfire on the real-token / mock-narrative cross-source mode.
+ */
+const THEME_SEEDS: Seed[] = [
+  {
+    id: 'global-dog-coins',
+    country: 'US',
+    title: 'Dog memecoin rotation accelerates',
+    summary:
+      'Bonk, WIF, DOGE, SHIB, FLOKI, PNUT — dog-themed memes rip on the same liquidity bid.',
+    volume: 78,
+    sentiment: 0.55,
+    momentum: 0.62,
+    category: 'trending',
+    ageMinutes: 95,
+    sources: [
+      {
+        url: 'https://x.com/Cobie/status/dog1',
+        author: '@Cobie',
+        text: 'Every dog is back. WIF, BONK, FLOKI, MOG. Same chart.',
+      },
+    ],
+  },
+  {
+    id: 'global-frog-coins',
+    country: 'US',
+    title: 'Frog season returns: PEPE leads the pond',
+    summary:
+      'PEPE, BRETT, MOG and the broader frog-meme cohort outperform majors on the day.',
+    volume: 71,
+    sentiment: 0.48,
+    momentum: 0.58,
+    category: 'trending',
+    ageMinutes: 130,
+    sources: [
+      {
+        url: 'https://x.com/0xKrane/status/frog1',
+        author: '@0xKrane',
+        text: 'Frogs > everything today. Pepe up bad.',
+      },
+    ],
+  },
+  {
+    id: 'global-cat-coins',
+    country: 'US',
+    title: 'Cat memes (POPCAT, MEW) catch a bid',
+    summary:
+      'Cat-themed tokens lead the meme-rotation tape after a hot Asian session.',
+    volume: 56,
+    sentiment: 0.46,
+    momentum: 0.41,
+    category: 'emerging',
+    ageMinutes: 220,
+    sources: [
+      {
+        url: 'https://x.com/AltcoinPsycho/status/cat1',
+        author: '@AltcoinPsycho',
+        text: 'Cats > dogs this rotation. POPCAT MEW chad.',
+      },
+    ],
+  },
+  {
+    id: 'global-ai-tokens',
+    country: 'US',
+    title: 'AI token bid: TAO, FET, RNDR, AGIX',
+    summary:
+      'Inference + decentralised compute names lead the AI bucket on the back of NVDA tailwinds.',
+    volume: 82,
+    sentiment: 0.51,
+    momentum: 0.66,
+    category: 'trending',
+    ageMinutes: 75,
+    sources: [
+      {
+        url: 'https://x.com/SmokeyTheBera/status/ai1',
+        author: '@SmokeyTheBera',
+        text: 'AI bucket lit. TAO, FET, RNDR all green.',
+      },
+    ],
+  },
+  {
+    id: 'global-pump-fun',
+    country: 'US',
+    title: 'Pump.fun rotation: fresh launches eclipse 100k DAU',
+    summary:
+      'Solana memes minted in the last 24h are absorbing the marginal trader; first-day curves are vertical.',
+    volume: 88,
+    sentiment: 0.32,
+    momentum: 0.78,
+    category: 'breaking',
+    ageMinutes: 28,
+    sources: [
+      {
+        url: 'https://x.com/alon/status/pf1',
+        author: '@alon',
+        text: 'pump.fun is back at all-time launches/day.',
+      },
+    ],
+  },
+  {
+    id: 'global-political-memes',
+    country: 'US',
+    title: 'Political memecoins surge into election window',
+    summary:
+      'Trump, MAGA, Kamala, BODEN-style political coins see a coordinated bid as poll narrative shifts.',
+    volume: 74,
+    sentiment: 0.18,
+    momentum: 0.71,
+    category: 'breaking',
+    ageMinutes: 42,
+    sources: [
+      {
+        url: 'https://x.com/MustStopMurad/status/pol1',
+        author: '@MustStopMurad',
+        text: 'Political memes are the highest-conviction trade for the next 60 days.',
+      },
+    ],
+  },
+  {
+    id: 'global-solana-szn',
+    country: 'US',
+    title: 'Solana memecoin season: JUP, BONK, WIF lead',
+    summary:
+      'SOL ecosystem memes outperform majors; DEX volume on Raydium hits a fresh ATH.',
+    volume: 84,
+    sentiment: 0.61,
+    momentum: 0.72,
+    category: 'trending',
+    ageMinutes: 110,
+    sources: [
+      {
+        url: 'https://x.com/MustStopMurad/status/sol1',
+        author: '@MustStopMurad',
+        text: 'Solana is the casino. Every bid is local memes.',
+      },
+    ],
+  },
+  {
+    id: 'global-nft-gaming',
+    country: 'US',
+    title: 'Gaming + NFT meta returns: card games, collectibles',
+    summary:
+      'MTG-themed coins, Pokemon variants, and on-chain collectibles see a coordinated bid.',
+    volume: 49,
+    sentiment: 0.42,
+    momentum: 0.38,
+    category: 'emerging',
+    ageMinutes: 280,
+    sources: [
+      {
+        url: 'https://x.com/AltcoinDailyio/status/nft1',
+        author: '@AltcoinDailyio',
+        text: 'Card-game tokens (MTG, Pokemon) catching a bid again.',
+      },
+    ],
+  },
+  {
+    id: 'global-celebrity-memes',
+    country: 'US',
+    title: 'Celebrity / animal memes: Harambe, Vitalik, gorillas',
+    summary:
+      'Animal-celebrity memecoins (Harambe, gorilla, monkey variants) and Vitalik-themed tokens rotate.',
+    volume: 47,
+    sentiment: 0.37,
+    momentum: 0.44,
+    category: 'emerging',
+    ageMinutes: 320,
+    sources: [
+      {
+        url: 'https://x.com/AltcoinPsycho/status/celeb1',
+        author: '@AltcoinPsycho',
+        text: 'Harambe never dies. Gorilla meta is back.',
+      },
+    ],
+  },
+];
+
+const THEME_SEED_TAG: Record<string, SeedTag> = {
+  'global-dog-coins': {
+    keywords: [
+      'dog', 'doge', 'shib', 'bonk', 'wif', 'floki', 'pnut', 'inu',
+      'hound', 'puppy', 'paws', 'paw', 'corgi', 'akita', 'husky',
+    ],
+    themes: ['memes', 'dogs'],
+    tagLabel: 'Dog memes',
+  },
+  'global-frog-coins': {
+    keywords: [
+      'pepe', 'frog', 'brett', 'mog', 'wojak', 'hoppy', 'hopper',
+      'toad', 'kek', 'rare',
+    ],
+    themes: ['memes', 'frogs'],
+    tagLabel: 'Frog memes',
+  },
+  'global-cat-coins': {
+    keywords: ['cat', 'popcat', 'mew', 'kitty', 'pussy', 'feline', 'whisker'],
+    themes: ['memes', 'cats'],
+    tagLabel: 'Cat memes',
+  },
+  'global-ai-tokens': {
+    keywords: [
+      'ai', 'tao', 'fet', 'rndr', 'agix', 'render', 'fetch',
+      'bittensor', 'neural', 'gork', 'grok', 'agent', 'gpt',
+    ],
+    themes: ['ai'],
+    tagLabel: 'AI tokens',
+  },
+  'global-pump-fun': {
+    keywords: [
+      'pump', 'fun', 'pumpfun', 'launchpad', 'launch', 'pemo', 'virl',
+      'moon', 'rocket', 'rugpull',
+    ],
+    themes: ['memes', 'solana'],
+    tagLabel: 'pump.fun',
+  },
+  'global-political-memes': {
+    keywords: [
+      'trump', 'djt', 'maga', 'kamala', 'biden', 'boden', 'putin',
+      'milei', 'elon', 'pope', 'doland', 'usa', 'america', 'patriot',
+      'freedom', 'woke', 'wmv', 'libtard', 'magaa',
+    ],
+    themes: ['memes', 'politics'],
+    tagLabel: 'Political memes',
+  },
+  'global-solana-szn': {
+    keywords: [
+      'sol', 'solana', 'jup', 'jupiter', 'bonk', 'wif', 'ray',
+      'raydium', 'fartcoin', 'fart',
+    ],
+    themes: ['solana', 'memes'],
+    tagLabel: 'Solana szn',
+  },
+  'global-nft-gaming': {
+    keywords: [
+      'nft', 'gaming', 'game', 'magic', 'collect', 'collectoor',
+      'gather', 'card', 'mtg', 'pokemon', 'pokepeg', 'peg', 'play',
+    ],
+    themes: ['gaming', 'nft'],
+    tagLabel: 'NFT / Gaming',
+  },
+  'global-celebrity-memes': {
+    keywords: [
+      'harambe', 'gorilla', 'monkey', 'ape', 'chimp', 'cobie',
+      'sbf', 'satoshi', 'vitalik', 'cz',
+    ],
+    themes: ['memes', 'celebrity'],
+    tagLabel: 'Celebrity memes',
+  },
+};
+
+/**
  * Hand-crafted narrative seeds covering ~20 countries. Mix of crypto, macro,
  * geopolitical, tech, and breaking news. Several have ageMinutes < 60 to drive
  * amber breaking pins.
@@ -854,18 +1319,28 @@ function shapeForWindow(seed: Seed, window: TimeWindow, now: number) {
   return { firstSeen, lastUpdated, category, volume };
 }
 
+/** Fallback used when a seed has no SEED_TAG entry — keeps the type
+ *  honest and the tagger from crashing on `undefined.keywords`. */
+const EMPTY_TAG: SeedTag = { keywords: [], themes: [], tagLabel: '' };
+
+function tagForSeed(id: string): SeedTag {
+  return SEED_TAG[id] ?? THEME_SEED_TAG[id] ?? EMPTY_TAG;
+}
+
 export class MockProvider implements NarrativeProvider {
   readonly id = 'mock' as const;
 
   async fetch(window: TimeWindow): Promise<Narrative[]> {
     const now = Date.now();
+    const allSeeds = [...SEEDS, ...THEME_SEEDS];
 
-    const shaped = SEEDS.map((seed) => {
+    const shaped = allSeeds.map((seed) => {
       const { firstSeen, lastUpdated, category, volume } = shapeForWindow(
         seed,
         window,
         now
       );
+      const tagMeta = tagForSeed(seed.id);
       return {
         seed,
         narrative: {
@@ -882,6 +1357,11 @@ export class MockProvider implements NarrativeProvider {
           firstSeen,
           lastUpdated,
           timeWindow: window,
+          // Link-layer fields populated from the side maps.
+          keywords: tagMeta.keywords,
+          themes: tagMeta.themes,
+          tagLabel: tagMeta.tagLabel || seed.title.slice(0, 32),
+          relatedTokenIds: [],
         } as Narrative,
       };
     });

@@ -1,7 +1,13 @@
 import { NextResponse } from 'next/server';
 import { cacheGet, cacheSet } from '@/lib/cache';
+import { inverseLink, tagTokens } from '@/lib/narrativeTagger';
 import { getActiveSourceMode, getProvider } from '@/lib/providers';
+import {
+  getActiveTokenSource,
+  getTokenProvider,
+} from '@/lib/providers/tokenProviders';
 import type { Narrative, TimeWindow } from '@/lib/types';
+import type { Token } from '@/lib/types/token';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -22,14 +28,15 @@ function parseWindow(raw: string | null): TimeWindow {
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const window = parseWindow(url.searchParams.get('window'));
-  const source = getActiveSourceMode();
-  const cacheKey = `narratives:${source}:${window}`;
+  const narrativeSource = getActiveSourceMode();
+  const tokenSource = getActiveTokenSource();
+  const linkedKey = `linked:narratives:${narrativeSource}:${tokenSource}:${window}`;
 
-  const cached = await cacheGet(cacheKey);
+  const cached = await cacheGet(linkedKey);
   if (cached) {
     return NextResponse.json(
       {
-        source,
+        source: narrativeSource,
         window,
         cached: true,
         narratives: JSON.parse(cached) as Narrative[],
@@ -38,25 +45,45 @@ export async function GET(request: Request) {
     );
   }
 
-  const provider = getProvider();
+  const narrativeProvider = getProvider();
+  const tokenProvider = getTokenProvider();
+
   let narratives: Narrative[] = [];
+  let tokens: Token[] = [];
   try {
-    narratives = await provider.fetch(window);
+    [narratives, tokens] = await Promise.all([
+      narrativeProvider.fetch(window),
+      tokenProvider.fetch({
+        window,
+        filter: 'trending',
+        chain: 'all',
+        limit: 200,
+      }),
+    ]);
   } catch (err) {
     console.error('[narratives] provider error', err);
-    narratives = [];
   }
 
-  if (narratives.length > 0) {
-    await cacheSet(cacheKey, JSON.stringify(narratives), WINDOW_TTL_SECONDS[window]);
+  // Tag tokens first so each token carries the narrative ids that
+  // matched, then walk them to populate relatedTokenIds on each
+  // narrative. No upstream calls — pure data linking.
+  const taggedTokens = tagTokens(tokens, narratives);
+  const linked = inverseLink(narratives, taggedTokens);
+
+  if (linked.length > 0) {
+    await cacheSet(
+      linkedKey,
+      JSON.stringify(linked),
+      WINDOW_TTL_SECONDS[window]
+    );
   }
 
   return NextResponse.json(
     {
-      source,
+      source: narrativeSource,
       window,
       cached: false,
-      narratives,
+      narratives: linked,
     },
     { headers: { 'Cache-Control': 'no-store' } }
   );
