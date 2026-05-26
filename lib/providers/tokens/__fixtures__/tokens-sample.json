@@ -1,0 +1,430 @@
+{
+  "schemaVersion": "1.0.0",
+  "pairs": [
+    {
+      "chainId": "fogo",
+      "dexId": "valiant",
+      "url": "https://dexscreener.com/fogo/j7mxblsz51tcbog3xsijtaxs64n46kqbprgqmd3dqmkp",
+      "pairAddress": "J7mxBLSz51Tcbog3XsiJTAXS64N46KqbpRGQmd3dQMKp",
+      "baseToken": {
+        "address": "So11111111111111111111111111111111111111112",
+        "name": "Wrapped FOGO",
+        "symbol": "FOGO"
+      },
+      "quoteToken": {
+        "address": "uSd2czE61Evaf76RNbq4KPpXnkiL3irdzgLFUMe3NoG",
+        "name": "USDC",
+        "symbol": "USDC.s"
+      },
+      "priceNative": "0.01482",
+      "priceUsd": "0.01482",
+      "txns": {
+        "m5": {
+          "buys": 27,
+          "sells": 28
+        },
+        "h1": {
+          "buys": 377,
+          "sells": 392
+        },
+        "h6": {
+          "buys": 1162,
+          "sells": 1177
+        },
+        "h24": {
+          "buys": 5842,
+          "sells": 5119
+        }
+      },
+      "volume": {
+        "h24": 112499.46,
+        "h6": 19621.21,
+        "h1": 4329.95,
+        "m5": 51.03
+      },
+      "priceChange": {
+        "m5": 0.6,
+        "h1": -0.44,
+        "h6": -1.86,
+        "h24": -2.13
+      },
+      "liquidity": {
+        "usd": 374864.99,
+        "base": 14441568,
+        "quote": 160796
+      },
+      "fdv": 148272321,
+      "marketCap": 148272321,
+      "pairCreatedAt": 1768479521000
+    },
+    {
+      "chainId": "ethereum",
+      "dexId": "uniswap",
+      "url": "https://dexscreener.com/ethereum/0xa43fe16908251ee70ef74718545e4fe6c5ccec9f",
+      "pairAddress": "0xA43fe16908251ee70EF74718545e4FE6C5cCEc9f",
+      "labels": [
+        "v2"
+      ],
+      "baseToken": {
+        "address": "0x6982508145454Ce325dDbE47a25d4ec3d2311933",
+        "name": "Pepe",
+        "symbol": "PEPE"
+      },
+      "quoteToken": {
+        "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        "name": "Wrapped Ether",
+        "symbol": "WETH"
+      },
+      "priceNative": "0.000000001701",
+      "priceUsd": "0.000003591",
+      "txns": {
+        "m5": {
+          "buys": 0,
+          "sells": 0
+        },
+        "h1": {
+          "buys": 10,
+          "sells": 3
+        },
+        "h6": {
+          "buys": 33,
+          "sells": 35
+        },
+        "h24": {
+          "buys": 91,
+          "sells": 113
+        }
+      },
+      "volume": {
+        "h24": 267090.98,
+        "h6": 109983.48,
+        "h1": 20663.36,
+        "m5": 0
+      },
+      "priceChange": {
+        "h1": -0.35,
+        "h6": 0.78,
+        "h24": -1.24
+      },
+      "liquidity": {
+        "usd": 25147986.5,
+        "base": 3500863700811,
+        "quote": 5956.6921
+      },
+      "fdv": 1486139674,
+      "marketCap": 1486139674,
+      "pairCreatedAt": 1681492871000,
+      "info": {
+        "imageUrl": "https://cdn.dexscreener.com/cms/images/ae001139fa1fcd24f8421d82caf72d8e06fabafab33b089c5d2e6d18039354e7?width=800&height=800&quality=95&format=auto",
+        "header": "https://cdn.dexscreener.com/cms/images/f558e07ff23d76a0a22f23e9e554bb513b79404163d185d5e79d96a5058004eb?width=1500&height=500&quality=95&format=auto",
+        "openGraph": "https://cdn.dexscreener.com/token-images/og/ethereum/0x6982508145454ce325ddbe47a25d4ec3d2311933?timestamp=1779807000000",
+        "websites": [
+          {
+            "url": "https://www.pepe.vip/",
+            "label": "Website"
+          }
+        ],
+        "socials": [
+          {
+            "url": "https://twitter.com/pepecoineth",
+            "type": "twitter"
+          }
+        ]
+      }
+    },
+    {
+      "chainId": "ethereum",
+      "dexId": "uniswap",
+      "url": "https://dexscreener.com/ethereum/0x11950d141ecb863f01007add7d1a342041227b58",
+      "pairAddress": "0x11950d141EcB863F01007AdD7D1A342041227b58",
+      "labels": [
+        "v3"
+      ],
+      "baseToken": {
+        "address": "0x6982508145454Ce325dDbE47a25d4ec3d2311933",
+        "name": "Pepe",
+        "symbol": "PEPE"
+      },
+      "quoteToken": {
+        "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        "name": "Wrapped Ether",
+        "symbol": "WETH"
+      },
+      "priceNative": "0.000000001700",
+      "priceUsd": "0.000003634",
+      "txns": {
+        "m5": {
+          "buys": 0,
+          "sells": 0
+        },
+        "h1": {
+          "buys": 4,
+          "sells": 0
+        },
+        "h6": {
+          "buys": 18,
+          "sells": 3
+        },
+        "h24": {
+          "buys": 39,
+          "sells": 29
+        }
+      },
+      "volume": {
+        "h24": 9615.72,
+        "h6": 4783.04,
+        "h1": 220.04,
+        "m5": 0
+      },
+      "priceChange": {
+        "h1": 0.84,
+        "h6": 2.03,
+        "h24": -0.05
+      },
+      "liquidity": {
+        "usd": 2133790.36,
+        "base": 565950075711,
+        "quote": 35.8982
+      },
+      "fdv": 1503928512,
+      "marketCap": 1503928512,
+      "pairCreatedAt": 1681942955000,
+      "info": {
+        "imageUrl": "https://cdn.dexscreener.com/cms/images/ae001139fa1fcd24f8421d82caf72d8e06fabafab33b089c5d2e6d18039354e7?width=800&height=800&quality=95&format=auto",
+        "header": "https://cdn.dexscreener.com/cms/images/f558e07ff23d76a0a22f23e9e554bb513b79404163d185d5e79d96a5058004eb?width=1500&height=500&quality=95&format=auto",
+        "openGraph": "https://cdn.dexscreener.com/token-images/og/ethereum/0x6982508145454ce325ddbe47a25d4ec3d2311933?timestamp=1779807000000",
+        "websites": [
+          {
+            "url": "https://www.pepe.vip/",
+            "label": "Website"
+          }
+        ],
+        "socials": [
+          {
+            "url": "https://twitter.com/pepecoineth",
+            "type": "twitter"
+          }
+        ]
+      }
+    },
+    {
+      "chainId": "ethereum",
+      "dexId": "uniswap",
+      "url": "https://dexscreener.com/ethereum/0xe42df52d7938631f6c6cb56aac2fafc1e00ea77b7517a02ee244bd7d86c061cd",
+      "pairAddress": "0xe42df52d7938631f6c6cb56aac2fafc1e00ea77b7517a02ee244bd7d86c061cd",
+      "labels": [
+        "v4"
+      ],
+      "baseToken": {
+        "address": "0x6982508145454Ce325dDbE47a25d4ec3d2311933",
+        "name": "Pepe",
+        "symbol": "PEPE"
+      },
+      "quoteToken": {
+        "address": "0x0000000000000000000000000000000000000000",
+        "name": "Ether",
+        "symbol": "ETH"
+      },
+      "priceNative": "0.000000001688",
+      "priceUsd": "0.000003604",
+      "txns": {
+        "m5": {
+          "buys": 0,
+          "sells": 0
+        },
+        "h1": {
+          "buys": 3,
+          "sells": 0
+        },
+        "h6": {
+          "buys": 4,
+          "sells": 1
+        },
+        "h24": {
+          "buys": 4,
+          "sells": 5
+        }
+      },
+      "volume": {
+        "h24": 2662.7,
+        "h6": 2062.98,
+        "h1": 310.33,
+        "m5": 0
+      },
+      "priceChange": {
+        "h1": 0.65,
+        "h6": 1.19,
+        "h24": 0.75
+      },
+      "liquidity": {
+        "usd": 226390.25,
+        "base": 48510491588,
+        "quote": 24.1364
+      },
+      "fdv": 1491455785,
+      "marketCap": 1491455785,
+      "pairCreatedAt": 1739562395000,
+      "info": {
+        "imageUrl": "https://cdn.dexscreener.com/cms/images/ae001139fa1fcd24f8421d82caf72d8e06fabafab33b089c5d2e6d18039354e7?width=800&height=800&quality=95&format=auto",
+        "header": "https://cdn.dexscreener.com/cms/images/f558e07ff23d76a0a22f23e9e554bb513b79404163d185d5e79d96a5058004eb?width=1500&height=500&quality=95&format=auto",
+        "openGraph": "https://cdn.dexscreener.com/token-images/og/ethereum/0x6982508145454ce325ddbe47a25d4ec3d2311933?timestamp=1779807000000",
+        "websites": [
+          {
+            "url": "https://www.pepe.vip/",
+            "label": "Website"
+          }
+        ],
+        "socials": [
+          {
+            "url": "https://twitter.com/pepecoineth",
+            "type": "twitter"
+          }
+        ]
+      }
+    },
+    {
+      "chainId": "ethereum",
+      "dexId": "uniswap",
+      "url": "https://dexscreener.com/ethereum/0x4d2985ed0e6f89fdfea66264f88241db024c75ec656d9b7314ccb759e27d11ca",
+      "pairAddress": "0x4d2985ed0e6f89fdfea66264f88241db024c75ec656d9b7314ccb759e27d11ca",
+      "labels": [
+        "v4"
+      ],
+      "baseToken": {
+        "address": "0x6982508145454Ce325dDbE47a25d4ec3d2311933",
+        "name": "Pepe",
+        "symbol": "PEPE"
+      },
+      "quoteToken": {
+        "address": "0x0000000000000000000000000000000000000000",
+        "name": "Ether",
+        "symbol": "ETH"
+      },
+      "priceNative": "0.000000001699",
+      "priceUsd": "0.000003566",
+      "txns": {
+        "m5": {
+          "buys": 0,
+          "sells": 0
+        },
+        "h1": {
+          "buys": 0,
+          "sells": 0
+        },
+        "h6": {
+          "buys": 0,
+          "sells": 0
+        },
+        "h24": {
+          "buys": 3,
+          "sells": 2
+        }
+      },
+      "volume": {
+        "h24": 25.78,
+        "h6": 0,
+        "h1": 0,
+        "m5": 0
+      },
+      "priceChange": {
+        "h24": -1.92
+      },
+      "liquidity": {
+        "usd": 47481.14,
+        "base": 4720135236,
+        "quote": 14.6039
+      },
+      "fdv": 1475587205,
+      "marketCap": 1475587205,
+      "pairCreatedAt": 1737745355000,
+      "info": {
+        "imageUrl": "https://cdn.dexscreener.com/cms/images/ae001139fa1fcd24f8421d82caf72d8e06fabafab33b089c5d2e6d18039354e7?width=800&height=800&quality=95&format=auto",
+        "header": "https://cdn.dexscreener.com/cms/images/f558e07ff23d76a0a22f23e9e554bb513b79404163d185d5e79d96a5058004eb?width=1500&height=500&quality=95&format=auto",
+        "openGraph": "https://cdn.dexscreener.com/token-images/og/ethereum/0x6982508145454ce325ddbe47a25d4ec3d2311933?timestamp=1779807000000",
+        "websites": [
+          {
+            "url": "https://www.pepe.vip/",
+            "label": "Website"
+          }
+        ],
+        "socials": [
+          {
+            "url": "https://twitter.com/pepecoineth",
+            "type": "twitter"
+          }
+        ]
+      }
+    },
+    {
+      "chainId": "ethereum",
+      "dexId": "uniswap",
+      "url": "https://dexscreener.com/ethereum/0xf239009a101b6b930a527deaab6961b6e7dec8a6",
+      "pairAddress": "0xF239009A101B6B930A527DEaaB6961b6E7deC8a6",
+      "labels": [
+        "v3"
+      ],
+      "baseToken": {
+        "address": "0x6982508145454Ce325dDbE47a25d4ec3d2311933",
+        "name": "Pepe",
+        "symbol": "PEPE"
+      },
+      "quoteToken": {
+        "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        "name": "Wrapped Ether",
+        "symbol": "WETH"
+      },
+      "priceNative": "0.000000001703",
+      "priceUsd": "0.000003566",
+      "txns": {
+        "m5": {
+          "buys": 0,
+          "sells": 0
+        },
+        "h1": {
+          "buys": 0,
+          "sells": 0
+        },
+        "h6": {
+          "buys": 0,
+          "sells": 0
+        },
+        "h24": {
+          "buys": 0,
+          "sells": 1
+        }
+      },
+      "volume": {
+        "h24": 18.6,
+        "h6": 0,
+        "h1": 0,
+        "m5": 0
+      },
+      "priceChange": {},
+      "liquidity": {
+        "usd": 37454.19,
+        "base": 7058011183,
+        "quote": 5.8635
+      },
+      "fdv": 1475839127,
+      "marketCap": 1475839127,
+      "pairCreatedAt": 1681701395000,
+      "info": {
+        "imageUrl": "https://cdn.dexscreener.com/cms/images/ae001139fa1fcd24f8421d82caf72d8e06fabafab33b089c5d2e6d18039354e7?width=800&height=800&quality=95&format=auto",
+        "header": "https://cdn.dexscreener.com/cms/images/f558e07ff23d76a0a22f23e9e554bb513b79404163d185d5e79d96a5058004eb?width=1500&height=500&quality=95&format=auto",
+        "openGraph": "https://cdn.dexscreener.com/token-images/og/ethereum/0x6982508145454ce325ddbe47a25d4ec3d2311933?timestamp=1779807000000",
+        "websites": [
+          {
+            "url": "https://www.pepe.vip/",
+            "label": "Website"
+          }
+        ],
+        "socials": [
+          {
+            "url": "https://twitter.com/pepecoineth",
+            "type": "twitter"
+          }
+        ]
+      }
+    }
+  ]
+}

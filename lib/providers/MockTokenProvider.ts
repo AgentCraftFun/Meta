@@ -1,5 +1,12 @@
 import type { TimeWindow } from '../types';
-import type { HeatLevel, Token, TokenChain } from '../types/token';
+import type {
+  HeatLevel,
+  Token,
+  TokenChain,
+  TokenChainFilter,
+  TokenFetchOpts,
+  TokenFilter,
+} from '../types/token';
 import type { TokenProvider } from './TokenProvider';
 
 /**
@@ -259,11 +266,47 @@ function filterForWindow(tokens: Token[], window: TimeWindow): Token[] {
   return tokens.slice().sort((a, b) => b.priceChange24h - a.priceChange24h);
 }
 
+/** Apply the new API filter set on top of the window-shaped universe.
+ *  Logic mirrors the real DexScreener provider so the moon HUD behaves
+ *  identically across sources. */
+function applyMockFilter(
+  tokens: Token[],
+  filter: TokenFilter,
+  window: TimeWindow
+): Token[] {
+  switch (filter) {
+    case 'trending':
+      // Already roughly sorted by filterForWindow's window-aware order.
+      return tokens;
+    case 'gainers':
+      return tokens.slice().sort((a, b) => b.priceChange24h - a.priceChange24h);
+    case 'losers':
+      return tokens.slice().sort((a, b) => a.priceChange24h - b.priceChange24h);
+    case 'new':
+      return tokens
+        .filter((t) => t.age < 24)
+        .sort((a, b) => a.age - b.age);
+  }
+  // Keep tsc happy on unreachable defaults.
+  return tokens;
+}
+
+function applyMockChain(tokens: Token[], chain: TokenChainFilter): Token[] {
+  if (chain === 'all') return tokens;
+  return tokens.filter((t) => t.chain === chain);
+}
+
 export class MockTokenProvider implements TokenProvider {
   readonly id = 'mock' as const;
 
-  async fetch(window: TimeWindow): Promise<Token[]> {
-    const all = ALL_SEEDS.map((seed) => seedToToken(seed, window));
-    return filterForWindow(all, window);
+  async fetch(opts: TokenFetchOpts): Promise<Token[]> {
+    const filter = opts.filter ?? 'trending';
+    const chain = opts.chain ?? 'all';
+    const limit = Math.min(opts.limit ?? 100, 200);
+    const all = ALL_SEEDS.map((seed) => seedToToken(seed, opts.window));
+    const windowed = filterForWindow(all, opts.window);
+    const chained = applyMockChain(windowed, chain);
+    const filtered = applyMockFilter(chained, filter, opts.window);
+    return filtered.slice(0, limit);
   }
 }
