@@ -37,3 +37,24 @@ body.viewer-mode {
   overflow: hidden;
   height: 100vh;
 }
+
+/* Opt-in tabular numerics. Apply `data-numeric="true"` to any price,
+   percentage, market-cap, or count so digit widths don't reflow on tick. */
+[data-numeric='true'] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Honor the OS reduced-motion preference. Crushes CSS transitions and
+   keyframe animations to near-zero so they fire but don't move. R3F
+   scenes pause auto-orbit through useReducedMotion in JS (CSS can't
+   reach WebGL). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}

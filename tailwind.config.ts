@@ -1,4 +1,27 @@
 import type { Config } from 'tailwindcss';
+import {
+  colors as dsColors,
+  motion as dsMotion,
+  radius as dsRadius,
+  space as dsSpace,
+  type as dsType,
+} from './lib/design/tokens';
+
+const spacing = Object.fromEntries(
+  Object.entries(dsSpace).map(([k, v]) => [`ds${k}`, `${v}px`])
+);
+
+const borderRadius = Object.fromEntries(
+  Object.entries(dsRadius).map(([k, v]) => [`ds-${k}`, `${v}px`])
+);
+
+const transitionDuration = Object.fromEntries(
+  Object.entries(dsMotion.duration).map(([k, v]) => [`ds-${k}`, `${v}ms`])
+);
+
+const transitionTimingFunction = Object.fromEntries(
+  Object.entries(dsMotion.ease).map(([k, v]) => [`ds-${k}`, v])
+);
 
 const config: Config = {
   content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}'],
@@ -11,7 +34,12 @@ const config: Config = {
           violet: '#b48bff',
           red: '#ff5d6c',
         },
+        ds: dsColors,
       },
+      spacing,
+      borderRadius,
+      transitionDuration,
+      transitionTimingFunction,
       fontFamily: {
         sans: [
           'Inter',
@@ -37,6 +65,8 @@ const config: Config = {
           'Menlo',
           'monospace',
         ],
+        'ds-sans': [...dsType.sans],
+        'ds-mono': [...dsType.mono],
       },
       boxShadow: {
         'neon-cyan': '0 0 24px rgba(94, 240, 255, 0.35)',
@@ -46,6 +76,7 @@ const config: Config = {
       animation: {
         'pulse-soft': 'pulseSoft 2.4s ease-in-out infinite',
         'fade-in': 'fadeIn 600ms ease-out forwards',
+        'ds-pulse': 'dsPulse 1.5s ease-in-out infinite',
       },
       keyframes: {
         pulseSoft: {
@@ -55,6 +86,10 @@ const config: Config = {
         fadeIn: {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
+        },
+        dsPulse: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.6' },
         },
       },
     },

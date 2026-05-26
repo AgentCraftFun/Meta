@@ -20,6 +20,7 @@ import Stage from '@/components/celestial/Stage';
 import Starfield from '@/components/celestial/Starfield';
 import { useMetaStore } from '@/lib/store';
 import { SUN_POSITION } from '@/lib/sun';
+import { useReducedMotion } from '@/lib/useReducedMotion';
 import BreakingShake from './BreakingShake';
 import CameraController from './CameraController';
 import Clouds from './Clouds';
@@ -43,6 +44,7 @@ export const EARTH_X_OPEN = -0.45;
  */
 export default function EarthScene() {
   const caOffset = useMemo(() => new THREE.Vector2(0.0008, 0.0008), []);
+  const reducedMotion = useReducedMotion();
 
   return (
     <Stage>
@@ -80,7 +82,7 @@ export default function EarthScene() {
         zoomSpeed={0.6}
         minDistance={1.8}
         maxDistance={5}
-        autoRotate
+        autoRotate={!reducedMotion}
         autoRotateSpeed={0.15}
         target={[EARTH_X_CLOSED, 0, 0]}
       />

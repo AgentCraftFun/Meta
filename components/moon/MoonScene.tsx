@@ -20,6 +20,7 @@ import Starfield from '@/components/celestial/Starfield';
 import { applyMoonFilter, type MoonFilter } from '@/lib/moonFlags';
 import { useMetaStore } from '@/lib/store';
 import { useEffectiveTokens } from '@/lib/useEffectiveTokens';
+import { useReducedMotion } from '@/lib/useReducedMotion';
 import Moon from './Moon';
 import MoonAtmosphericGlow from './MoonAtmosphericGlow';
 import MoonCameraController from './MoonCameraController';
@@ -55,6 +56,8 @@ export default function MoonScene() {
     () => applyMoonFilter(universe, filter),
     [universe, filter]
   );
+
+  const reducedMotion = useReducedMotion();
 
   // Rotation paused while a flag is hovered OR selected. A 2s grace
   // period after the last hover clears prevents jitter on quick
@@ -104,7 +107,7 @@ export default function MoonScene() {
 
       {/* Claimed surface: moon body + craters rotate together, offset left */}
       <ClaimedSurface
-        paused={paused}
+        paused={paused || reducedMotion}
         filteredTokens={filteredTokens}
         filter={filter}
       />
@@ -123,7 +126,7 @@ export default function MoonScene() {
         zoomSpeed={0.6}
         minDistance={1.6}
         maxDistance={6}
-        autoRotate
+        autoRotate={!reducedMotion}
         autoRotateSpeed={0.15}
         target={[MOON_X_CLOSED, 0, 0]}
       />
