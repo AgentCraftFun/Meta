@@ -15,6 +15,7 @@ import { formatAge, formatUsd } from '@/lib/format';
 import { narrativeToTag } from '@/lib/narrativeTagger';
 import { CHAIN_BADGE } from '@/lib/terminal/chains';
 import { applyFilters, sortTokens } from '@/lib/terminal/sortFilter';
+import { tokenHref } from '@/lib/tokenHref';
 import {
   useTerminalStore,
   type SortColumn,
@@ -138,7 +139,8 @@ export default function TokenTable() {
         }
       }
       if (e.key === 'Enter' && selectedRowId) {
-        router.push(`/token/${encodeURIComponent(selectedRowId)}`);
+        const selected = sorted.find((t) => t.id === selectedRowId);
+        if (selected) router.push(tokenHref(selected));
       }
     }
     window.addEventListener('keydown', onKey);
@@ -209,9 +211,7 @@ export default function TokenTable() {
                       pulsingNarratives={pulsingNarratives}
                       timeframe={timeframe}
                       onHover={() => setSelectedRow(token.id)}
-                      onClick={() =>
-                        router.push(`/token/${encodeURIComponent(token.id)}`)
-                      }
+                      onClick={() => router.push(tokenHref(token))}
                       style={{
                         position: 'absolute',
                         top: 0,

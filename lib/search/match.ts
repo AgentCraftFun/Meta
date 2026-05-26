@@ -1,5 +1,6 @@
 import centroidsRaw from '@/public/data/country-centroids.json';
 import { narrativeToTag } from '../narrativeTagger';
+import { tokenHref, tokenHrefRaw } from '../tokenHref';
 import type { Narrative } from '../types';
 import type { Token } from '../types/token';
 import type {
@@ -48,7 +49,7 @@ export function matchTokens(q: string, tokens: Token[]): TokenResult[] {
     name: t.name,
     chain: t.chain,
     imageUrl: t.imageUrl,
-    href: `/token/${encodeURIComponent(t.id)}`,
+    href: tokenHref(t),
   }));
 }
 
@@ -103,7 +104,7 @@ export function matchWallets(q: string): WalletResult[] {
         kind: 'wallet',
         address: trimmed,
         chain: 'ethereum',
-        href: `/token/${encodeURIComponent(trimmed)}`,
+        href: tokenHrefRaw('ethereum', trimmed),
       },
     ];
   }
@@ -113,7 +114,7 @@ export function matchWallets(q: string): WalletResult[] {
         kind: 'wallet',
         address: trimmed,
         chain: 'solana',
-        href: `/token/${encodeURIComponent(trimmed)}`,
+        href: tokenHrefRaw('solana', trimmed),
       },
     ];
   }

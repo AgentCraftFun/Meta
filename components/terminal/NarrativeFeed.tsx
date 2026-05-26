@@ -8,6 +8,7 @@ import { flagEmoji } from '@/lib/flags';
 import { narrativeToTag } from '@/lib/narrativeTagger';
 import { useMetaStore } from '@/lib/store';
 import { useTerminalStore } from '@/lib/terminal/state';
+import { tokenHref } from '@/lib/tokenHref';
 import type { Narrative } from '@/lib/types';
 import { useNarratives } from '@/lib/useNarratives';
 import { useTokens } from '@/lib/useTokens';
@@ -205,7 +206,11 @@ function Card({
       {related.length > 0 && (
         <div className="mt-ds2 flex flex-wrap gap-ds1">
           {related.map((t) => (
-            <SetTickerFilter key={t.id} symbol={t.symbol} tokenId={t.id} />
+            <SetTickerFilter
+              key={t.id}
+              symbol={t.symbol}
+              href={tokenHref(t)}
+            />
           ))}
         </div>
       )}
@@ -237,17 +242,16 @@ function ImpactBar({ value }: { value: number }) {
 
 function SetTickerFilter({
   symbol,
-  tokenId,
+  href,
 }: {
   symbol: string;
-  tokenId: string;
+  href: string;
 }) {
-  // Clicking a ticker chip in the feed should jump the user into the
-  // detail page — same as a table row click. The token-id path is
-  // stable across filter changes (the route is the canonical handle).
+  // Clicking a ticker chip in the feed jumps into the detail page —
+  // same as a table row click.
   return (
     <Link
-      href={`/token/${encodeURIComponent(tokenId)}`}
+      href={href}
       className="rounded-ds-sm border border-ds-border-strong bg-ds-bg-surface px-ds2 py-[1px] text-[10px] uppercase tracking-[0.22em] text-ds-text-primary hover:border-ds-accent-cyan/60 hover:text-ds-accent-cyan"
     >
       {symbol}
