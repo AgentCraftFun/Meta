@@ -40,6 +40,7 @@ const CHAIN_MAP: Record<string, TokenChain> = {
   solana: 'solana',
   ethereum: 'ethereum',
   base: 'base',
+  bsc: 'bsc',
 };
 function mapChain(raw: string): TokenChain {
   return CHAIN_MAP[raw] ?? 'other';

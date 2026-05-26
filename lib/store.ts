@@ -5,7 +5,7 @@ import type { LiveEvent } from './types/liveEvent';
 import type { NarrativeEvent } from './types/narrativeEvent';
 import type { Token } from './types/token';
 
-export type ChainFilter = 'all' | 'solana' | 'ethereum' | 'base';
+export type ChainFilter = 'all' | 'solana' | 'ethereum' | 'base' | 'bsc';
 
 const FEED_CAP = 50;
 

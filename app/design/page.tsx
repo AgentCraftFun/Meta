@@ -103,7 +103,7 @@ export default function DesignPage() {
               <Sparkline data={upTrend} color="#00D982" />
             </SparkSlot>
             <SparkSlot label="Down">
-              <Sparkline data={downTrend} color="#FF4D6D" />
+              <Sparkline data={downTrend} color="#FF7088" />
             </SparkSlot>
             <SparkSlot label="Flat">
               <Sparkline data={flat} color="#A0A6B0" />
@@ -129,10 +129,10 @@ export default function DesignPage() {
             <Swatch name="border.strong" value="#2A2E37" className="bg-ds-border-strong" />
             <Swatch name="text.primary" value="#FFFFFF" className="bg-ds-text-primary" />
             <Swatch name="text.secondary" value="#A0A6B0" className="bg-ds-text-secondary" />
-            <Swatch name="text.tertiary" value="#5A6068" className="bg-ds-text-tertiary" />
+            <Swatch name="text.tertiary" value="#7E848C" className="bg-ds-text-tertiary" />
             <Swatch name="accent.cyan" value="#4DD4FF" className="bg-ds-accent-cyan" />
             <Swatch name="accent.bull" value="#00D982" className="bg-ds-accent-bull" />
-            <Swatch name="accent.bear" value="#FF4D6D" className="bg-ds-accent-bear" />
+            <Swatch name="accent.bear" value="#FF7088" className="bg-ds-accent-bear" />
             <Swatch name="accent.warn" value="#FFB84D" className="bg-ds-accent-warn" />
           </div>
         </Section>

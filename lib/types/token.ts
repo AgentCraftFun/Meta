@@ -2,7 +2,7 @@ import type { NarrativeTag, TimeWindow } from '../types';
 
 export type HeatLevel = 'hot' | 'warm' | 'emerging';
 
-export type TokenChain = 'solana' | 'ethereum' | 'base' | 'other';
+export type TokenChain = 'solana' | 'ethereum' | 'base' | 'bsc' | 'other';
 
 export type TokenSource = 'pumpfun' | 'dexscreener' | 'birdeye' | 'mock';
 
@@ -64,7 +64,7 @@ export type TokenSourceMode = 'mock' | 'dexscreener' | 'birdeye';
  *  via /api/tokens?filter=... for SSR / external consumers. */
 export type TokenFilter = 'trending' | 'gainers' | 'losers' | 'new';
 
-export type TokenChainFilter = 'all' | 'solana' | 'ethereum' | 'base';
+export type TokenChainFilter = 'all' | 'solana' | 'ethereum' | 'base' | 'bsc';
 
 export type TokenFetchOpts = {
   window: TimeWindow;

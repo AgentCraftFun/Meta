@@ -25,12 +25,17 @@ export const colors = {
   text: {
     primary: '#FFFFFF',
     secondary: '#A0A6B0',
-    tertiary: '#5A6068',
+    // Tertiary brightened from the Sprint-0 spec (#5A6068 → #7E848C)
+    // to clear WCAG AA 4.5:1 against bg.base at 10–12px. Original
+    // value sat at 3.14:1.
+    tertiary: '#7E848C',
   },
   accent: {
     cyan: '#4DD4FF',
     bull: '#00D982',
-    bear: '#FF4D6D',
+    // Bear brightened (#FF4D6D → #FF7088) to clear the 7:1 target
+    // for price / percentage cells; original sat at 6.16:1.
+    bear: '#FF7088',
     warn: '#FFB84D',
   },
 } as const;

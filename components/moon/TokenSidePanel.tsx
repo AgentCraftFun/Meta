@@ -22,6 +22,7 @@ const CHAIN_LABEL: Record<Token['chain'], string> = {
   solana: 'Solana',
   ethereum: 'Ethereum',
   base: 'Base',
+  bsc: 'BSC',
   other: 'Other',
 };
 
@@ -256,6 +257,7 @@ const DEX_CHAIN_SLUG: Record<Token['chain'], string | null> = {
   ethereum: 'ethereum',
   solana: 'solana',
   base: 'base',
+  bsc: 'bsc',
   other: null,
 };
 
