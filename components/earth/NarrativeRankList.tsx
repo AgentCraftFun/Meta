@@ -58,8 +58,8 @@ export default function NarrativeRankList() {
 
   return (
     <aside
-      className="pointer-events-auto fixed right-0 top-0 z-20 flex h-full w-[360px] flex-col border-l border-white/8 bg-black/50 font-mono backdrop-blur-xl"
-      style={{ paddingTop: 80 }}
+      className="pointer-events-auto fixed right-0 top-12 z-20 flex h-[calc(100vh-48px)] w-[360px] flex-col border-l border-white/8 bg-black/50 font-mono backdrop-blur-xl"
+      style={{ paddingTop: 32 }}
     >
       <div className="flex items-center gap-3 px-5 pb-4 pt-2">
         <span

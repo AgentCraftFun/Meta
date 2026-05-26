@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import SurfaceTransition from '@/components/celestial/SurfaceTransition';
+import TopBar from '@/components/chrome/TopBar';
 import './globals.css';
 import Providers from './providers';
 
@@ -36,6 +37,7 @@ export default function RootLayout({
       </head>
       <body className="bg-[#05080F] text-slate-100 antialiased">
         <Providers>
+          <TopBar />
           {children}
           <SurfaceTransition />
         </Providers>

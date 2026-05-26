@@ -1,18 +1,11 @@
 'use client';
 
 import KeyboardShortcuts from '@/components/hud/KeyboardShortcuts';
-import TerminalTopBar from '@/components/terminal/TerminalTopBar';
 import Link from 'next/link';
 
-/**
- * Stub — the real watchlist (saved tokens + price alerts + custom
- * narrative subscriptions) lands two sprints out. Keeping it routed
- * so the Terminal nav and the `3` hotkey have somewhere to go.
- */
 export default function WatchlistPage() {
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-ds-bg-base text-ds-text-primary">
-      <TerminalTopBar />
+    <div className="flex h-screen w-screen flex-col overflow-hidden bg-ds-bg-base text-ds-text-primary pt-12">
       <main className="flex flex-1 items-center justify-center font-ds-mono">
         <div className="flex max-w-[420px] flex-col items-center gap-ds3 text-center">
           <p className="text-[11px] uppercase tracking-[0.4em] text-ds-text-tertiary">

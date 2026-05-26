@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import { useSurfaceTransition } from '@/lib/useSurfaceTransition';
 
 const SURFACE_HREF = {
-  earth: '/',
+  earth: '/map',
   moon: '/moon',
 } as const;
 

@@ -60,8 +60,8 @@ export default function MoonLeftHud() {
   return (
     <aside
       aria-label="Moon HUD"
-      className="pointer-events-auto fixed left-0 top-0 z-20 flex h-full w-[280px] flex-col gap-4 border-r border-white/8 bg-black/50 px-4 font-mono backdrop-blur-xl"
-      style={{ paddingTop: 80, paddingBottom: 16 }}
+      className="pointer-events-auto fixed left-0 top-12 z-20 flex h-[calc(100vh-48px)] w-[280px] flex-col gap-4 border-r border-white/8 bg-black/50 px-4 font-mono backdrop-blur-xl"
+      style={{ paddingTop: 32, paddingBottom: 16 }}
     >
       {/* 1 — Chain selector */}
       <ChainSelector />

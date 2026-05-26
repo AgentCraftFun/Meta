@@ -2,17 +2,17 @@
 
 import dynamic from 'next/dynamic';
 import { useEffect } from 'react';
+import EarthLeftHud from '@/components/earth/EarthLeftHud';
+import NarrativeFeedSimulator from '@/components/earth/NarrativeFeedSimulator';
+import NarrativeRankList from '@/components/earth/NarrativeRankList';
 import KeyboardShortcuts from '@/components/hud/KeyboardShortcuts';
 import MobileGate from '@/components/hud/MobileGate';
-import MoonModeBadge from '@/components/hud/MoonModeBadge';
-import MoonStatusOverlay from '@/components/hud/MoonStatusOverlay';
+import SidePanel from '@/components/hud/SidePanel';
+import SourceModeBadge from '@/components/hud/SourceModeBadge';
+import SpeakerToggle from '@/components/hud/SpeakerToggle';
 import SurfaceToggle from '@/components/hud/SurfaceToggle';
-import LiveFeedSimulator from '@/components/moon/LiveFeedSimulator';
-import MoonLeftHud from '@/components/moon/MoonLeftHud';
-import TokenList from '@/components/moon/TokenList';
-import TokenSidePanel from '@/components/moon/TokenSidePanel';
 
-const MoonScene = dynamic(() => import('@/components/moon/MoonScene'), {
+const EarthScene = dynamic(() => import('@/components/earth/EarthScene'), {
   ssr: false,
   loading: () => <Loader />,
 });
@@ -30,7 +30,7 @@ function Loader() {
   );
 }
 
-export default function MoonPage() {
+export default function Page() {
   useEffect(() => {
     document.body.classList.add('viewer-mode');
     return () => {
@@ -40,18 +40,18 @@ export default function MoonPage() {
 
   return (
     <main className="relative h-screen w-screen overflow-hidden bg-black">
-      <MoonScene />
+      <EarthScene />
+      <SpeakerToggle />
       <SurfaceToggle />
-      <MoonLeftHud />
-      <TokenList />
-      <TokenSidePanel />
-      <MoonStatusOverlay />
-      <MoonModeBadge />
+      <EarthLeftHud />
+      <NarrativeRankList />
+      <SidePanel />
+      <SourceModeBadge />
       <KeyboardShortcuts />
       <MobileGate />
-      {/* Headless — fabricates new-pair / volume-spike / new-high events
-          on a random interval, pauses while tab is hidden. */}
-      <LiveFeedSimulator />
+      {/* Headless — fabricates new-story / momentum-shift / cross-country
+          events on a 4-8s interval, pauses while the tab is hidden. */}
+      <NarrativeFeedSimulator />
     </main>
   );
 }

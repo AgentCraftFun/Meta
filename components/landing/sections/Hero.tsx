@@ -71,7 +71,7 @@ export default function Hero() {
               transition={{ duration: 0.8, ease: 'easeOut', delay: 0.75 }}
               className="mt-10"
             >
-              <CTAButton href="/">Enter the Terminal</CTAButton>
+              <CTAButton href="/terminal">Enter the Terminal</CTAButton>
             </motion.div>
           </div>
         </div>

@@ -3,19 +3,12 @@
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import KeyboardShortcuts from '@/components/hud/KeyboardShortcuts';
-import TerminalTopBar from '@/components/terminal/TerminalTopBar';
 
-/**
- * Stub — token detail page (chart, tx feed, holders, source tweets,
- * narrative timeline) ships in the next-next sprint. Routed now so
- * row clicks + Enter from the Terminal land somewhere readable.
- */
 export default function TokenDetailPage() {
   const params = useParams<{ id: string }>();
   const id = params?.id ?? '';
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-ds-bg-base text-ds-text-primary">
-      <TerminalTopBar />
+    <div className="flex h-screen w-screen flex-col overflow-hidden bg-ds-bg-base text-ds-text-primary pt-12">
       <main className="flex flex-1 flex-col items-center justify-center gap-ds3 font-ds-mono">
         <p className="text-[11px] uppercase tracking-[0.4em] text-ds-text-tertiary">
           Token detail

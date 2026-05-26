@@ -10,7 +10,9 @@ function surfaceFromPath(path: string | null): Surface {
   if (!path) return 'other';
   if (path.startsWith('/terminal')) return 'terminal';
   if (path.startsWith('/watchlist')) return 'watchlist';
-  if (path === '/' || path.startsWith('/moon')) return 'map';
+  if (path === '/' || path.startsWith('/map') || path.startsWith('/moon')) {
+    return 'map';
+  }
   return 'other';
 }
 
@@ -96,10 +98,9 @@ export default function KeyboardShortcuts() {
           setHelpOpen((v) => !v);
           break;
         case '/':
-          if (surface === 'terminal') {
-            e.preventDefault();
-            focusSearch();
-          }
+          // Spec: ⌘K or / focuses global search from anywhere.
+          e.preventDefault();
+          focusSearch();
           break;
         case 'f':
         case 'F':
@@ -119,7 +120,7 @@ export default function KeyboardShortcuts() {
         case '2':
           e.preventDefault();
           if (surface === 'terminal' || surface === 'watchlist') {
-            router.push('/');
+            router.push('/map');
           } else {
             store.setTimeWindow('24h');
           }

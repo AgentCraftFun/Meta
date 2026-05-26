@@ -49,7 +49,7 @@ export default function TokenSidePanel() {
     <aside
       aria-hidden={!open}
       className={[
-        'pointer-events-auto fixed right-0 top-0 z-40 flex h-full w-[420px] flex-col border-l border-neon-cyan/15 bg-black/55 font-mono backdrop-blur-xl transition-transform duration-300 ease-out',
+        'pointer-events-auto fixed right-0 top-12 z-40 flex h-[calc(100vh-48px)] w-[420px] flex-col border-l border-neon-cyan/15 bg-black/55 font-mono backdrop-blur-xl transition-transform duration-300 ease-out',
         open ? 'translate-x-0' : 'translate-x-full',
       ].join(' ')}
       style={{ boxShadow: open ? '0 0 60px rgba(94,240,255,0.06)' : 'none' }}

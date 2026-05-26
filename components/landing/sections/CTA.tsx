@@ -86,7 +86,7 @@ export default function CTA() {
 
         <FadeUp delay={0.3}>
           <div className="mt-12">
-            <CTAButton href="/" size="lg">
+            <CTAButton href="/terminal" size="lg">
               Enter the Terminal
             </CTAButton>
           </div>

@@ -12,7 +12,8 @@ const SURFACES: { id: Surface; label: string }[] = [
 ];
 
 function activeSurface(path: string): Surface {
-  return path.startsWith('/moon') ? 'moon' : 'earth';
+  if (path.startsWith('/moon')) return 'moon';
+  return 'earth';
 }
 
 export default function SurfaceToggle() {
@@ -28,7 +29,7 @@ export default function SurfaceToggle() {
   };
 
   return (
-    <div className="pointer-events-auto fixed right-5 top-5 z-30 flex items-center gap-1.5 rounded-sm border border-white/10 bg-black/40 p-1 font-mono backdrop-blur-xl">
+    <div className="pointer-events-auto fixed right-5 top-[60px] z-30 flex items-center gap-1.5 rounded-sm border border-white/10 bg-black/40 p-1 font-mono backdrop-blur-xl">
       {SURFACES.map((s, i) => {
         const isActive = s.id === active;
         return (
