@@ -45,7 +45,11 @@ export default function TokenList() {
   // the moon, not from this list itself).
   const itemRefs = useRef<Map<string, HTMLLIElement>>(new Map());
   const lastHoverFromList = useRef<string | null>(null);
+  /** Same anchoring fix as the Earth rank list: don't autoscroll on
+   *  initial mount, only after the user has interacted. */
+  const userInteracted = useRef(false);
   useEffect(() => {
+    if (!userInteracted.current) return;
     if (!hoveredTokenId) return;
     if (lastHoverFromList.current === hoveredTokenId) return;
     const el = itemRefs.current.get(hoveredTokenId);
@@ -95,6 +99,7 @@ export default function TokenList() {
               selected={selectedTokenId === token.id}
               accent={accent}
               onPointerEnter={() => {
+                userInteracted.current = true;
                 lastHoverFromList.current = token.id;
                 setHoveredToken(token.id);
               }}

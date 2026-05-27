@@ -2,15 +2,17 @@
 
 import dynamic from 'next/dynamic';
 import { useEffect } from 'react';
+import CanvasFilterChips from '@/components/celestial/CanvasFilterChips';
+import SceneLegend from '@/components/celestial/SceneLegend';
 import EarthLeftHud from '@/components/earth/EarthLeftHud';
 import NarrativeFeedSimulator from '@/components/earth/NarrativeFeedSimulator';
 import NarrativeRankList from '@/components/earth/NarrativeRankList';
 import KeyboardShortcuts from '@/components/hud/KeyboardShortcuts';
 import MobileGate from '@/components/hud/MobileGate';
 import SidePanel from '@/components/hud/SidePanel';
-import SourceModeBadge from '@/components/hud/SourceModeBadge';
 import SpeakerToggle from '@/components/hud/SpeakerToggle';
 import SurfaceToggle from '@/components/hud/SurfaceToggle';
+import { useCarryoverHandoff } from '@/lib/useCarryoverHandoff';
 
 const EarthScene = dynamic(() => import('@/components/earth/EarthScene'), {
   ssr: false,
@@ -38,6 +40,11 @@ export default function Page() {
     };
   }, []);
 
+  // Pre-apply Moon → Earth carryover (country + narrative) during the
+  // cinematic transition's hold phase so the camera tween lands on
+  // the right country the moment the canvas appears.
+  useCarryoverHandoff('earth');
+
   return (
     <main className="relative h-screen w-screen overflow-hidden bg-black">
       <EarthScene />
@@ -46,11 +53,10 @@ export default function Page() {
       <EarthLeftHud />
       <NarrativeRankList />
       <SidePanel />
-      <SourceModeBadge />
+      <CanvasFilterChips surface="earth" />
+      <SceneLegend surface="earth" />
       <KeyboardShortcuts />
       <MobileGate />
-      {/* Headless — fabricates new-story / momentum-shift / cross-country
-          events on a 4-8s interval, pauses while the tab is hidden. */}
       <NarrativeFeedSimulator />
     </main>
   );

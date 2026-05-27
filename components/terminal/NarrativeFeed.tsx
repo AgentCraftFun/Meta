@@ -7,7 +7,6 @@ import Pill from '@/components/primitives/Pill';
 import { flagEmoji } from '@/lib/flags';
 import { narrativeToTag } from '@/lib/narrativeTagger';
 import { useMetaStore } from '@/lib/store';
-import { useTerminalStore } from '@/lib/terminal/state';
 import { tokenHref } from '@/lib/tokenHref';
 import type { Narrative } from '@/lib/types';
 import { useNarratives } from '@/lib/useNarratives';
@@ -29,7 +28,7 @@ export default function NarrativeFeed() {
   const events = useMetaStore((s) => s.narrativeEvents);
   const { data: narrativesData } = useNarratives(timeWindow);
   const { data: tokensData } = useTokens(timeWindow);
-  const toggleNarrative = useTerminalStore((s) => s.toggleNarrative);
+  const toggleNarrative = useMetaStore((s) => s.toggleNarrativeId);
 
   // Tick once per second so age strings stay live without forcing a
   // full event re-pump.

@@ -21,7 +21,7 @@ const WINDOW_OPTIONS: Array<{ id: TimeWindow; label: string; accent: string }> =
  *   1. Time window pills (vertical stack — replaces the old TimeToggle)
  *   2. Live breaking-news feed (cards from store.narrativeEvents)
  *   3. Global stats (total narratives / top country / hottest)
- *   4. Status pill — LIVE/MOCK + last sync clock
+ *   4. Status pill — driven by the global TopBar StatusIndicator
  *
  * Width 280px, fixed left, top padding clears the TopBar wordmark.
  */

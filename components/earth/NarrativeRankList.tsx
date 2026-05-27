@@ -44,10 +44,15 @@ export default function NarrativeRankList() {
 
   const itemRefs = useRef<Map<string, HTMLLIElement>>(new Map());
   const lastHoverFromList = useRef<string | null>(null);
+  /** Anchor fix (audit Issue 9): suppress scrollIntoView until the
+   *  user has actually interacted. On first paint we always want the
+   *  list to start at #01, never jump to whatever country the hover
+   *  state happened to carry from a prior session. */
+  const userInteracted = useRef(false);
   useEffect(() => {
+    if (!userInteracted.current) return;
     if (!hoveredCountry) return;
     if (lastHoverFromList.current === hoveredCountry) return;
-    // First matching narrative for the hovered country.
     const match = ranked.find((n) => n.country === hoveredCountry);
     if (!match) return;
     const el = itemRefs.current.get(match.id);
@@ -96,6 +101,7 @@ export default function NarrativeRankList() {
               selected={selectedCountry === n.country}
               accent={accent}
               onPointerEnter={() => {
+                userInteracted.current = true;
                 lastHoverFromList.current = n.country;
                 setHoveredCountry(n.country);
               }}

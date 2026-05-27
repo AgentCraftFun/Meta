@@ -20,7 +20,7 @@ const MAX_CRATERS = 40;
  *   1. Chain selector (segmented ALL / SOL / ETH / BASE)
  *   2. Filter pills (Trending / Hot / New / Gainers / Losers)
  *   3. Live feed (cards, tallest section, expands when filter = 'new')
- *   4. Status pill — LIVE/MOCK + active vs faded count
+ *   4. Status pill — driven by the global TopBar StatusIndicator
  *
  * The whole column is fixed at width 280px with top padding clearing
  * the TopBar wordmark.

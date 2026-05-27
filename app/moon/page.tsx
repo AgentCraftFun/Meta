@@ -2,15 +2,17 @@
 
 import dynamic from 'next/dynamic';
 import { useEffect } from 'react';
+import CanvasFilterChips from '@/components/celestial/CanvasFilterChips';
+import SceneLegend from '@/components/celestial/SceneLegend';
 import KeyboardShortcuts from '@/components/hud/KeyboardShortcuts';
 import MobileGate from '@/components/hud/MobileGate';
-import MoonModeBadge from '@/components/hud/MoonModeBadge';
 import MoonStatusOverlay from '@/components/hud/MoonStatusOverlay';
 import SurfaceToggle from '@/components/hud/SurfaceToggle';
 import LiveFeedSimulator from '@/components/moon/LiveFeedSimulator';
 import MoonLeftHud from '@/components/moon/MoonLeftHud';
 import TokenList from '@/components/moon/TokenList';
 import TokenSidePanel from '@/components/moon/TokenSidePanel';
+import { useCarryoverHandoff } from '@/lib/useCarryoverHandoff';
 
 const MoonScene = dynamic(() => import('@/components/moon/MoonScene'), {
   ssr: false,
@@ -38,6 +40,10 @@ export default function MoonPage() {
     };
   }, []);
 
+  // Earth → Moon carryover: applies narrativeIds during the hold
+  // phase so the craters arrive scoped to the carried narrative.
+  useCarryoverHandoff('moon');
+
   return (
     <main className="relative h-screen w-screen overflow-hidden bg-black">
       <MoonScene />
@@ -46,11 +52,10 @@ export default function MoonPage() {
       <TokenList />
       <TokenSidePanel />
       <MoonStatusOverlay />
-      <MoonModeBadge />
+      <CanvasFilterChips surface="moon" />
+      <SceneLegend surface="moon" />
       <KeyboardShortcuts />
       <MobileGate />
-      {/* Headless — fabricates new-pair / volume-spike / new-high events
-          on a random interval, pauses while tab is hidden. */}
       <LiveFeedSimulator />
     </main>
   );

@@ -71,8 +71,8 @@ export default function TokenTable() {
   const router = useRouter();
   const timeWindow = useMetaStore((s) => s.timeWindow);
 
-  const chain = useTerminalStore((s) => s.chain);
-  const narrativeIds = useTerminalStore((s) => s.narrativeIds);
+  const chain = useMetaStore((s) => s.chain);
+  const narrativeIds = useMetaStore((s) => s.narrativeIds);
   const timeframe = useTerminalStore((s) => s.timeframe);
   const filterTab = useTerminalStore((s) => s.filterTab);
   const sortColumn = useTerminalStore((s) => s.sortColumn);
@@ -300,11 +300,11 @@ function TableHeader({
 }
 
 function FilterChips() {
-  const chain = useTerminalStore((s) => s.chain);
-  const narrativeIds = useTerminalStore((s) => s.narrativeIds);
-  const setChain = useTerminalStore((s) => s.setChain);
-  const toggleNarrative = useTerminalStore((s) => s.toggleNarrative);
-  const clearAll = useTerminalStore((s) => s.clearAll);
+  const chain = useMetaStore((s) => s.chain);
+  const narrativeIds = useMetaStore((s) => s.narrativeIds);
+  const setChain = useMetaStore((s) => s.setChain);
+  const toggleNarrative = useMetaStore((s) => s.toggleNarrativeId);
+  const clearAll = useMetaStore((s) => s.clearAllFilters);
   const timeWindow = useMetaStore((s) => s.timeWindow);
   const { data } = useNarratives(timeWindow);
 
@@ -640,7 +640,7 @@ function SkeletonRow({ style }: { style: CSSProperties }) {
 }
 
 function EmptyState({ hasFilters }: { hasFilters: boolean }) {
-  const clearAll = useTerminalStore((s) => s.clearAll);
+  const clearAll = useMetaStore((s) => s.clearAllFilters);
   return (
     <div
       role="status"

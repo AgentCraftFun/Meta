@@ -21,7 +21,11 @@ export type CountryGroup = {
 type Props = {
   group: CountryGroup;
   selected: boolean;
+  /** Soft dim from country-selection state (other countries get 60%). */
   dimmed: boolean;
+  /** Hard dim from narrative-tag filter — non-matching pins fall to
+   *  25% per spec. */
+  filterDim?: boolean;
   onClick: (iso: string) => void;
 };
 
@@ -186,7 +190,13 @@ const FLARE_FRAG = /* glsl */ `
 
 const CLICK_SPIKE_MS = 500;
 
-function NarrativeMarkerImpl({ group, selected, dimmed, onClick }: Props) {
+function NarrativeMarkerImpl({
+  group,
+  selected,
+  dimmed,
+  filterDim,
+  onClick,
+}: Props) {
   const { iso, name, lat, lng, top } = group;
   const [hovered, setHovered] = useState(false);
   const externallyHovered = useMetaStore(
@@ -278,7 +288,10 @@ function NarrativeMarkerImpl({ group, selected, dimmed, onClick }: Props) {
     }
 
     const hoverMul = effectiveHovered ? 1.5 : 1;
-    const dimMul = dimmed && !selected ? 0.4 : 1;
+    // filterDim (narrative-tag filter) is the harder dim — overrides
+    // the softer country-selection dim. Both are bypassed for the
+    // selected pin so the user always sees their target full-bright.
+    const dimMul = selected ? 1 : filterDim ? 0.25 : dimmed ? 0.4 : 1;
 
     const i = config.intensity * hoverMul * spike * dimMul * visibility;
 
@@ -441,6 +454,7 @@ function makeBeamMaterial(
 const NarrativeMarker = memo(NarrativeMarkerImpl, (prev, next) => {
   if (prev.selected !== next.selected) return false;
   if (prev.dimmed !== next.dimmed) return false;
+  if (prev.filterDim !== next.filterDim) return false;
   if (prev.onClick !== next.onClick) return false;
   const a = prev.group;
   const b = next.group;

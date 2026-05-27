@@ -1,17 +1,15 @@
 'use client';
 
 import { create } from 'zustand';
-import type { ChainFilter } from '../store';
 import type { TokenFilter } from '../types/token';
 
 /**
- * Terminal-local UI state. Kept separate from the Earth/Moon
- * `useMetaStore` so the two surfaces can evolve independently — and
- * so a user landing on /terminal doesn't get their selection wiped
- * because the globe scene was unmounting.
+ * Terminal-LOCAL UI state. The shared filter state (chain, narrative
+ * ids, selected country/token, hover state, time window) lives in
+ * `useMetaStore` so the Terminal, Earth, and Moon all reach into the
+ * same source of truth. This store only holds Terminal-specific UI
+ * preferences that don't make sense on the canvas surfaces.
  *
- *   chain          — single-select chain pre-filter (rail section 1)
- *   narrativeIds   — multi-select narrative tag ids (rail section 2)
  *   timeframe      — drives which priceChange column is the sort key
  *                    AND highlights that column in the table header
  *   filterTab      — trending / gainers / losers / new (header pills)
@@ -23,8 +21,6 @@ import type { TokenFilter } from '../types/token';
 export type Timeframe = '5m' | '1h' | '6h' | '24h';
 export type SortDirection = 'asc' | 'desc';
 
-/** Sortable column ids. The numeric columns share a `priceChange<X>`
- *  structure; `volume`, `mcap`, `liquidity`, `age` are special. */
 export type SortColumn =
   | 'rank'
   | 'symbol'
@@ -40,8 +36,6 @@ export type SortColumn =
   | 'liquidity';
 
 type State = {
-  chain: ChainFilter;
-  narrativeIds: string[];
   timeframe: Timeframe;
   filterTab: TokenFilter;
   sortColumn: SortColumn | null;
@@ -50,10 +44,6 @@ type State = {
 };
 
 type Actions = {
-  setChain: (c: ChainFilter) => void;
-  toggleNarrative: (id: string) => void;
-  clearNarratives: () => void;
-  clearAll: () => void;
   setTimeframe: (t: Timeframe) => void;
   setFilterTab: (f: TokenFilter) => void;
   setSort: (col: SortColumn, dir?: SortDirection) => void;
@@ -61,29 +51,19 @@ type Actions = {
 };
 
 export const useTerminalStore = create<State & Actions>((set) => ({
-  chain: 'all',
-  narrativeIds: [],
   timeframe: '24h',
   filterTab: 'trending',
   sortColumn: null,
   sortDirection: 'desc',
   selectedRowId: null,
-  setChain: (chain) => set({ chain }),
-  toggleNarrative: (id) =>
-    set((s) => ({
-      narrativeIds: s.narrativeIds.includes(id)
-        ? s.narrativeIds.filter((n) => n !== id)
-        : [...s.narrativeIds, id],
-    })),
-  clearNarratives: () => set({ narrativeIds: [] }),
-  clearAll: () => set({ chain: 'all', narrativeIds: [] }),
   setTimeframe: (timeframe) => set({ timeframe }),
   setFilterTab: (filterTab) => set({ filterTab }),
   setSort: (sortColumn, sortDirection) =>
     set((s) => ({
       sortColumn,
       sortDirection:
-        sortDirection ?? (s.sortColumn === sortColumn && s.sortDirection === 'desc' ? 'asc' : 'desc'),
+        sortDirection ??
+        (s.sortColumn === sortColumn && s.sortDirection === 'desc' ? 'asc' : 'desc'),
     })),
   setSelectedRow: (selectedRowId) => set({ selectedRowId }),
 }));

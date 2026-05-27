@@ -3,7 +3,6 @@
 import { useMemo } from 'react';
 import Pill from '@/components/primitives/Pill';
 import { CHAIN_ROWS } from '@/lib/terminal/chains';
-import { useTerminalStore } from '@/lib/terminal/state';
 import { narrativeToTag } from '@/lib/narrativeTagger';
 import { useMetaStore } from '@/lib/store';
 import { useNarratives } from '@/lib/useNarratives';
@@ -19,10 +18,10 @@ const RECENT_PULSE_MS = 5 * 60 * 1000;
  * vertical rhythm.
  */
 export default function ChainAndNarrativeRail() {
-  const chain = useTerminalStore((s) => s.chain);
-  const setChain = useTerminalStore((s) => s.setChain);
-  const narrativeIds = useTerminalStore((s) => s.narrativeIds);
-  const toggleNarrative = useTerminalStore((s) => s.toggleNarrative);
+  const chain = useMetaStore((s) => s.chain);
+  const setChain = useMetaStore((s) => s.setChain);
+  const narrativeIds = useMetaStore((s) => s.narrativeIds);
+  const toggleNarrative = useMetaStore((s) => s.toggleNarrativeId);
   const timeWindow = useMetaStore((s) => s.timeWindow);
   const narrativeEvents = useMetaStore((s) => s.narrativeEvents);
 

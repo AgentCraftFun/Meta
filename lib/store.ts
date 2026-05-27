@@ -22,8 +22,12 @@ type State = {
   hoveredCountry: string | null;
   /** Active filter pill on /moon. */
   moonFilter: MoonFilter;
-  /** Active chain pre-filter on /moon. */
+  /** Active chain pre-filter. Shared across Terminal + Moon. */
   chain: ChainFilter;
+  /** Active narrative tag ids. Multi-select. Shared across Terminal,
+   *  Earth, Moon — one source of truth for "which narratives is the
+   *  user looking at". Empty array = no filter. */
+  narrativeIds: string[];
   /** Capped event log driving the LiveFeed panel + crater impact triggers. */
   liveEvents: LiveEvent[];
   /** Capped narrative event log for Earth's left HUD live feed. */
@@ -41,6 +45,10 @@ type Actions = {
   setHoveredCountry: (iso: string | null) => void;
   setMoonFilter: (f: MoonFilter) => void;
   setChain: (c: ChainFilter) => void;
+  setNarrativeIds: (ids: string[]) => void;
+  toggleNarrativeId: (id: string) => void;
+  clearNarrativeIds: () => void;
+  clearAllFilters: () => void;
   pushLiveEvent: (e: LiveEvent) => void;
   pushNarrativeEvent: (e: NarrativeEvent) => void;
   pushSimulatedToken: (t: Token) => void;
@@ -56,6 +64,7 @@ export const useMetaStore = create<State & Actions>((set) => ({
   hoveredCountry: null,
   moonFilter: 'trending',
   chain: 'all',
+  narrativeIds: [],
   liveEvents: [],
   narrativeEvents: [],
   simulatedTokens: [],
@@ -67,6 +76,16 @@ export const useMetaStore = create<State & Actions>((set) => ({
   setHoveredCountry: (hoveredCountry) => set({ hoveredCountry }),
   setMoonFilter: (moonFilter) => set({ moonFilter }),
   setChain: (chain) => set({ chain }),
+  setNarrativeIds: (narrativeIds) => set({ narrativeIds }),
+  toggleNarrativeId: (id) =>
+    set((s) => ({
+      narrativeIds: s.narrativeIds.includes(id)
+        ? s.narrativeIds.filter((x) => x !== id)
+        : [...s.narrativeIds, id],
+    })),
+  clearNarrativeIds: () => set({ narrativeIds: [] }),
+  clearAllFilters: () =>
+    set({ chain: 'all', narrativeIds: [], selectedCountry: null, selectedTokenId: null }),
   pushLiveEvent: (e) =>
     set((s) => ({ liveEvents: [e, ...s.liveEvents].slice(0, FEED_CAP) })),
   pushNarrativeEvent: (e) =>
