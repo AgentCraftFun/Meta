@@ -72,9 +72,15 @@ export default function GlobalSearch() {
   const [recents, setRecents] = useState<RecentSearch[]>([]);
 
   // ── React Query caches ──
-  const window = useMetaStore((s) => s.timeWindow);
-  const { data: tokensData } = useTokens(window);
-  const { data: narrativesData } = useNarratives(window);
+  // NOTE: do NOT name this `window` — this component also reads
+  // `window.__metamapSearchFocus` and `window.location` further down;
+  // a local `window` would shadow the global object and we'd attempt
+  // to set properties on the string "24h", which throws
+  // TypeError: Cannot create property '...' on string '24h' in
+  // production strict mode.
+  const timeWindow = useMetaStore((s) => s.timeWindow);
+  const { data: tokensData } = useTokens(timeWindow);
+  const { data: narrativesData } = useNarratives(timeWindow);
 
   // Synchronous results — derived from the cache.
   const clientResults = useMemo(
