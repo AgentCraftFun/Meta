@@ -11,6 +11,8 @@ import {
 } from 'react';
 import Delta from '@/components/primitives/Delta';
 import Pill from '@/components/primitives/Pill';
+import PriceFlash from '@/components/primitives/PriceFlash';
+import ErrorBanner from '@/components/terminal/ErrorBanner';
 import { formatAge, formatUsd } from '@/lib/format';
 import { narrativeToTag } from '@/lib/narrativeTagger';
 import { CHAIN_BADGE } from '@/lib/terminal/chains';
@@ -83,7 +85,7 @@ export default function TokenTable() {
   const selectedRowId = useTerminalStore((s) => s.selectedRowId);
   const setSelectedRow = useTerminalStore((s) => s.setSelectedRow);
 
-  const { data, isLoading } = useTokens(timeWindow);
+  const { data, isLoading, isError, isFetching, refetch } = useTokens(timeWindow);
   const tokens = data?.tokens ?? [];
 
   const filtered = useMemo(
@@ -156,6 +158,13 @@ export default function TokenTable() {
         setFilterTab={setFilterTab}
         sortColumn={sortColumn}
       />
+      {isError && (
+        <ErrorBanner
+          message="Couldn't load tokens — retrying…"
+          isRetrying={isFetching}
+          onRetry={() => refetch()}
+        />
+      )}
       <FilterChips />
       <ColumnHeader
         sortColumn={sortColumn}
@@ -527,9 +536,11 @@ function Row({
         </span>
       </Cell>
       <Cell width={96} align="right">
-        <span data-numeric="true" className="tabular-nums text-ds-text-primary">
-          {formatUsd(token.priceUsd)}
-        </span>
+        <PriceFlash value={token.priceUsd}>
+          <span data-numeric="true" className="tabular-nums text-ds-text-primary">
+            {formatUsd(token.priceUsd)}
+          </span>
+        </PriceFlash>
       </Cell>
       <ChangeCell value={token.priceChange5m} emphasised={timeframe === '5m'} />
       <ChangeCell value={token.priceChange1h} emphasised={timeframe === '1h'} />
@@ -648,8 +659,8 @@ function EmptyState({ hasFilters }: { hasFilters: boolean }) {
     >
       <p className="text-[12px] uppercase tracking-[0.32em] text-ds-text-secondary">
         {hasFilters
-          ? 'No tokens match the current filters'
-          : 'No tokens available'}
+          ? 'No tokens match the current filters. Try a different narrative or chain.'
+          : "No tokens to show right now. We'll keep listening."}
       </p>
       {hasFilters && (
         <button

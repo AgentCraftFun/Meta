@@ -3,6 +3,7 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import type { OrbitControls as ThreeOrbitControls } from 'three-stdlib';
 import centroidsRaw from '@/public/data/country-centroids.json';
 import { latLngToVec3 } from '@/lib/geo';
 import { useMetaStore } from '@/lib/store';
@@ -28,9 +29,9 @@ function easeInOutCubic(t: number) {
  * the click landed.
  */
 export default function CameraController() {
-  const { camera, controls, scene } = useThree() as {
+  const { camera, controls, scene } = useThree() as unknown as {
     camera: THREE.PerspectiveCamera;
-    controls: any | null;
+    controls: ThreeOrbitControls | null;
     scene: THREE.Scene;
   };
   const selectedCountry = useMetaStore((s) => s.selectedCountry);

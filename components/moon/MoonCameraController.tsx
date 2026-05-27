@@ -3,6 +3,7 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
+import type { OrbitControls as ThreeOrbitControls } from 'three-stdlib';
 import { getCraterPosition } from '@/lib/craterPlacement';
 import { applyMoonFilter } from '@/lib/moonFlags';
 import { useMetaStore } from '@/lib/store';
@@ -44,9 +45,9 @@ export default function MoonCameraController() {
       .slice(0, MAX_CRATERS);
   }, [universe, filter]);
 
-  const { camera, controls, scene } = useThree() as {
+  const { camera, controls, scene } = useThree() as unknown as {
     camera: THREE.PerspectiveCamera;
-    controls: any | null;
+    controls: ThreeOrbitControls | null;
     scene: THREE.Scene;
   };
 

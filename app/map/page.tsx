@@ -2,9 +2,11 @@
 
 import dynamic from 'next/dynamic';
 import { useEffect } from 'react';
+import CanvasA11yAnnouncer from '@/components/celestial/CanvasA11yAnnouncer';
 import CanvasFilterChips from '@/components/celestial/CanvasFilterChips';
 import SceneLegend from '@/components/celestial/SceneLegend';
 import EarthLeftHud from '@/components/earth/EarthLeftHud';
+import HighImpactSoundCue from '@/components/earth/HighImpactSoundCue';
 import NarrativeFeedSimulator from '@/components/earth/NarrativeFeedSimulator';
 import NarrativeRankList from '@/components/earth/NarrativeRankList';
 import KeyboardShortcuts from '@/components/hud/KeyboardShortcuts';
@@ -55,9 +57,11 @@ export default function Page() {
       <SidePanel />
       <CanvasFilterChips surface="earth" />
       <SceneLegend surface="earth" />
+      <CanvasA11yAnnouncer surface="earth" />
       <KeyboardShortcuts />
       <MobileGate />
       <NarrativeFeedSimulator />
+      <HighImpactSoundCue />
     </main>
   );
 }

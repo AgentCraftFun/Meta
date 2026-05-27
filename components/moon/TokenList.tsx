@@ -83,7 +83,7 @@ export default function TokenList() {
       <ol className="flex-1 overflow-y-auto pb-6">
         {filtered.length === 0 ? (
           <li className="px-5 py-6 text-[10px] uppercase tracking-[0.36em] text-white/35">
-            No tokens for this filter
+            No tokens for this filter yet. Try Trending or a different chain.
           </li>
         ) : (
           filtered.map((token, i) => (
@@ -186,8 +186,11 @@ const Row = forwardRef<HTMLLIElement, RowProps>(function Row(
       </div>
       {/* Activity bar — visually correlates with crater size on the moon */}
       <div className="mt-1.5 flex items-center gap-2 pl-7">
-        <span className="text-[8px] uppercase tracking-[0.32em] text-white/30">
-          ACT
+        <span
+          title="Activity = blended momentum, volume, and recency"
+          className="text-[8px] uppercase tracking-[0.32em] text-white/30"
+        >
+          Activity
         </span>
         <div className="h-[3px] flex-1 overflow-hidden bg-white/8">
           <div

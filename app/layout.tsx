@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import SurfaceTransition from '@/components/celestial/SurfaceTransition';
+import AxeRunner from '@/components/chrome/AxeRunner';
 import ToastHost from '@/components/chrome/ToastHost';
 import TopBar from '@/components/chrome/TopBar';
 import './globals.css';
@@ -42,6 +43,7 @@ export default function RootLayout({
           {children}
           <SurfaceTransition />
           <ToastHost />
+          <AxeRunner />
         </Providers>
       </body>
     </html>

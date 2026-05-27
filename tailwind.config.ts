@@ -77,6 +77,8 @@ const config: Config = {
         'pulse-soft': 'pulseSoft 2.4s ease-in-out infinite',
         'fade-in': 'fadeIn 600ms ease-out forwards',
         'ds-pulse': 'dsPulse 1.5s ease-in-out infinite',
+        'ds-flash-up': 'ds-flash-up 400ms ease-out forwards',
+        'ds-flash-down': 'ds-flash-down 400ms ease-out forwards',
       },
       keyframes: {
         pulseSoft: {

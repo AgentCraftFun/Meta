@@ -186,8 +186,11 @@ const Row = forwardRef<HTMLLIElement, RowProps>(function Row(
         </p>
       </div>
       <div className="mt-1.5 flex items-center gap-2 pl-7">
-        <span className="text-[8px] uppercase tracking-[0.32em] text-white/30">
-          IMP
+        <span
+          title="Impact = normalised volume 0–100"
+          className="text-[8px] uppercase tracking-[0.32em] text-white/30"
+        >
+          Impact
         </span>
         <div className="h-[3px] flex-1 overflow-hidden bg-white/8">
           <div

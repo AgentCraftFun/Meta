@@ -18,6 +18,7 @@ import ShootingStar from '@/components/celestial/ShootingStar';
 import SpaceGradient from '@/components/celestial/SpaceGradient';
 import Stage from '@/components/celestial/Stage';
 import Starfield from '@/components/celestial/Starfield';
+import type { OrbitControls as ThreeOrbitControls } from 'three-stdlib';
 import { useMetaStore } from '@/lib/store';
 import { SUN_POSITION } from '@/lib/sun';
 import { useReducedMotion } from '@/lib/useReducedMotion';
@@ -122,7 +123,9 @@ function EarthGroup() {
   const selectedCountry = useMetaStore((s) => s.selectedCountry);
   const targetX = selectedCountry ? EARTH_X_OPEN : EARTH_X_CLOSED;
 
-  const { controls } = useThree() as { controls: any | null };
+  const { controls } = useThree() as unknown as {
+    controls: ThreeOrbitControls | null;
+  };
 
   useFrame((_, delta) => {
     if (!groupRef.current) return;

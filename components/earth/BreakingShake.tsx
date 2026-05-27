@@ -3,6 +3,7 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import type { OrbitControls as ThreeOrbitControls } from 'three-stdlib';
 import { useMetaStore } from '@/lib/store';
 import type { TimeWindow } from '@/lib/types';
 import { useNarratives } from '@/lib/useNarratives';
@@ -29,7 +30,9 @@ export default function BreakingShake() {
   const { data } = useNarratives(window);
   const seenByWindow = useRef<Map<TimeWindow, Set<string>>>(new Map());
   const shake = useRef<{ start: number; base: THREE.Vector3 } | null>(null);
-  const { controls } = useThree() as { controls: any | null };
+  const { controls } = useThree() as unknown as {
+    controls: ThreeOrbitControls | null;
+  };
 
   useEffect(() => {
     const ids = new Set(

@@ -24,7 +24,47 @@ html {
 
 canvas {
   display: block;
-  outline: none;
+  /* outline: none deliberately omitted — the global :focus-visible
+     rule below provides a cyan ring on every focusable element
+     (including <canvas> when tabbed-to). */
+}
+
+/* Global accessibility focus indicator. 2px solid cyan, 2px offset,
+   on every focusable element on every surface. Falls back to the
+   browser default only if :focus-visible is unsupported (~no
+   modern browsers). */
+:focus-visible {
+  outline: 2px solid #4DD4FF;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Screen-reader-only utility for hidden aria-live regions and labels. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Price-tick flash. Used by components/primitives/PriceFlash.tsx —
+   the cell wraps its number in a span with this class for ~400ms
+   when the underlying value changes. Background fades from accent
+   colour at 30% alpha to transparent. Disabled by the
+   prefers-reduced-motion block below (animation-duration → 0.01ms
+   makes the flash invisible). */
+@keyframes ds-flash-up {
+  0%   { background-color: rgba(0, 217, 130, 0.30); }
+  100% { background-color: rgba(0, 217, 130, 0);    }
+}
+@keyframes ds-flash-down {
+  0%   { background-color: rgba(255, 112, 136, 0.30); }
+  100% { background-color: rgba(255, 112, 136, 0);    }
 }
 
 ::selection {

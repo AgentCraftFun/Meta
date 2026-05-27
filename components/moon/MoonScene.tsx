@@ -17,6 +17,7 @@ import ShootingStar from '@/components/celestial/ShootingStar';
 import SpaceGradient from '@/components/celestial/SpaceGradient';
 import Stage from '@/components/celestial/Stage';
 import Starfield from '@/components/celestial/Starfield';
+import type { OrbitControls as ThreeOrbitControls } from 'three-stdlib';
 import { applyMoonFilter, type MoonFilter } from '@/lib/moonFlags';
 import { useMetaStore } from '@/lib/store';
 import { useEffectiveTokens } from '@/lib/useEffectiveTokens';
@@ -174,7 +175,9 @@ function ClaimedSurface({
   const selectedTokenId = useMetaStore((s) => s.selectedTokenId);
   const targetX = selectedTokenId ? MOON_X_OPEN : MOON_X_CLOSED;
 
-  const { controls } = useThree() as { controls: any | null };
+  const { controls } = useThree() as unknown as {
+    controls: ThreeOrbitControls | null;
+  };
 
   useFrame((_, delta) => {
     if (groupRef.current) {

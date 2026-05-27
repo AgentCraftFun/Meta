@@ -3,6 +3,7 @@
 import ChainAndNarrativeRail from '@/components/terminal/ChainAndNarrativeRail';
 import NarrativeFeed from '@/components/terminal/NarrativeFeed';
 import TokenTable from '@/components/terminal/TokenTable';
+import HighImpactSoundCue from '@/components/earth/HighImpactSoundCue';
 import NarrativeFeedSimulator from '@/components/earth/NarrativeFeedSimulator';
 import LiveFeedSimulator from '@/components/moon/LiveFeedSimulator';
 import KeyboardShortcuts from '@/components/hud/KeyboardShortcuts';
@@ -40,6 +41,7 @@ export default function TerminalPage() {
 
       <NarrativeFeedSimulator />
       <LiveFeedSimulator />
+      <HighImpactSoundCue />
       <KeyboardShortcuts />
     </div>
   );

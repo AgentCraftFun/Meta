@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useEffect } from 'react';
+import CanvasA11yAnnouncer from '@/components/celestial/CanvasA11yAnnouncer';
 import CanvasFilterChips from '@/components/celestial/CanvasFilterChips';
 import SceneLegend from '@/components/celestial/SceneLegend';
 import KeyboardShortcuts from '@/components/hud/KeyboardShortcuts';
@@ -54,6 +55,7 @@ export default function MoonPage() {
       <MoonStatusOverlay />
       <CanvasFilterChips surface="moon" />
       <SceneLegend surface="moon" />
+      <CanvasA11yAnnouncer surface="moon" />
       <KeyboardShortcuts />
       <MobileGate />
       <LiveFeedSimulator />
