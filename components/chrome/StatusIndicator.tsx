@@ -47,9 +47,15 @@ export default function StatusIndicator() {
   const window = useMetaStore((s) => s.timeWindow);
   const tokens = useTokens(window);
   const narratives = useNarratives(window);
-  const [now, setNow] = useState(() => Date.now());
+  // Start `now` as null so SSR + first client render produce identical
+  // output (placeholder). The useEffect below replaces it with a real
+  // timestamp on the next tick, AFTER hydration completes. Otherwise
+  // SSR captures a slightly older Date.now() than the client's first
+  // render and React 18 throws a hydration mismatch in production.
+  const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
+    setNow(Date.now());
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
@@ -59,10 +65,11 @@ export default function StatusIndicator() {
     narratives.dataUpdatedAt || 0
   );
   const hasError = Boolean(tokens.error || narratives.error);
-  const status = classifyStatus(lastUpdate, hasError, now);
+  const status =
+    now === null ? 'stale' : classifyStatus(lastUpdate, hasError, now);
   const { dot, label } = STATUS_CLASS[status];
 
-  const clock = formatUtcClock(new Date(now));
+  const clock = now === null ? '—— : —— : —— UTC' : formatUtcClock(new Date(now));
 
   return (
     <div
