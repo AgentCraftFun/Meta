@@ -10,7 +10,6 @@ import HighImpactSoundCue from '@/components/earth/HighImpactSoundCue';
 import NarrativeFeedSimulator from '@/components/earth/NarrativeFeedSimulator';
 import NarrativeRankList from '@/components/earth/NarrativeRankList';
 import KeyboardShortcuts from '@/components/hud/KeyboardShortcuts';
-import MobileGate from '@/components/hud/MobileGate';
 import SidePanel from '@/components/hud/SidePanel';
 import SpeakerToggle from '@/components/hud/SpeakerToggle';
 import SurfaceToggle from '@/components/hud/SurfaceToggle';
@@ -59,7 +58,6 @@ export default function Page() {
       <SceneLegend surface="earth" />
       <CanvasA11yAnnouncer surface="earth" />
       <KeyboardShortcuts />
-      <MobileGate />
       <NarrativeFeedSimulator />
       <HighImpactSoundCue />
     </main>

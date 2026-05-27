@@ -3,6 +3,7 @@ import SurfaceTransition from '@/components/celestial/SurfaceTransition';
 import AxeRunner from '@/components/chrome/AxeRunner';
 import ToastHost from '@/components/chrome/ToastHost';
 import TopBar from '@/components/chrome/TopBar';
+import MobileShell from '@/components/mobile/MobileShell';
 import './globals.css';
 import Providers from './providers';
 
@@ -39,9 +40,11 @@ export default function RootLayout({
       </head>
       <body className="bg-[#05080F] text-slate-100 antialiased">
         <Providers>
-          <TopBar />
-          {children}
-          <SurfaceTransition />
+          <MobileShell>
+            <TopBar />
+            {children}
+            <SurfaceTransition />
+          </MobileShell>
           <ToastHost />
           <AxeRunner />
         </Providers>

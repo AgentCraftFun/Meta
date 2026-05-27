@@ -6,7 +6,6 @@ import CanvasA11yAnnouncer from '@/components/celestial/CanvasA11yAnnouncer';
 import CanvasFilterChips from '@/components/celestial/CanvasFilterChips';
 import SceneLegend from '@/components/celestial/SceneLegend';
 import KeyboardShortcuts from '@/components/hud/KeyboardShortcuts';
-import MobileGate from '@/components/hud/MobileGate';
 import MoonStatusOverlay from '@/components/hud/MoonStatusOverlay';
 import SurfaceToggle from '@/components/hud/SurfaceToggle';
 import LiveFeedSimulator from '@/components/moon/LiveFeedSimulator';
@@ -57,7 +56,6 @@ export default function MoonPage() {
       <SceneLegend surface="moon" />
       <CanvasA11yAnnouncer surface="moon" />
       <KeyboardShortcuts />
-      <MobileGate />
       <LiveFeedSimulator />
     </main>
   );
