@@ -76,11 +76,12 @@ export default function GlobeStageController() {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
       const center = vh / 2;
-      // Length of the scroll-linked hand-off between two sections. The globe
-      // DWELLS on a slot the rest of the time, so it sits perfectly still while
-      // you read a section (no mid-section drift) and only travels during this
-      // band, just before the next section's top reaches the viewport centre.
-      const TRANS = 0.4 * vh;
+      // Length of the scroll-linked hand-off between two sections. Larger = the
+      // globe travels more GRADUALLY (a graceful glide, not a fast hop) while the
+      // next section approaches centre, then DWELLS once it arrives. 0.5*vh is the
+      // max that still leaves the hero exactly in place at scroll 0 (blend=0 when
+      // the next section's top is a full half-viewport below centre).
+      const TRANS = 0.5 * vh;
       const n = sections.length;
 
       const rects = sections.map((s) => s.getBoundingClientRect());
