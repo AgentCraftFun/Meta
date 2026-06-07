@@ -156,7 +156,7 @@ export const LAST_SECTION = 4;
  * glance which build is actually live (printed to console on load + shown in the
  * GLOBE PLACER panel). If you don't see this exact tag, you're on a stale build.
  */
-export const GLOBE_BUILD_TAG = 'globe-build-8 · SPIN-FROZEN + TELEMETRY';
+export const GLOBE_BUILD_TAG = 'globe-build-9 · CANVAS-RESIZE FIX (offsetSize)';
 
 // Long horizontal traverses get a shallow orbital arc (subtle, vanishes at the
 // endpoints). Only applied when |Δcx| between two slots exceeds ARC_DCX.

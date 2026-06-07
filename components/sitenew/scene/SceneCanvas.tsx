@@ -131,6 +131,14 @@ export default function SceneCanvas() {
       >
         <Canvas
           dpr={[1, 2]}
+          // CRITICAL: measure the canvas with offsetWidth/Height (LAYOUT size,
+          // unaffected by CSS transforms) instead of getBoundingClientRect.
+          // #globe-transform is CSS-scaled per section; without this, R3F sized
+          // the WebGL buffer to the *scaled* box and lagged behind the scale
+          // change, making the globe jump/resize ~1s after each scroll. With
+          // offsetSize the buffer stays a constant viewport size and the CSS
+          // transform cleanly scales the globe once.
+          resize={{ offsetSize: true }}
           gl={{
             antialias: true,
             powerPreference: 'high-performance',
