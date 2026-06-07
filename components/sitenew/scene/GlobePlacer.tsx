@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { SLOTS } from './globeSlots';
+import { SLOTS, globeTransform } from './globeSlots';
 
 /**
  * DEV-ONLY live globe placement tool. Inert unless the URL has `?place`.
@@ -72,6 +72,21 @@ export default function GlobePlacer() {
       if (a !== cur) {
         cur = a;
         setActive(a);
+      }
+      // WYSIWYG: the overlay OWNS the globe while tuning (the controller stands
+      // down whenever __globePlace is set). Render the active section's tuned
+      // slot through the SAME globeTransform the runtime uses, snapped (no damp,
+      // no blend) so the on-screen position is exactly what will ship.
+      const g = document.getElementById('globe-transform');
+      if (g) {
+        const o = placeRef.current[a] ?? { cx: 0.5, cy: 0.5, scale: 1 };
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const baseW = g.offsetWidth || vw;
+        const baseH = g.offsetHeight || vh;
+        g.style.transform = globeTransform(o.cx, o.cy, o.scale, vw, vh, baseW, baseH);
+        g.style.filter = 'brightness(1)';
+        g.style.opacity = '1';
       }
     };
     raf = requestAnimationFrame(loop);

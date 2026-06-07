@@ -40,6 +40,9 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
     // Smooth path: Lenis drives scroll + emits normalized progress + velocity,
     // and keeps GSAP ScrollTrigger (the ScrollDirector) in sync each frame.
     const lenis = new Lenis({ lerp: 0.1, duration: 1.2 });
+    // Expose the instance so the globe controller can read ONE smoothed scroll
+    // source (lenis.scroll) instead of mixing it with window.scrollY.
+    (window as unknown as { __lenis?: Lenis }).__lenis = lenis;
 
     lenis.on(
       'scroll',
@@ -59,6 +62,7 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
 
     return () => {
       cancelAnimationFrame(raf);
+      delete (window as unknown as { __lenis?: Lenis }).__lenis;
       lenis.destroy();
     };
   }, [setReducedMotion, setScrollProgress, setScrollVelocity]);

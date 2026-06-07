@@ -3,66 +3,119 @@
 import { useEffect } from 'react';
 import { GLOBE_DAMP_LAMBDA } from '../system/motion';
 import { useSceneStore } from '../system/useSceneStore';
-import { SLOTS, lerpSlot, type Slot } from './globeSlots';
+import { SLOTS, globeTransform, globeCenterPx, lerpSlot, type Slot } from './globeSlots';
 
 /**
- * THE TRAVELLING GLOBE — one continuous, damped pipeline. No per-section
- * enter/exit triggers, no IntersectionObserver, no CSS transitions: those are
- * what made it snap. Exactly ONE rAF loop and ONE source of truth:
+ * THE TRAVELLING GLOBE — one continuous, damped pipeline that converges and
+ * then goes perfectly still. ONE rAF loop, ONE scroll source, ONE transform
+ * math (globeTransform, shared with the GlobePlacer overlay).
  *
- *   P  → global scroll position (Lenis writes its smoothed scroll straight to
- *        window.scrollY, so reading scrollY each frame IS the smoothed value;
- *        falls back to raw scrollY when Lenis is off).
- *   t  → a continuous FLOAT "section index": t=0 at hero top, t=1 when §1 is
- *        centred in the viewport, t=2 on §2, … Piecewise-linear between those
- *        scroll anchors, so t glides as you scroll (never a stepped integer).
- *        Clamped to [0, LAST_SECTION] so it can't drift into untuned slots.
- *   lerp → each frame we lerp the two slots t sits between (floor/ceil) by the
- *        fractional part of t → a target that's already smooth across the page.
- *   damp → exponential smoothing toward that target (lambda ~5) removes any
- *        residual stutter from scroll jitter.
+ * PER FRAME:  P (single scroll source) → t (float section index, pure fn of P
+ * from CACHED anchors) → lerp adjacent slots = TARGET → exponential damp with a
+ * convergence snap. The target is a pure function of P, so when scroll is idle
+ * the target is byte-identical every frame and the globe stops dead.
  *
- * Everything (vw/vh, section rects, P) is read FRESH every frame — no pixel
- * position is ever cached across resizes. The loop runs every frame regardless
- * of whether scroll events fire, so sparse scroll events can't cause stutter.
+ * STABILITY RULES (kill idle/scroll jitter):
+ *   • Single scroll source: Lenis.scroll if present, else window.scrollY. Never
+ *     mixed (mixing them on alternating frames is the classic idle jitter).
+ *   • Section breakpoints + base size measured ONCE on mount + on (debounced)
+ *     resize and cached. We NEVER read layout (getBoundingClientRect / offset*)
+ *     of any element inside the loop — that both jitters and reflows.
+ *   • Converge-then-stop: once |target-current| < EPS we snap to target and add
+ *     no further sub-pixel noise.
+ *   • dt clamped (≤1/30s) so a backgrounded tab can't explode on refocus.
+ *   • Exactly ONE rAF, guarded against StrictMode/HMR double-mount.
  *
- * RENDER: only `transform: translate3d(x,y,0) scale(s)` (+ brightness/opacity/
- * blur filters) on #globe-transform, whose transform-origin is center center.
- * Because #globe-transform is a full-viewport element (inset-0) with the globe
- * rendered dead-centre inside it, translating by ((cx-0.5)*vw, (cy-0.5)*vh)
- * lands the globe's CENTER exactly at (cx*vw, cy*vh).
- *
- * REDUCED-MOTION / mobile (≤768px): no rAF, no damp — the globe is parked once
- * at the hero slot (re-applied on resize). A valid, non-broken static state.
+ * REDUCED-MOTION / mobile (≤768px): no rAF, no damp — parked at the hero slot.
  */
 
-// Only §0–§4 are tuned this session; clamp travel so it never overshoots into
-// the still-untuned §5+ slots.
+// Only §0–§4 are tuned this session; clamp travel so it never drifts into the
+// still-untuned §5+ slots.
 const LAST_SECTION = 4;
-
-// Above this scroll velocity, skip the (target) blur to keep fast scrolls crisp.
+// Above this scroll velocity, drop the (target) blur to keep fast scrolls crisp.
 const FAST_BLUR_SKIP = 40;
+// Convergence epsilons (snap-and-stop). Fractions for cx/cy so it's resolution-
+// independent (~0.3px at 1080p); small absolutes for the rest.
+const EPS_FRAC = 0.0003;
+const EPS_SCALE = 0.0005;
+const EPS_FILTER = 0.002;
+const MAX_DT = 1 / 30;
+
+// Module-level guard: a StrictMode / HMR double-mount must not start a 2nd loop.
+let LOOP_ACTIVE = false;
+
+/** Damp one channel toward its target, snapping (and stopping) within eps. */
+function damp(curV: number, tgtV: number, k: number, eps: number): number {
+  if (Math.abs(tgtV - curV) < eps) return tgtV;
+  return curV + (tgtV - curV) * k;
+}
 
 export default function GlobeStageController() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const mobile = window.matchMedia('(max-width: 768px)').matches;
+    const DEBUG = new URLSearchParams(window.location.search).has('globedebug');
 
-    // ---- REDUCED-MOTION / MOBILE: park at hero slot, no animation. ----------
+    // ---- single scroll source -------------------------------------------
+    const getScroll = (): number => {
+      const lenis = (window as unknown as { __lenis?: { scroll: number } }).__lenis;
+      return lenis ? lenis.scroll : window.scrollY;
+    };
+
+    // ---- cached measurements (mount + resize ONLY — never per-frame) ------
+    let vw = window.innerWidth;
+    let vh = window.innerHeight;
+    let baseW = vw;
+    let baseH = vh;
+    let anchors: number[] = []; // absolute doc-scroll px at which t === index
+    let gEl: HTMLElement | null = null;
+
+    const findEl = (): HTMLElement | null => {
+      if (!gEl) gEl = document.getElementById('globe-transform');
+      return gEl;
+    };
+
+    const measure = () => {
+      vw = window.innerWidth;
+      vh = window.innerHeight;
+      const g = findEl();
+      if (g) {
+        // offsetWidth/Height = un-transformed LAYOUT size (ignores our scale),
+        // so reading it is not layout feedback.
+        baseW = g.offsetWidth || vw;
+        baseH = g.offsetHeight || vh;
+      }
+      const sections = Array.from(
+        document.querySelectorAll<HTMLElement>('[data-sn-section]')
+      ).sort((a, b) => Number(a.dataset.snSection) - Number(b.dataset.snSection));
+      const scroll = getScroll();
+      const lastIdx = Math.min(LAST_SECTION, sections.length - 1);
+      const next: number[] = [];
+      for (let i = 0; i <= lastIdx; i++) {
+        if (i === 0) {
+          next[i] = 0; // hero top
+          continue;
+        }
+        const r = sections[i].getBoundingClientRect();
+        // absolute doc-scroll position at which section i is CENTRED.
+        next[i] = r.top + scroll + r.height / 2 - vh / 2;
+      }
+      anchors = next;
+    };
+
+    // ---- REDUCED-MOTION / MOBILE: park at hero slot, no loop -------------
     if (reduced || mobile) {
       const apply = () => {
-        const el = document.getElementById('globe-transform');
-        if (!el) return;
-        const vw = window.innerWidth;
-        const vh = window.innerHeight;
+        const g = findEl();
+        if (!g) return;
+        measure();
         const s = SLOTS[0];
-        el.style.transform = `translate3d(${((s.cx - 0.5) * vw).toFixed(2)}px, ${((s.cy - 0.5) * vh).toFixed(2)}px, 0) scale(${s.scale})`;
-        el.style.filter = `brightness(${s.bright})`;
-        el.style.opacity = String(s.opacity);
+        g.style.transform = globeTransform(s.cx, s.cy, s.scale, vw, vh, baseW, baseH);
+        g.style.filter = `brightness(${s.bright})`;
+        g.style.opacity = String(s.opacity);
       };
       apply();
-      // Retry shortly in case the element mounts after this effect.
       const t0 = window.setTimeout(apply, 200);
       window.addEventListener('resize', apply);
       return () => {
@@ -71,67 +124,46 @@ export default function GlobeStageController() {
       };
     }
 
-    // ---- CONTINUOUS TRAVEL --------------------------------------------------
-    let el: HTMLElement | null = null;
-    let sections: HTMLElement[] = [];
-    let raf = 0;
-    let last = performance.now();
+    // ---- single-loop guard ----------------------------------------------
+    if (LOOP_ACTIVE) {
+      // eslint-disable-next-line no-console
+      console.warn('[globe] second rAF loop blocked (StrictMode/HMR double-mount).');
+    }
+    LOOP_ACTIVE = true;
 
-    // Start AT slot 0 so there's no scale/opacity pop on the first paint.
+    measure();
+    // Re-measure after layout settles (fonts / boot overlay can shift offsets).
+    const settle = window.setTimeout(measure, 300);
+    window.addEventListener('load', measure);
+
+    if (DEBUG) {
+      // Prove the rendered centre is scale-independent (BUG-1 invariant).
+      const cAt1 = globeCenterPx(SLOTS[0].cx, vw, baseW, 1);
+      const cAt2 = globeCenterPx(SLOTS[0].cx, vw, baseW, 2);
+      // eslint-disable-next-line no-console
+      console.info(
+        `[globe] scroll source = ${(window as unknown as { __lenis?: unknown }).__lenis ? 'Lenis.scroll' : 'window.scrollY'}`
+      );
+      // eslint-disable-next-line no-console
+      console.info(
+        `[globe] centre invariant: scale1=${cAt1.toFixed(2)}px scale2=${cAt2.toFixed(2)}px → ${cAt1 === cAt2 ? 'EQUAL (scale-independent)' : 'MISMATCH'}`
+      );
+    }
+
+    // damped state in SLOT space (cx/cy/scale/...), started AT slot 0 to avoid
+    // a first-paint pop. Rendered via the SAME globeTransform the placer uses.
     const s0 = SLOTS[0];
     const cur = {
-      tx: (s0.cx - 0.5) * window.innerWidth,
-      ty: (s0.cy - 0.5) * window.innerHeight,
-      scale: s0.scale,
-      bright: s0.bright,
-      opacity: s0.opacity,
-      blur: s0.blur,
-      feather: s0.feather,
+      cx: s0.cx, cy: s0.cy, scale: s0.scale,
+      bright: s0.bright, opacity: s0.opacity, blur: s0.blur, feather: s0.feather,
       travel: 0,
     };
 
-    const loop = (t: number) => {
-      raf = requestAnimationFrame(loop);
-      if (document.hidden) {
-        last = t;
-        return;
-      }
-      if (!el) el = document.getElementById('globe-transform');
-      if (sections.length === 0) {
-        sections = Array.from(
-          document.querySelectorAll<HTMLElement>('[data-sn-section]')
-        ).sort((a, b) => Number(a.dataset.snSection) - Number(b.dataset.snSection));
-      }
-      if (!el || sections.length === 0) {
-        last = t;
-        return;
-      }
-
-      const dt = Math.min((t - last) / 1000, 0.05);
-      last = t;
-
-      // --- fresh measurements every frame (never cached across resizes) -----
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const P = window.scrollY; // Lenis writes its smoothed scroll → scrollY
-
-      // Scroll anchors (absolute doc px). anchor[0] = hero top (P=0); for every
-      // other section the anchor is the scroll position at which that section is
-      // CENTRED in the viewport. rect.top + P = the section's absolute top.
-      const lastIdx = Math.min(LAST_SECTION, sections.length - 1);
-      const anchors: number[] = [];
-      for (let i = 0; i <= lastIdx; i++) {
-        if (i === 0) {
-          anchors[i] = 0;
-          continue;
-        }
-        const r = sections[i].getBoundingClientRect();
-        anchors[i] = r.top + P + r.height / 2 - vh / 2;
-      }
-
-      // --- P → continuous t (float section index), clamped to [0, lastIdx] ---
+    // Pure function of P: → { slot target, float index t }.
+    const targetFor = (P: number): { s: Slot; t: number } => {
+      const lastIdx = anchors.length - 1;
       let tt: number;
-      if (P <= anchors[0]) {
+      if (lastIdx <= 0 || P <= anchors[0]) {
         tt = 0;
       } else {
         tt = lastIdx;
@@ -144,67 +176,92 @@ export default function GlobeStageController() {
           }
         }
       }
-
-      // --- lerp the two slots t sits between by its fractional part ----------
       const lo = Math.floor(tt);
-      const hi = Math.min(lo + 1, lastIdx);
-      const frac = tt - lo;
+      const hi = Math.min(lo + 1, Math.max(lastIdx, 0));
+      return { s: lerpSlot(SLOTS[lo], SLOTS[hi], tt - lo), t: tt };
+    };
 
-      // DEV PLACEMENT TOOL override (?place): merge into BOTH endpoints before
-      // the lerp so the tool slides between sections exactly like production.
-      const place = (window as unknown as {
-        __globePlace?: Record<number, { cx: number; cy: number; scale: number }>;
-      }).__globePlace;
-      const slotA: Slot = place && place[lo] ? { ...SLOTS[lo], ...place[lo] } : SLOTS[lo];
-      const slotB: Slot = place && place[hi] ? { ...SLOTS[hi], ...place[hi] } : SLOTS[hi];
-      const tgt: Slot = lerpSlot(slotA, slotB, frac);
+    let raf = 0;
+    let last = performance.now();
+    let dbg = 0;
 
-      // CENTER-origin translate: place the globe's centre at (cx*vw, cy*vh).
-      const txTarget = (tgt.cx - 0.5) * vw;
-      const tyTarget = (tgt.cy - 0.5) * vh;
+    const loop = (now: number) => {
+      raf = requestAnimationFrame(loop);
+
+      // While the ?place overlay is up it OWNS the transform — stand down so the
+      // two never fight (which would look like random jumps).
+      if ((window as unknown as { __globePlace?: unknown }).__globePlace) {
+        last = now;
+        return;
+      }
+      if (document.hidden) {
+        last = now;
+        return;
+      }
+      const g = findEl();
+      if (!g || anchors.length === 0) {
+        last = now;
+        if (anchors.length === 0) measure();
+        return;
+      }
+
+      let dt = (now - last) / 1000;
+      last = now;
+      if (dt <= 0) return;
+      if (dt > MAX_DT) dt = MAX_DT;
+
+      const P = getScroll();
+      const { s: tgt, t: tt } = targetFor(P);
 
       const { scrollVelocity } = useSceneStore.getState();
       const blurTarget = Math.abs(scrollVelocity) > FAST_BLUR_SKIP ? 0 : tgt.blur;
 
-      // --- single damp toward the target (the only smoothing) ---------------
-      const k = 1 - Math.exp(-GLOBE_DAMP_LAMBDA * dt);
-      cur.tx += (txTarget - cur.tx) * k;
-      cur.ty += (tyTarget - cur.ty) * k;
-      cur.scale += (tgt.scale - cur.scale) * k;
-      cur.bright += (tgt.bright - cur.bright) * k;
-      cur.opacity += (tgt.opacity - cur.opacity) * k;
-      cur.blur += (blurTarget - cur.blur) * k;
-      cur.feather += (tgt.feather - cur.feather) * k;
-      cur.travel += (tt - cur.travel) * k;
+      if (DEBUG && dbg < 120) {
+        dbg++;
+        // eslint-disable-next-line no-console
+        console.log(
+          `[globe] f${dbg} P=${P.toFixed(1)} t=${tt.toFixed(4)} target cx=${tgt.cx.toFixed(4)} cy=${tgt.cy.toFixed(4)} s=${tgt.scale.toFixed(4)}`
+        );
+      }
 
-      el.style.transform = `translate3d(${cur.tx.toFixed(2)}px, ${cur.ty.toFixed(2)}px, 0) scale(${cur.scale.toFixed(4)})`;
-      el.style.filter =
+      const k = 1 - Math.exp(-GLOBE_DAMP_LAMBDA * dt);
+      cur.cx = damp(cur.cx, tgt.cx, k, EPS_FRAC);
+      cur.cy = damp(cur.cy, tgt.cy, k, EPS_FRAC);
+      cur.scale = damp(cur.scale, tgt.scale, k, EPS_SCALE);
+      cur.bright = damp(cur.bright, tgt.bright, k, EPS_FILTER);
+      cur.opacity = damp(cur.opacity, tgt.opacity, k, EPS_FILTER);
+      cur.blur = damp(cur.blur, blurTarget, k, EPS_FILTER);
+      cur.feather = damp(cur.feather, tgt.feather, k, EPS_FILTER);
+      cur.travel = damp(cur.travel, tt, k, EPS_FRAC);
+
+      g.style.transform = globeTransform(cur.cx, cur.cy, cur.scale, vw, vh, baseW, baseH);
+      g.style.filter =
         cur.blur > 0.05
           ? `brightness(${cur.bright.toFixed(3)}) blur(${cur.blur.toFixed(2)}px)`
           : `brightness(${cur.bright.toFixed(3)})`;
-      el.style.opacity = cur.opacity.toFixed(3);
+      g.style.opacity = cur.opacity.toFixed(3);
 
-      // publish damped travel index for the in-scene spin (CameraRig reads it)
       useSceneStore.getState().setGlobeTravel(cur.travel);
     };
 
     raf = requestAnimationFrame(loop);
 
-    // Re-query sections on resize (debounced); pixel positions themselves are
-    // always recomputed in-loop, so nothing stale is cached across resizes.
+    // Resize: recompute vw/vh + base size + breakpoints (debounced). cur stays
+    // in fraction space, so the next frame re-anchors smoothly (no lurch).
     let rt: ReturnType<typeof setTimeout> | null = null;
     const onResize = () => {
       if (rt) clearTimeout(rt);
-      rt = setTimeout(() => {
-        sections = [];
-      }, 150);
+      rt = setTimeout(measure, 150);
     };
     window.addEventListener('resize', onResize);
 
     return () => {
       cancelAnimationFrame(raf);
+      LOOP_ACTIVE = false;
       if (rt) clearTimeout(rt);
+      window.clearTimeout(settle);
       window.removeEventListener('resize', onResize);
+      window.removeEventListener('load', measure);
     };
   }, []);
 

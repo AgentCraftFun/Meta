@@ -72,6 +72,63 @@ export function clipCircle(r: number): string {
   return `circle(${r.toFixed(1)}% at ${GLOBE_ORIGIN.x * 100}% ${GLOBE_ORIGIN.y * 100}%)`;
 }
 
+/**
+ * THE shared globe-positioning math — the SINGLE source of truth for turning a
+ * slot's (cx, cy, scale) into a CSS transform. Called by BOTH the runtime
+ * controller (GlobeStageController) AND the live tuning overlay (GlobePlacer),
+ * so "what you tune is exactly what ships".
+ *
+ * CONTRACT
+ *   cx, cy      : where the globe's visual CENTER must land, as a fraction of
+ *                 the viewport → pixel centre = (cx*vw, cy*vh).
+ *   scale       : size multiplier vs the un-scaled globe.
+ *   vw, vh      : current viewport size (px).
+ *   baseW, baseH: the #globe-transform element's UN-scaled layout size
+ *                 (offsetWidth/offsetHeight — measured WITHOUT reading the
+ *                 transformed rect). The globe is rendered dead-centre inside
+ *                 this element, so the element's centre IS the globe's centre.
+ *
+ * TRANSFORM-ORIGIN: **center center** (set in CSS on #globe-transform).
+ *   With a centre origin, `scale()` pivots about the element's centre
+ *   (baseW/2, baseH/2), leaving that point fixed; the following `translate`
+ *   then shifts it to the target. Therefore:
+ *       tx = cx*vw - baseW/2      ty = cy*vh - baseH/2
+ *   lands the element centre — i.e. the globe centre — at (cx*vw, cy*vh).
+ *
+ * INVARIANT (scale-independent centre): for ANY scale s, the post-transform
+ *   centre = (pivot stays at baseW/2 under centre-origin scale) + tx
+ *          = baseW/2 + (cx*vw - baseW/2) = cx*vw.  Independent of s.
+ *   `globeCenterPx` proves this (returns cx*vw whatever the scale).
+ */
+export function globeTransform(
+  cx: number,
+  cy: number,
+  scale: number,
+  vw: number,
+  vh: number,
+  baseW: number,
+  baseH: number
+): string {
+  const tx = cx * vw - baseW / 2;
+  const ty = cy * vh - baseH / 2;
+  return `translate3d(${tx.toFixed(2)}px, ${ty.toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
+}
+
+/**
+ * The on-screen pixel CENTER the above transform yields. Models centre-origin
+ * scaling explicitly: the centre pivot (baseW/2) is unmoved by scale, then the
+ * translate adds (cx*vw - baseW/2). The `scale` argument is intentionally
+ * unused — that is the proof the centre is scale-independent.
+ */
+export function globeCenterPx(
+  cx: number,
+  vw: number,
+  baseW: number,
+  _scale: number
+): number {
+  return baseW / 2 + (cx * vw - baseW / 2); // === cx*vw, for ALL scales
+}
+
 export function lerpSlot(a: Slot, b: Slot, t: number): Slot {
   const k = t < 0 ? 0 : t > 1 ? 1 : t;
   return {
