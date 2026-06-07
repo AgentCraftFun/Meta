@@ -68,18 +68,18 @@ export default function Product() {
         </FadeUp>
 
         <div className="mt-12 grid grid-cols-1 items-start gap-12 md:grid-cols-2 md:gap-20">
-          {/* Left — text */}
+          {/* Left — text + features (compact 2×2 so all four fit one screen) */}
           <div>
             <Decode>
-              <h2 className="font-display text-[40px] font-bold leading-[1.04] tracking-[-0.025em] text-white md:text-[56px]">
+              <h2 className="font-display text-[38px] font-bold leading-[1.04] tracking-[-0.025em] text-white md:text-[50px]">
                 A 3D earth that shows you{' '}
                 <Shimmer>what the world is talking about</Shimmer>.
               </h2>
             </Decode>
 
-            <ul className="mt-14 grid grid-cols-1 gap-3">
+            <ul className="mt-9 grid grid-cols-1 gap-3 sm:grid-cols-2">
               {FEATURES.map((f, i) => (
-                <FadeUp key={f.title} delay={0.1 + i * 0.08}>
+                <FadeUp key={f.title} delay={0.1 + i * 0.08} className="h-full">
                   <FeatureRow
                     code={f.code}
                     title={f.title}
@@ -113,27 +113,25 @@ function FeatureRow({
   Icon: () => JSX.Element;
 }) {
   return (
-    <li className="group relative">
-      <TacticalFrame color="rgba(34, 211, 238, 0.18)" size={10}>
-       <TiltCard>
-        <div className="flex items-start gap-5 bg-[#0B1220]/55 p-5 transition-colors duration-200 group-hover:bg-[#111A2E]/85">
-          <span className="mt-1 flex h-10 w-10 flex-shrink-0 items-center justify-center border border-cyan-400/35 bg-cyan-400/10 text-cyan-300">
-            <Icon />
-          </span>
-          <div className="flex-1">
-            <div className="flex items-center gap-3">
-              <span className="font-mono text-[10px] uppercase tracking-[0.42em] text-cyan-400/65">
-                {code}
-              </span>
-              <span aria-hidden className="h-px flex-1 bg-cyan-400/15" />
-            </div>
-            <h3 className="mt-2 font-display text-[17px] font-bold uppercase tracking-[0.04em] text-white">
-              {title}
-            </h3>
-            <p className="mt-1.5 text-[14px] leading-relaxed text-slate-400">
-              {desc}
-            </p>
+    <li className="group relative h-full">
+      <TacticalFrame color="rgba(34, 211, 238, 0.18)" size={10} className="h-full">
+       <TiltCard className="h-full">
+        <div className="flex h-full flex-col bg-[#0B1220]/55 p-4 transition-colors duration-200 group-hover:bg-[#111A2E]/85">
+          <div className="flex items-center gap-3">
+            <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center border border-cyan-400/35 bg-cyan-400/10 text-cyan-300">
+              <Icon />
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.42em] text-cyan-400/65">
+              {code}
+            </span>
+            <span aria-hidden className="h-px flex-1 bg-cyan-400/15" />
           </div>
+          <h3 className="mt-3 font-display text-[15px] font-bold uppercase tracking-[0.04em] text-white">
+            {title}
+          </h3>
+          <p className="mt-1.5 text-[13px] leading-relaxed text-slate-400">
+            {desc}
+          </p>
         </div>
        </TiltCard>
       </TacticalFrame>
