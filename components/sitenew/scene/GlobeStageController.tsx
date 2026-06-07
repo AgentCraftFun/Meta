@@ -26,6 +26,17 @@ import { GLOBE_ORIGIN, SLOTS, lerpSlot, type Slot } from './globeSlots';
  */
 const FAST_BLUR_SKIP = 40;
 
+/** TEMP debug readout — surfaced on-screen by <GlobeDebug> for diagnosis. */
+export const globeDebug = {
+  f: 0,
+  scale: 0,
+  tx: 0,
+  ty: 0,
+  opacity: 1,
+  n: 0,
+  tops: '',
+};
+
 function smoothstep(x: number): number {
   const t = x < 0 ? 0 : x > 1 ? 1 : x;
   return t * t * (3 - 2 * t);
@@ -113,6 +124,15 @@ export default function GlobeStageController() {
 
       // publish damped travel index for the in-scene spin
       useSceneStore.getState().setGlobeTravel(cur.travel);
+
+      // TEMP debug
+      globeDebug.f = f;
+      globeDebug.scale = cur.scale;
+      globeDebug.tx = cur.tx;
+      globeDebug.ty = cur.ty;
+      globeDebug.opacity = cur.opacity;
+      globeDebug.n = n;
+      globeDebug.tops = rects.map((r) => Math.round(r.top)).join(',');
     };
 
     raf = requestAnimationFrame(loop);
