@@ -76,22 +76,33 @@ export default function GlobeStageController() {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
       const center = vh / 2;
-      const BAND = 0.3 * vh; // tighter band → each section dwells at its slot longer
+      // Length of the scroll-linked hand-off between two sections. The globe
+      // DWELLS on a slot the rest of the time, so it sits perfectly still while
+      // you read a section (no mid-section drift) and only travels during this
+      // band, just before the next section's top reaches the viewport centre.
+      const TRANS = 0.4 * vh;
       const n = sections.length;
 
       const rects = sections.map((s) => s.getBoundingClientRect());
-      // Continuous travel index: SUM how far each section boundary has crossed
-      // the viewport centre (each contributes 0→1 over a ±BAND window, centred
-      // on the boundary hitting screen centre). No section-flip → no jump/glitch.
-      let f = 0;
-      for (let b = 0; b < n - 1; b++) {
-        const boundaryY = rects[b + 1].top; // viewport-y of boundary b↔b+1
-        f += smoothstep((center - boundaryY + BAND) / (2 * BAND));
+
+      // Active section = the last one whose top has reached/passed the viewport
+      // centre (same rule as ScrollDirector's "top center" trigger). The globe
+      // rests on SLOTS[a] — dwell, not continuous drift.
+      let a = 0;
+      for (let i = 0; i < n; i++) {
+        if (rects[i].top <= center + 0.5) a = i;
       }
-      f = Math.max(0, Math.min(n - 1, f));
-      const i0 = Math.floor(f);
-      const i1 = Math.min(i0 + 1, n - 1);
-      const tgt: Slot = lerpSlot(SLOTS[i0], SLOTS[i1], f - i0);
+      // Hand-off: in the final TRANS px before the NEXT section's top hits the
+      // centre, blend toward the next slot. blend reaches 1 exactly as `a`
+      // flips to a+1 (and that slot's blend restarts at 0), so it's seamless.
+      const j = Math.min(a + 1, n - 1);
+      let blend = 0;
+      if (a < n - 1) {
+        const d = rects[a + 1].top - center; // px the next boundary sits below centre
+        blend = smoothstep(1 - d / TRANS); // 0 while dwelling → 1 at the hand-off
+      }
+      const f = a + blend; // continuous index, used only for the in-scene spin
+      const tgt: Slot = lerpSlot(SLOTS[a], SLOTS[j], blend);
 
       // (Product cutout rect-tracking removed for now — it could size the globe
       //  to the small panel cell and was the likely "tiny glitch". Product uses
