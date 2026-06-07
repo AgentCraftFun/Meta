@@ -22,6 +22,7 @@ import { SUN_POSITION } from '@/lib/sun';
 import { useReducedMotion } from '@/lib/useReducedMotion';
 import { z } from '../system/motion';
 import CameraRig from './CameraRig';
+import HeroBeacon from './HeroBeacon';
 import LightHeroFallback from './LightHeroFallback';
 import SceneEarth from './SceneEarth';
 import SceneClouds from './SceneClouds';
@@ -60,6 +61,8 @@ function Scene({
       <group ref={earthGroupRef}>
         <SceneEarth tier={tier} />
         <SceneClouds tier={tier} frozen={frozen} />
+        {/* First beacon — ignites once scroll begins (Phase 3). */}
+        <HeroBeacon lat={38} lng={-97} />
       </group>
       <Atmosphere />
 
