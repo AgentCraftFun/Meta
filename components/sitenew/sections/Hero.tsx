@@ -1,21 +1,17 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import CTAButton from '../CTAButton';
 import CornerBrackets from '../CornerBrackets';
 
-const HeroGlobe = dynamic(() => import('../HeroGlobe'), {
-  ssr: false,
-  loading: () => <div className="absolute inset-0 bg-[#05080F]" />,
-});
-
+/**
+ * siteNEW hero. The 3D globe is now the page-wide persistent <SceneCanvas>
+ * mounted in app/siteNEW/page.tsx (fixed, z-0), so this section is transparent
+ * content floating over it — no local globe.
+ */
 export default function Hero() {
   return (
-    <section className="relative h-screen w-full overflow-hidden bg-[#05080F]">
-      {/* 3D backdrop */}
-      <HeroGlobe />
-
+    <section className="relative h-screen w-full overflow-hidden">
       {/* Tactical frame */}
       <CornerBrackets />
 

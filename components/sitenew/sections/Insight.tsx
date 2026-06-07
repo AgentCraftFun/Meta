@@ -35,7 +35,7 @@ const STEPS = [
 
 export default function Insight() {
   return (
-    <section className="relative w-full overflow-hidden bg-[#05080F] px-6 py-[140px] md:px-10">
+    <section className="relative w-full overflow-hidden bg-[#05080F]/75 px-6 py-[140px] md:px-10">
       <GridBackdrop step={72} color="rgba(34, 211, 238, 0.04)" />
 
       <div className="relative mx-auto max-w-[1240px]">

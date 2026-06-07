@@ -38,7 +38,7 @@ const STATS = [
 
 export default function Problem() {
   return (
-    <section className="relative w-full overflow-hidden bg-[#05080F] px-6 py-[140px] md:px-10">
+    <section className="relative w-full overflow-hidden bg-[#05080F]/75 px-6 py-[140px] md:px-10">
       <GridBackdrop step={72} color="rgba(34, 211, 238, 0.05)" />
       <Scanline />
 
