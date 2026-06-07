@@ -8,8 +8,7 @@ import { useSceneStore } from './useSceneStore';
 /**
  * Maps each section's viewport progress → store.activeSection + store
  * .sectionProgress, via one GSAP ScrollTrigger per [data-sn-section] element.
- * The scene's CameraRig reads activeSection to fly between waypoints; the
- * BeaconField reads sectionProgress to draw the Insight arcs.
+ * The scene's CameraRig reads activeSection to fly between waypoints.
  *
  * A section becomes active when its top crosses viewport center; onUpdate
  * publishes 0→1 local progress while it straddles center (exactly one section

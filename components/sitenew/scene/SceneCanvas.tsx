@@ -11,9 +11,7 @@ import { SUN_POSITION } from '@/lib/sun';
 import { useReducedMotion } from '@/lib/useReducedMotion';
 import { z } from '../system/motion';
 import { useSceneStore } from '../system/useSceneStore';
-import BeaconField from './BeaconField';
 import CameraRig from './CameraRig';
-import HeroBeacon from './HeroBeacon';
 import LightHeroFallback from './LightHeroFallback';
 import SceneEarth from './SceneEarth';
 import SceneClouds from './SceneClouds';
@@ -38,7 +36,7 @@ function PerfGuard() {
     } else if (v <= FAST_SCROLL_THRESHOLD && fast.current && !calmTimer.current) {
       calmTimer.current = setTimeout(() => {
         fast.current = false;
-        setDpr(Math.min(typeof window !== 'undefined' ? window.devicePixelRatio : 1.75, 1.75));
+        setDpr(Math.min(typeof window !== 'undefined' ? window.devicePixelRatio : 2, 2));
         calmTimer.current = null;
       }, 180);
     }
@@ -49,11 +47,9 @@ function PerfGuard() {
 function Scene({
   tier,
   frozen,
-  simplified,
 }: {
   tier: TextureTier;
   frozen: boolean;
-  simplified: boolean;
 }) {
   const earthGroupRef = useRef<THREE.Group>(null);
 
@@ -62,19 +58,17 @@ function Scene({
       {/* Transparent canvas: ONLY the globe sphere is rendered (no full-screen
           stars / space-gradient), so there is no rectangle to clip — the sphere
           is naturally circular and scales/moves cleanly. The page #05080F shows
-          through everywhere else. */}
+          through everywhere else. No surface beacons/pins — just the clean globe. */}
       <directionalLight position={SUN_POSITION} intensity={2.0} color="#fffaf0" />
       <ambientLight intensity={0.05} color="#1a2540" />
 
       <group ref={earthGroupRef}>
         <SceneEarth tier={tier} />
         <SceneClouds tier={tier} frozen={frozen} />
-        <HeroBeacon lat={38} lng={-97} />
-        <BeaconField simplified={simplified} frozen={frozen} />
       </group>
-      {/* Stronger atmospheric rim to compensate for no bloom (bloom needs a
-          composer, which breaks canvas transparency → rectangle). */}
-      <Atmosphere intensity={2.6} />
+      {/* Subtle atmospheric rim — kept light so the globe reads crisp (a strong
+          rim hazes the silhouette and washes the surface). */}
+      <Atmosphere intensity={1.4} />
 
       {/* Camera holds hero framing; the globe travels via the controller's
           canvas-layer transform + scroll-linked spin. */}
@@ -99,9 +93,6 @@ export default function SceneCanvas() {
   }
 
   const tier = pickTextureTier();
-  const simplified =
-    typeof window !== 'undefined' &&
-    window.matchMedia('(max-width: 768px)').matches;
 
   return (
     <div
@@ -119,7 +110,7 @@ export default function SceneCanvas() {
         }}
       >
         <Canvas
-          dpr={[1, 1.75]}
+          dpr={[1, 2]}
           gl={{
             antialias: true,
             powerPreference: 'high-performance',
@@ -130,13 +121,13 @@ export default function SceneCanvas() {
           camera={{ position: [2.25, 0.7, 3.23], fov: 30, near: 0.1, far: 1000 }}
           onCreated={({ gl }) => {
             gl.toneMapping = ACESFilmicToneMapping;
-            gl.toneMappingExposure = 0.85;
+            gl.toneMappingExposure = 1.0;
             gl.outputColorSpace = SRGBColorSpace;
             gl.setClearColor(0x000000, 0); // transparent — page #05080F shows through
           }}
         >
           <Suspense fallback={null}>
-            <Scene tier={tier} frozen={reduced} simplified={simplified} />
+            <Scene tier={tier} frozen={reduced} />
           </Suspense>
         </Canvas>
       </div>

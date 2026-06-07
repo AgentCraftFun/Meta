@@ -35,7 +35,7 @@ export type Slot = {
 // near 1.0 and only OFFSET them left/right (via cx) into the section's negative
 // space; do NOT shrink them. Only the dim "console" backdrops (4–7) go full-bleed.
 export const SLOTS: Slot[] = [
-  { cx: 0.7, cy: 0.5, scale: 1.0, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 0 Hero — big full globe (~93% vh), right
+  { cx: 0.64, cy: 0.5, scale: 1.4, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 0 Hero — BIG cropped globe bleeding off the right edge (~1.3 vh), matches the reference. Stays crisp: 1.4 < dpr 2 so the canvas is still super-sampled.
   { cx: 0.74, cy: 0.5, scale: 0.92, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 1 Problem — big globe hugging the RIGHT (clears the left text column)
   { cx: 0.15, cy: 0.5, scale: 0.9, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 2 Insight — big globe hugging the LEFT (clears the right content column)
   { cx: 0.66, cy: 0.5, scale: 0.72, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 3 Product — large globe RIGHT, behind/through the product-mock cutout
