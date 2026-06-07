@@ -30,13 +30,12 @@ export default function CameraRig({
   frozen?: boolean;
   lockFlight?: boolean;
 }) {
-  const { camera } = useThree();
+  const { camera, size } = useThree();
   const targetMouse = useRef({ x: 0, y: 0 });
   const smoothedMouse = useRef({ x: 0, y: 0 });
   const lookCurrent = useRef(new THREE.Vector3().copy(WAYPOINT_LOOK[0]));
   const posTarget = useRef(new THREE.Vector3().copy(WAYPOINT_POS[0]));
   const lookTarget = useRef(new THREE.Vector3().copy(WAYPOINT_LOOK[0]));
-  const autoSpin = useRef(0);
 
   useEffect(() => {
     if (frozen) return;
@@ -51,12 +50,10 @@ export default function CameraRig({
   useFrame((_, delta) => {
     const dt = Math.min(delta, 0.05);
 
-    // Gentle constant ambient auto-spin only. NO scroll-linked spin: the globe
-    // travels purely via the CSS transform on #globe-transform, so the camera /
-    // scene must stay perfectly fixed (any scene-side motion fights the slots).
+    // SPIN FROZEN for static verification — the globe must be completely still
+    // so position can be confirmed. (Re-enable ambient spin later if desired.)
     if (!frozen && earthGroupRef.current) {
-      autoSpin.current += 0.04 * dt;
-      earthGroupRef.current.rotation.y = autoSpin.current;
+      earthGroupRef.current.rotation.y = 0;
     }
 
     // CAMERA HARD-LOCKED to the Hero waypoint, unconditionally. The per-section
@@ -93,6 +90,11 @@ export default function CameraRig({
     lookCurrent.current.y = THREE.MathUtils.damp(lookCurrent.current.y, lookTarget.current.y, CAMERA_LAMBDA, dt);
     lookCurrent.current.z = THREE.MathUtils.damp(lookCurrent.current.z, lookTarget.current.z, CAMERA_LAMBDA, dt);
     camera.lookAt(lookCurrent.current);
+
+    // DEV telemetry → GlobePlacer panel: prove whether the camera/canvas move.
+    useSceneStore.getState().setSceneDebug(
+      `cam ${camera.position.x.toFixed(2)},${camera.position.y.toFixed(2)},${camera.position.z.toFixed(2)} · gl ${size.width}x${size.height}`
+    );
   });
 
   return null;

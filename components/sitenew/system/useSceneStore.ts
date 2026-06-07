@@ -19,6 +19,8 @@ export type SceneState = {
   globeTravel: number;
   /** Instantaneous scroll velocity (px/frame-ish) for the fast-scroll guard. */
   scrollVelocity: number;
+  /** DEV telemetry: live camera pos + canvas size, shown in the GlobePlacer. */
+  sceneDebug: string;
   /** OS prefers-reduced-motion — set once on mount. */
   reducedMotion: boolean;
   /** Boot sequence finished (or skipped). */
@@ -29,6 +31,7 @@ export type SceneState = {
   setSectionProgress: (p: number) => void;
   setGlobeTravel: (v: number) => void;
   setScrollVelocity: (v: number) => void;
+  setSceneDebug: (v: string) => void;
   setReducedMotion: (v: boolean) => void;
   setBooted: (v: boolean) => void;
 };
@@ -39,6 +42,7 @@ export const useSceneStore = create<SceneState>((set) => ({
   sectionProgress: 0,
   globeTravel: 0,
   scrollVelocity: 0,
+  sceneDebug: '',
   reducedMotion: false,
   booted: false,
 
@@ -47,6 +51,7 @@ export const useSceneStore = create<SceneState>((set) => ({
   setSectionProgress: (p) => set({ sectionProgress: p }),
   setGlobeTravel: (v) => set({ globeTravel: v }),
   setScrollVelocity: (v) => set({ scrollVelocity: v }),
+  setSceneDebug: (v) => set({ sceneDebug: v }),
   setReducedMotion: (v) => set({ reducedMotion: v }),
   setBooted: (v) => set({ booted: v }),
 }));

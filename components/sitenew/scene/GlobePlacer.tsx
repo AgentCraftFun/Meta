@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { GLOBE_BUILD_TAG, SLOTS, activeSection, globeTransform } from './globeSlots';
+import { useSceneStore } from '../system/useSceneStore';
 
 /**
  * DEV-ONLY live globe placement tool. Inert unless the URL has `?place`.
@@ -27,6 +28,7 @@ export default function GlobePlacer() {
   const [, force] = useState(0);
   const placeRef = useRef<Place>({});
   const [enabled, setEnabled] = useState(false);
+  const dbgRef = useRef<HTMLPreElement>(null);
 
   // Active section — the SAME function the live controller uses, so the overlay
   // and the live page can never disagree about which slot is shown.
@@ -77,6 +79,23 @@ export default function GlobePlacer() {
         g.style.transform = globeTransform(o.cx, o.cy, o.scale, vw, vh, baseW, baseH);
         g.style.filter = 'brightness(1)';
         g.style.opacity = '1';
+
+        // LIVE TELEMETRY: if the globe visibly moves while these numbers stay
+        // constant, the movement is INSIDE the WebGL canvas (camera/scene); if
+        // the numbers change, it's the CSS/measurement. `cam` is the live camera
+        // pos from CameraRig — if it changes, the camera is (still) moving.
+        if (dbgRef.current) {
+          const r = g.getBoundingClientRect();
+          const cam = useSceneStore.getState().sceneDebug;
+          const canvas = g.querySelector('canvas');
+          const cr = canvas?.getBoundingClientRect();
+          dbgRef.current.textContent =
+            `vw ${vw}x${vh} base ${baseW}x${baseH}\n` +
+            `tf ${g.style.transform}\n` +
+            `wrap ${r.x.toFixed(0)},${r.y.toFixed(0)} ${r.width.toFixed(0)}x${r.height.toFixed(0)}\n` +
+            `cnv ${cr ? `${cr.width.toFixed(0)}x${cr.height.toFixed(0)}` : 'n/a'}\n` +
+            `${cam}`;
+        }
       }
     };
     raf = requestAnimationFrame(loop);
@@ -145,6 +164,16 @@ export default function GlobePlacer() {
       </div>
       <div style={{ color: '#7CFFB2', fontSize: 10, marginBottom: 6, opacity: 0.85 }}>
         {GLOBE_BUILD_TAG}
+      </div>
+      <pre
+        ref={dbgRef}
+        style={{
+          color: '#FFD27C', fontSize: 10, lineHeight: 1.35, margin: '0 0 8px',
+          whiteSpace: 'pre-wrap', wordBreak: 'break-all',
+        }}
+      />
+      <div style={{ color: '#9aa', fontSize: 10, marginBottom: 8 }}>
+        ↑ if the globe moves while these stay constant, it&apos;s INSIDE the canvas
       </div>
       <div style={{ color: '#fff', fontSize: 14, marginBottom: 8 }}>
         cx {p.cx.toFixed(3)} · cy {p.cy.toFixed(3)} · <b>scale {p.scale.toFixed(3)}</b>
