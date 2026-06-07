@@ -24,13 +24,13 @@ export type Slot = {
 };
 
 export const SLOTS: Slot[] = [
-  { cx: 0.68, cy: 0.5, scale: 1.0, bright: 1.0, opacity: 1.0, blur: 0, feather: 150 }, // 0 Hero — crisp, full-right
-  { cx: 0.82, cy: 0.42, scale: 0.28, bright: 1.0, opacity: 1.0, blur: 0, feather: 46 }, // 1 Problem — small disc, clear upper-right (left column ≤600px holds the text)
-  { cx: 0.19, cy: 0.5, scale: 0.4, bright: 1.0, opacity: 1.0, blur: 0, feather: 52 }, // 2 Insight — disc, left of the flow
-  { cx: 0.62, cy: 0.5, scale: 0.3, bright: 1.0, opacity: 1.0, blur: 0, feather: 50 }, // 3 Product — disc in panel (rect-tracked when active)
-  { cx: 0.5, cy: 0.46, scale: 0.95, bright: 0.5, opacity: 0.26, blur: 2, feather: 120 }, // 4 HowItWorks — dim backdrop
-  { cx: 0.5, cy: 0.45, scale: 1.0, bright: 0.5, opacity: 0.24, blur: 2, feather: 130 }, // 5 Vision — dim backdrop
-  { cx: 0.5, cy: 0.55, scale: 1.1, bright: 0.45, opacity: 0.22, blur: 3, feather: 140 }, // 6 CTA — dim backdrop
+  { cx: 0.68, cy: 0.5, scale: 1.0, bright: 1.0, opacity: 1.0, blur: 0, feather: 150 }, // 0 Hero — full-bleed right (no mask)
+  { cx: 0.76, cy: 0.48, scale: 0.52, bright: 1.0, opacity: 1.0, blur: 0, feather: 60 }, // 1 Problem — big disc, right (clears left text column)
+  { cx: 0.16, cy: 0.5, scale: 0.6, bright: 1.0, opacity: 1.0, blur: 0, feather: 60 }, // 2 Insight — big disc, left (flow on the right)
+  { cx: 0.62, cy: 0.5, scale: 0.34, bright: 1.0, opacity: 1.0, blur: 0, feather: 60 }, // 3 Product — disc in panel (rect-tracked when active)
+  { cx: 0.5, cy: 0.46, scale: 0.95, bright: 0.5, opacity: 0.26, blur: 2, feather: 120 }, // 4 HowItWorks — dim full backdrop
+  { cx: 0.5, cy: 0.45, scale: 1.0, bright: 0.5, opacity: 0.24, blur: 2, feather: 130 }, // 5 Vision — dim full backdrop
+  { cx: 0.5, cy: 0.55, scale: 1.1, bright: 0.45, opacity: 0.22, blur: 3, feather: 140 }, // 6 CTA — dim full backdrop
   { cx: 0.5, cy: 0.55, scale: 1.1, bright: 0.45, opacity: 0.0, blur: 3, feather: 140 }, // 7 Footer — faded out
 ];
 

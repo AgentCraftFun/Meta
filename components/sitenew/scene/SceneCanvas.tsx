@@ -151,10 +151,9 @@ export default function SceneCanvas() {
     typeof window !== 'undefined' &&
     window.matchMedia('(max-width: 768px)').matches;
 
-  // Soft radial feather so the canvas rectangle melts into the #05080F base.
-  // Default = hero feather (full-bleed); the controller re-writes it per slot so
-  // every non-hero slot becomes a clean soft-edged disc.
-  const feather = featherMask(SLOTS[0].feather);
+  // Default = no mask (hero is full-bleed). The controller applies a radial
+  // feather only on scaled-down disc slots; ≥100 feather stays maskless.
+  const defaultMask = SLOTS[0].feather >= 100 ? 'none' : featherMask(SLOTS[0].feather);
 
   return (
     <div
@@ -169,8 +168,8 @@ export default function SceneCanvas() {
         style={{
           transformOrigin: 'center center',
           willChange: 'transform, filter, opacity',
-          maskImage: feather,
-          WebkitMaskImage: feather,
+          maskImage: defaultMask,
+          WebkitMaskImage: defaultMask,
         }}
       >
         <Canvas
