@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useSceneStore } from '../system/useSceneStore';
 import { SLOTS, activeSection, globeTransform } from './globeSlots';
 
 /**
@@ -85,8 +84,6 @@ export default function GlobeStageController() {
 
       if (idx !== lastIdx) {
         lastIdx = idx;
-        // No smooth scroll-spin: the in-scene spin steps with the section.
-        useSceneStore.getState().setGlobeTravel(idx);
         if (DEBUG) {
           const s = SLOTS[idx];
           // eslint-disable-next-line no-console

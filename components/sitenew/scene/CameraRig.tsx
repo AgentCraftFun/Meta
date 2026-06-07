@@ -20,8 +20,6 @@ import { WAYPOINT_LOOK, WAYPOINT_POS } from './waypoints';
  */
 const PARALLAX_X = 0.1;
 const PARALLAX_Y = 0.07;
-/** Radians of deliberate globe spin per section travelled (on top of auto-spin). */
-const SPIN_PER_SECTION = 2.2;
 
 export default function CameraRig({
   earthGroupRef,
@@ -53,19 +51,19 @@ export default function CameraRig({
   useFrame((_, delta) => {
     const dt = Math.min(delta, 0.05);
 
-    // Gentle constant auto-spin + a deliberate scroll-linked spin so the globe
-    // visibly rotates as it travels between slots.
+    // Gentle constant ambient auto-spin only. NO scroll-linked spin: the globe
+    // travels purely via the CSS transform on #globe-transform, so the camera /
+    // scene must stay perfectly fixed (any scene-side motion fights the slots).
     if (!frozen && earthGroupRef.current) {
       autoSpin.current += 0.04 * dt;
-      const travel = useSceneStore.getState().globeTravel;
-      earthGroupRef.current.rotation.y = autoSpin.current + travel * SPIN_PER_SECTION;
+      earthGroupRef.current.rotation.y = autoSpin.current;
     }
 
-    // Which waypoint? Hero (0) when frozen/locked, else the active section.
-    const idx =
-      frozen || lockFlight
-        ? 0
-        : Math.min(WAYPOINT_POS.length - 1, useSceneStore.getState().activeSection);
+    // CAMERA HARD-LOCKED to the Hero waypoint, unconditionally. The per-section
+    // waypoint flight is what shifted/resized the globe ~1s after each scroll
+    // (camera damping between waypoints) and fought the CSS slot positions.
+    // The globe now moves ONLY via the CSS transform; the camera never flies.
+    const idx = 0;
     posTarget.current.copy(WAYPOINT_POS[idx]);
     lookTarget.current.copy(WAYPOINT_LOOK[idx]);
 
