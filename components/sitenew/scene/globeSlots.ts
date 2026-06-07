@@ -244,21 +244,13 @@ function dwellEase(f: number): number {
 }
 
 /**
- * THE shared interpolation: continuous t → an interpolated Slot.
- *   • dwell-eased fractional part (rest-on-slot + smooth handoff)
- *   • cx/cy linear, scale in LOG space (perceptually even shrink/grow)
- *   • shallow arc on long horizontal traverses (endpoints exact)
- * The controller damps toward this; the placer applies it directly. Same code
- * ⇒ the overlay preview and the live travel are pixel-identical.
+ * Core slot interpolation between adjacent slots, given an ALREADY-eased segment
+ * fraction `e` (0→1). cx/cy linear, scale in LOG space (perceptually even
+ * shrink/grow), shallow arc on long horizontal traverses (endpoints exact).
+ * Shared by both the free-scroll (dwell) and snap (smooth) readers below so the
+ * spatial math is identical — only the easing of `e` differs.
  */
-export function slotAt(t: number, slots: Slot[]): Slot {
-  const lastIdx = Math.min(LAST_SECTION, slots.length - 1);
-  const lo = Math.max(0, Math.min(Math.floor(t), lastIdx));
-  const hi = Math.min(lo + 1, lastIdx);
-  const a = slots[lo];
-  const b = slots[hi];
-  const e = dwellEase(t - lo);
-
+function interpSlot(a: Slot, b: Slot, e: number): Slot {
   const cx = flerp(a.cx, b.cx, e);
   let cy = flerp(a.cy, b.cy, e);
   const scale = Math.exp(flerp(Math.log(a.scale), Math.log(b.scale), e));
@@ -274,4 +266,40 @@ export function slotAt(t: number, slots: Slot[]): Slot {
     blur: flerp(a.blur, b.blur, e),
     feather: flerp(a.feather, b.feather, e),
   };
+}
+
+/**
+ * THE shared interpolation: continuous t → an interpolated Slot.
+ *   • dwell-eased fractional part (rest-on-slot + smooth handoff)
+ *   • cx/cy linear, scale in LOG space (perceptually even shrink/grow)
+ *   • shallow arc on long horizontal traverses (endpoints exact)
+ * The controller damps toward this; the placer applies it directly. Same code
+ * ⇒ the overlay preview and the live travel are pixel-identical.
+ */
+export function slotAt(t: number, slots: Slot[]): Slot {
+  const lastIdx = Math.min(LAST_SECTION, slots.length - 1);
+  const lo = Math.max(0, Math.min(Math.floor(t), lastIdx));
+  const hi = Math.min(lo + 1, lastIdx);
+  return interpSlot(slots[lo], slots[hi], dwellEase(t - lo));
+}
+
+/**
+ * SNAP variant: continuous t → interpolated Slot using the RAW (linear) segment
+ * fraction — NO dwell plateau. In section-snap mode `t` is already the cinematic
+ * quint-eased progress `p`, so the globe's temporal curve must be a direct
+ * function of `t` (no second easing) to stay in PERFECT lock-step with the
+ * section pan (which is also linear in `p`). The dwell plateau is only correct
+ * for free scroll (where it rests the globe on a slot while a section is
+ * centred); applying it here would compress the globe's travel into the middle
+ * of the transition and make it whip. Same log-scale + long-traverse arc as
+ * slotAt — only the easing of the fraction differs. At integer t this returns
+ * the exact tuned slot, so the globe lands precisely on every slot.
+ */
+export function slotAtSmooth(t: number, slots: Slot[]): Slot {
+  const lastIdx = Math.min(LAST_SECTION, slots.length - 1);
+  const lo = Math.max(0, Math.min(Math.floor(t), lastIdx));
+  const hi = Math.min(lo + 1, lastIdx);
+  const f = t - lo;
+  const e = f < 0 ? 0 : f > 1 ? 1 : f;
+  return interpSlot(slots[lo], slots[hi], e);
 }

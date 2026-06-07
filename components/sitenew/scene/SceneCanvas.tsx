@@ -108,6 +108,9 @@ export default function SceneCanvas() {
           content layer ON TOP of the globe and made it look "see-through". */}
       <div
         aria-hidden
+        // Far-plane backdrop for the section-snap depth effect — drifts slower
+        // than the content (distant). Inert when snap is off.
+        data-snap-grid
         className="absolute inset-0"
         style={{
           backgroundImage: `

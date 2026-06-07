@@ -15,9 +15,16 @@ import LiveSignal from '@/components/sitenew/system/LiveSignal';
 import Reticle from '@/components/sitenew/system/Reticle';
 import ScrollDirector from '@/components/sitenew/system/ScrollDirector';
 import SmoothScroll from '@/components/sitenew/system/SmoothScroll';
-import SnapScroll from '@/components/sitenew/system/SnapScroll';
+import SnapStage from '@/components/sitenew/system/SnapStage';
 
 export { metadata } from './metadata';
+
+/** Stable per-section anchor id (kebab-cased label) for hash / skip links. */
+const slug = (label: string) =>
+  label
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
 
 // Section order — index aligns with the camera waypoint table. Labels expose
 // each region to assistive tech.
@@ -53,21 +60,32 @@ export default function LandingPage() {
       <Grade />
       {/* Scroll → activeSection / sectionProgress for the camera + beacons. */}
       <ScrollDirector />
-      {/* Desktop/fine-pointer only: section-locked scroll snapping (one gesture
-          = one buttery quint transition; globe glides in sync via scroll). */}
-      <SnapScroll />
       {/* Hero targeting-reticle cursor. */}
       <Reticle />
       {/* Ambient live-signal strip (ticker + refresh clock). */}
       <LiveSignal />
 
-      {/* Content floats over the globe; transparent main, z-10. */}
+      {/* Content floats over the globe; transparent main, z-10. In snap mode
+          SnapStage locks this to one section at a time; otherwise it is an inert
+          pass-through and the sections stack and scroll natively. */}
       <main id="sn-main" className="relative z-10 w-full text-slate-100">
-        {SECTIONS.map(({ Component, label }, i) => (
-          <div key={i} data-sn-section={i} role="region" aria-label={label}>
-            <Component />
-          </div>
-        ))}
+        <SnapStage>
+          {SECTIONS.map(({ Component, label }, i) => (
+            <div
+              key={i}
+              id={slug(label)}
+              data-sn-section={i}
+              role="region"
+              aria-label={label}
+            >
+              {/* Reveal target — snap drives opacity/translateY here so the
+                  100vh block itself stays perfectly aligned in the strip. */}
+              <div data-snap-reveal>
+                <Component />
+              </div>
+            </div>
+          ))}
+        </SnapStage>
       </main>
     </SmoothScroll>
   );
