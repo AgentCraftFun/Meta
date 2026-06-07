@@ -20,7 +20,7 @@ export const SLOTS: Slot[] = [
   { cx: 0.68, cy: 0.5, scale: 1.0, bright: 1.0, opacity: 1.0, blur: 0 }, // 0 Hero — crisp, foreground
   { cx: 0.74, cy: 0.4, scale: 0.42, bright: 1.0, opacity: 1.0, blur: 0 }, // 1 Problem — disc, right
   { cx: 0.24, cy: 0.48, scale: 0.42, bright: 1.0, opacity: 1.0, blur: 0 }, // 2 Insight — disc, left
-  { cx: 0.62, cy: 0.5, scale: 0.3, bright: 1.0, opacity: 1.0, blur: 0 }, // 3 Product — disc in panel
+  { cx: 0.5, cy: 0.5, scale: 0.92, bright: 0.55, opacity: 0.26, blur: 2 }, // 3 Product — dim backdrop (fallback; mock keeps its own globe)
   { cx: 0.5, cy: 0.45, scale: 0.95, bright: 0.5, opacity: 0.26, blur: 2 }, // 4 HowItWorks — dim backdrop
   { cx: 0.5, cy: 0.4, scale: 1.0, bright: 0.5, opacity: 0.24, blur: 2 }, // 5 Vision — dim backdrop
   { cx: 0.5, cy: 0.55, scale: 1.1, bright: 0.45, opacity: 0.22, blur: 3 }, // 6 CTA — dim backdrop

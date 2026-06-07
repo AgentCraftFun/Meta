@@ -14,13 +14,13 @@ import { GLOBE_ORIGIN, SLOTS, lerpSlot } from './globeSlots';
  * opacity. transform-origin is centered; the slot's target center is reached by
  * compensating for the globe's natural hero offset (GLOBE_ORIGIN).
  *
- * PHASE 1: only Hero→Problem→Insight are wired (index clamped to MAX_WIRED);
- * later sections hold at Insight until Phase 2.
+ * All 8 slots wired: Hero (full) → Problem (disc R) → Insight (disc L) →
+ * Product/HowItWorks/Vision/CTA (dim blurred backdrop) → Footer (fade out).
  *
  * REDUCED-MOTION / mobile (≤768px): controller disabled — the globe stays in
  * hero framing (identity transform), no travel.
  */
-const MAX_WIRED = 2;
+const MAX_WIRED = 7;
 
 export default function GlobeStageController() {
   useEffect(() => {
