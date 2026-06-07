@@ -4,6 +4,7 @@ import { useFrame } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { latLngToVec3, surfaceQuaternion } from '@/lib/geo';
+import { spawnOrder } from '../system/seededFeed';
 import { useSceneStore } from '../system/useSceneStore';
 import { INSIGHT_SECTION } from './waypoints';
 
@@ -185,10 +186,15 @@ export default function BeaconField({
   const scaleM = useMemo(() => new THREE.Matrix4(), []);
   const outM = useMemo(() => new THREE.Matrix4(), []);
   const colScratch = useMemo(() => new THREE.Color(), []);
+  const spawnList = useMemo(() => spawnOrder(count), [count]);
+  const spawnPtr = useRef(0);
+  const spawnAt = useRef(0);
 
-  useFrame(() => {
+  useFrame((state) => {
     const { activeSection, sectionProgress } = useSceneStore.getState();
     const active = activeSection >= INSIGHT_SECTION;
+    const time = state.clock.elapsedTime;
+    const paused = typeof document !== 'undefined' && document.hidden;
 
     if (active && activatedAt.current === null) activatedAt.current = performance.now();
     if (!active) activatedAt.current = null;
@@ -201,6 +207,21 @@ export default function BeaconField({
     const pillars = pillarsRef.current;
     const points = pointsRef.current;
     if (!pillars || !points) return;
+    if (paused) return; // pause-on-hidden: stop touching buffers
+
+    // Spawn/decay: every ~12s a new beacon pops somewhere new (seeded order).
+    if (!frozen && !simplified) {
+      if (time - spawnAt.current > 12) {
+        spawnAt.current = time;
+        spawnPtr.current = (spawnPtr.current + 1) % count;
+      }
+    }
+    const spawnIndex = spawnList[spawnPtr.current];
+    const spawnElapsed = time - spawnAt.current;
+    const spawnBump =
+      !frozen && !simplified && spawnElapsed < 3
+        ? Math.sin((Math.PI * spawnElapsed) / 3) * 0.6
+        : 0;
 
     for (let i = 0; i < count; i++) {
       let intensity: number;
@@ -212,6 +233,13 @@ export default function BeaconField({
         intensity = DIM + (1 - DIM) * t;
       } else {
         intensity = DIM;
+      }
+
+      // idle micro-pulse (±0.15, seeded per-instance phase) + spawn transient
+      if (!frozen) {
+        intensity += Math.sin(time * 1.5 + i * 1.7) * 0.15;
+        if (i === spawnIndex) intensity += spawnBump;
+        intensity = Math.max(0, intensity);
       }
 
       // pillar: scale height by intensity

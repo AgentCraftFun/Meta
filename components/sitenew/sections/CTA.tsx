@@ -4,6 +4,29 @@ import CTAButton from '../CTAButton';
 import FadeUp from '../FadeUp';
 import GridBackdrop from '../GridBackdrop';
 import SectionLabel from '../SectionLabel';
+import { useSceneStore } from '../system/useSceneStore';
+
+function RadarSweep() {
+  const reduced = useSceneStore((s) => s.reducedMotion);
+  if (reduced) return null;
+  return (
+    <span
+      aria-hidden
+      className="absolute rounded-full"
+      style={{
+        width: 1184,
+        height: 1184,
+        background:
+          'conic-gradient(from 0deg, transparent 0deg, rgba(34,211,238,0.14) 30deg, transparent 70deg)',
+        maskImage:
+          'radial-gradient(circle, transparent 18%, black 22%, black 49%, transparent 50%)',
+        WebkitMaskImage:
+          'radial-gradient(circle, transparent 18%, black 22%, black 49%, transparent 50%)',
+        animation: 'cta-radar 8s linear infinite',
+      }}
+    />
+  );
+}
 
 export default function CTA() {
   return (
@@ -13,6 +36,8 @@ export default function CTA() {
         aria-hidden
         className="pointer-events-none absolute inset-0 flex items-center justify-center"
       >
+        {/* Radar sweep — conic gradient rotating 8s linear (skipped under RM) */}
+        <RadarSweep />
         {[1, 1.5, 2.1, 2.8, 3.7].map((scale, i) => (
           <span
             key={i}
@@ -102,6 +127,11 @@ export default function CTA() {
 
       <style jsx>{`
         @keyframes cta-spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+        @keyframes cta-radar {
           to {
             transform: rotate(360deg);
           }

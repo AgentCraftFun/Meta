@@ -9,6 +9,7 @@ import Vision from '@/components/sitenew/sections/Vision';
 import SceneCanvas from '@/components/sitenew/scene/SceneCanvas';
 import BootSequence from '@/components/sitenew/system/BootSequence';
 import Grade from '@/components/sitenew/system/Grade';
+import LiveSignal from '@/components/sitenew/system/LiveSignal';
 import Reticle from '@/components/sitenew/system/Reticle';
 import ScrollDirector from '@/components/sitenew/system/ScrollDirector';
 import SmoothScroll from '@/components/sitenew/system/SmoothScroll';
@@ -27,6 +28,8 @@ export default function LandingPage() {
       <ScrollDirector />
       {/* Hero targeting-reticle cursor. */}
       <Reticle />
+      {/* Ambient live-signal strip (ticker + refresh clock). */}
+      <LiveSignal />
       {/* Content floats over the globe; transparent main, z-10. */}
       <main className="relative z-10 w-full text-slate-100">
         {SECTIONS.map((Section, i) => (
