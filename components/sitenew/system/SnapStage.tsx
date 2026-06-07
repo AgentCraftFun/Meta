@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, type ReactNode } from 'react';
-import { clamp01, easeExpoOut, easeQuintInOut } from './easing';
+import { clamp01, easeExpoOut, easeSnap } from './easing';
 import { isSnapEnabled, onSnapModeChange } from './snapMode';
 import { useSceneStore } from './useSceneStore';
 
@@ -11,35 +11,47 @@ import { useSceneStore } from './useSceneStore';
  * The page does NOT free-scroll. It locks to one section at a time; a single
  * wheel / key / swipe gesture triggers ONE buttery transition to the adjacent
  * section, then locks there. Everything is driven from ONE animated progress
- * value `p` that tweens current→target over 1.1s on the cinematic ease-in-out
- * quint curve, so nothing can desync:
+ * value `p` (tweened current→target over ~1.0s on easeSnap), so nothing desyncs.
  *
- *   1. The section strip translates to `-p · 100vh` (one GPU transform).
- *   2. `p` is published as store.snapProgress; the GlobeStageController feeds it
- *      to slotAtSmooth so the globe glides between its tuned slots across the
- *      SAME 1.1s — the globe travel and the section pan are the same motion.
- *   3. Each section's content reveals from a continuous "centredness" derived
- *      from `p` (opacity over 0.3→0.8, translateY 32→0, expoOut), reversing
- *      symmetrically as it leaves.
+ * RESPONSIVENESS — LEADING-EDGE FIRE: the FIRST wheel/key/swipe event (when not
+ * already animating) starts the transition immediately — no accumulation window,
+ * no debounce before starting. The lock comes AFTER: once moving, all further
+ * navigation input is ignored until the transition completes + a short cooldown.
+ * That is what makes it feel instant yet still "one flick = one section".
+ *
+ * DEPTH — everything reads from `p` at a different PLANE so each transition feels
+ * like flying through 3D space, not sliding flat sheets:
+ *   • GLOBE (far): the GlobeStageController reads `p` → slotAtSmooth; the slowest,
+ *     most distant element.
+ *   • SECTION STRIP: one translate3d(0,-p·100vh,0) GPU pan (the camera dolly).
+ *   • FOCAL CONTENT BLOCK (1.0×): per section it recedes/advances in Z — incoming
+ *     rises from scale 0.96 + opacity 0; outgoing falls back to scale 0.92 + 0.
+ *   • NEAR ACCENTS ([data-snap-depth] > 1, eyebrows / corner brackets): parallax
+ *     FASTER than content so they rush past the camera — the strongest depth cue.
+ *   • FAR GRID ([data-snap-grid]): drifts slower than content (back plane).
+ * All layers track `p` exactly off ONE rAF tween — no springs, so they can't
+ * desync. transform + opacity only; will-change is toggled on only while moving.
  *
  * GUARDRAILS: disabled under prefers-reduced-motion and on mobile / coarse
- * pointer / <768px (native scroll + the existing static/scroll globe take over).
- * Keyboard a11y (arrows / PageUp·Down / Space / Home / End), tab-order focus
- * recovery, hash sync, and end-clamping are all handled. Ambient loops (ticker,
- * heartbeats, reveals) keep running — this only governs navigation.
+ * pointer / <768px (native scroll + the existing static/scroll globe take over;
+ * reduced-motion therefore gets plain native reveals, no parallax/scale/recede).
+ * Keyboard a11y (arrows / PageUp·Down / Space / Home / End — leading-edge too),
+ * tab-order focus recovery, hash sync, and end-clamping are all handled.
  *
  * In non-snap mode this component is an inert pass-through wrapper: the viewport
  * / strip render as plain blocks and the children stack and scroll natively.
  */
 
-const DURATION = 1.1; // seconds — the cinematic transition length
-const COOLDOWN = 150; // ms lock after a transition before the next gesture
-const GESTURE_GAP = 120; // ms quiet needed before a wheel stream counts as new
-const WHEEL_MIN = 2; // px — ignore sub-pixel wheel noise
+const DURATION = 1.0; // seconds — the cinematic transition length
+const COOLDOWN = 120; // ms lock AFTER a transition before the next gesture
+const WHEEL_MIN = 10; // px — distinguish a deliberate gesture from micro-scroll
 const SWIPE_MIN = 40; // px — min touch travel to count as a swipe
-const REVEAL_Y = 32; // px content rise distance
+
+const REVEAL_Y = 28; // px content rise distance during reveal
 const REVEAL_LO = 0.3; // centredness where opacity starts
 const REVEAL_HI = 0.8; // centredness where opacity completes
+const SCALE_IN = 0.04; // incoming section starts at scale 1 - this (0.96)
+const SCALE_OUT = 0.08; // outgoing section recedes to scale 1 - this (0.92)
 
 export default function SnapStage({ children }: { children: ReactNode }) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -59,6 +71,10 @@ export default function SnapStage({ children }: { children: ReactNode }) {
     // ---- Per-configuration mutable state (reset on each (re)configure) -----
     let wrappers: HTMLElement[] = [];
     let inners: HTMLElement[] = [];
+    // Near-plane parallax accents (eyebrows, corner brackets, …), paired with
+    // the index of the section they belong to and their depth multiplier.
+    let accents: { el: HTMLElement; section: number; depth: number }[] = [];
+    let gridLayers: HTMLElement[] = []; // far-plane backdrops ([data-snap-grid])
     let N = 0;
     let vh = window.innerHeight;
 
@@ -67,7 +83,6 @@ export default function SnapStage({ children }: { children: ReactNode }) {
     let animating = false;
     let queuedTarget: number | null = null;
     let cooldownUntil = 0;
-    let lastWheelTime = -Infinity;
     let from = 0;
     let to = 0;
     let startTime = 0;
@@ -80,21 +95,57 @@ export default function SnapStage({ children }: { children: ReactNode }) {
 
     const idToIndex = new Map<string, number>();
 
+    // Grid back-plane drift per section travelled (slow distant parallax).
+    const GRID_DRIFT = 7; // px
+
     // ---- Frame application — the SINGLE place `p` is turned into pixels -----
     const applyFrame = (pp: number) => {
+      // CAMERA DOLLY: one pan transform on the whole strip.
       strip.style.transform = `translate3d(0, ${(-pp * vh).toFixed(2)}px, 0)`;
+
+      // FOCAL PLANE: each section's content block reveals + recedes/advances in
+      // Z. `d` = signed distance from centre (>0 below/incoming, <0 above/leaving).
       for (let i = 0; i < inners.length; i++) {
-        const centred = Math.max(0, 1 - Math.abs(i - pp));
-        const raw = clamp01((centred - REVEAL_LO) / (REVEAL_HI - REVEAL_LO));
-        const eased = easeExpoOut(raw);
+        const d = i - pp;
+        const centred = Math.max(0, 1 - Math.abs(d));
+        const e = easeExpoOut(clamp01((centred - REVEAL_LO) / (REVEAL_HI - REVEAL_LO)));
+        // Incoming rises toward the camera from 0.96; outgoing falls back to 0.92.
+        const away = d >= 0 ? SCALE_IN : SCALE_OUT;
+        const scale = 1 - (1 - e) * away;
+        // Small advance/recede along the travel direction (composes with the pan).
+        const ty = (1 - e) * REVEAL_Y * (d >= 0 ? 1 : -1);
         const el = inners[i];
-        el.style.opacity = eased.toFixed(3);
-        el.style.transform = `translate3d(0, ${((1 - eased) * REVEAL_Y).toFixed(2)}px, 0)`;
+        el.style.opacity = e.toFixed(3);
+        el.style.transform = `translate3d(0, ${ty.toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
       }
+
+      // NEAR PLANE: accents parallax FASTER than their section (rush past camera).
+      // FAR-ish elements (depth < 1) would lag; we only tag near accents here.
+      for (let i = 0; i < accents.length; i++) {
+        const a = accents[i];
+        const extra = (a.section - pp) * vh * (a.depth - 1);
+        a.el.style.transform = `translate3d(0, ${extra.toFixed(2)}px, 0)`;
+      }
+
+      // FAR PLANE: the grid backdrop drifts slowly (distant, lags the content).
+      for (let i = 0; i < gridLayers.length; i++) {
+        gridLayers[i].style.transform = `translate3d(0, ${(-pp * GRID_DRIFT).toFixed(2)}px, 0)`;
+      }
+
       setSnapProgress(pp);
       // Keep the ambient ticker / reticle visibility (which read scrollProgress)
       // in step with the snap position.
       setScrollProgress(N > 1 ? pp / (N - 1) : 0);
+    };
+
+    // will-change is ON only while a transition is running (perf: avoid many
+    // permanent compositor layers).
+    const setWillChange = (on: boolean) => {
+      const v = on ? 'transform' : '';
+      strip.style.willChange = on ? 'transform' : '';
+      for (const el of inners) el.style.willChange = on ? 'transform, opacity' : '';
+      for (const a of accents) a.el.style.willChange = v;
+      for (const el of gridLayers) el.style.willChange = v;
     };
 
     const updateHash = (idx: number) => {
@@ -112,7 +163,7 @@ export default function SnapStage({ children }: { children: ReactNode }) {
     const tick = (now: number) => {
       const elapsed = (now - startTime) / 1000;
       const tnorm = clamp01(elapsed / DURATION);
-      const eased = easeQuintInOut(tnorm);
+      const eased = easeSnap(tnorm);
       p = from + (to - from) * eased;
       applyFrame(p);
 
@@ -130,16 +181,26 @@ export default function SnapStage({ children }: { children: ReactNode }) {
           queuedTarget = null;
           go(q);
         }
+        // If nothing else started, we are idle — drop the compositor hints.
+        if (!animating) setWillChange(false);
         return;
       }
       raf = requestAnimationFrame(tick);
     };
 
     const startTween = (target: number) => {
+      // The grid backdrop ([data-snap-grid]) is mounted by SceneCanvas after
+      // hydration, so it may not have existed at setup — pick it up lazily.
+      if (gridLayers.length === 0) {
+        gridLayers = Array.from(
+          document.querySelectorAll<HTMLElement>('[data-snap-grid]')
+        );
+      }
       from = p;
       to = target;
       active = target;
       animating = true;
+      setWillChange(true);
       startTime = performance.now();
       if (raf) cancelAnimationFrame(raf);
       raf = requestAnimationFrame(tick);
@@ -158,15 +219,22 @@ export default function SnapStage({ children }: { children: ReactNode }) {
 
     const step = (dir: number) => go(active + dir);
 
-    // ---- Input: WHEEL -----------------------------------------------------
+    // ---- Input: WHEEL (LEADING-EDGE) --------------------------------------
+    // The FIRST event fires the move IMMEDIATELY — no accumulation/debounce
+    // before starting. The lock comes after: while animating, and for a short
+    // cooldown after, further wheel events are ignored. The cooldown self-extends
+    // only while a fling's inertial TAIL keeps streaming, so one long flick can't
+    // double-fire — yet a fresh, deliberate flick (a natural >cooldown gap later)
+    // still fires on its leading edge with zero added latency.
     const onWheel = (e: WheelEvent) => {
       e.preventDefault(); // page is locked; never let the document scroll
+      if (animating) return;
       const now = performance.now();
-      const gap = now - lastWheelTime;
-      lastWheelTime = now;
-      if (animating || now < cooldownUntil) return;
-      if (gap < GESTURE_GAP) return; // continuation of the same flick → ignore
-      if (Math.abs(e.deltaY) < WHEEL_MIN) return;
+      if (now < cooldownUntil) {
+        cooldownUntil = now + COOLDOWN; // keep the lock warm through the tail
+        return;
+      }
+      if (Math.abs(e.deltaY) < WHEEL_MIN) return; // accidental micro-scroll
       step(e.deltaY > 0 ? 1 : -1);
     };
 
@@ -272,6 +340,14 @@ export default function SnapStage({ children }: { children: ReactNode }) {
         el.style.removeProperty('transform');
         el.style.removeProperty('will-change');
       }
+      for (const a of accents) {
+        a.el.style.removeProperty('transform');
+        a.el.style.removeProperty('will-change');
+      }
+      for (const el of gridLayers) {
+        el.style.removeProperty('transform');
+        el.style.removeProperty('will-change');
+      }
     };
 
     const applyLayout = () => {
@@ -338,6 +414,21 @@ export default function SnapStage({ children }: { children: ReactNode }) {
         if (w.id) idToIndex.set(w.id, i);
       });
 
+      // Collect the parallax planes. Near accents ([data-snap-depth]) belong to
+      // whichever section contains them; the grid backdrop is a far plane.
+      accents = [];
+      wrappers.forEach((w, i) => {
+        w.querySelectorAll<HTMLElement>('[data-snap-depth]').forEach((el) => {
+          const depth = Number(el.dataset.snapDepth);
+          if (!Number.isNaN(depth) && depth !== 1) {
+            accents.push({ el, section: i, depth });
+          }
+        });
+      });
+      gridLayers = Array.from(
+        document.querySelectorAll<HTMLElement>('[data-snap-grid]')
+      );
+
       // Lock the document so nothing behind us scrolls.
       lockStyle(document.documentElement, 'overflow', 'hidden');
       lockStyle(document.body, 'overflow', 'hidden');
@@ -345,15 +436,13 @@ export default function SnapStage({ children }: { children: ReactNode }) {
       // Viewport: a single locked 100vh window that clips the strip.
       lockStyle(viewport, 'overflow', 'hidden');
       lockStyle(viewport, 'position', 'relative');
-      // Strip + per-section blocks.
-      strip.style.willChange = 'transform';
+      // Strip + per-section blocks. (will-change is toggled per-transition.)
       for (const w of wrappers) {
         lockStyle(w, 'display', 'flex');
         lockStyle(w, 'flex-direction', 'column');
         lockStyle(w, 'justify-content', 'center');
         lockStyle(w, 'overflow', 'hidden');
       }
-      for (const el of inners) el.style.willChange = 'opacity, transform';
       applyLayout();
 
       // Start on the section named by the URL hash, else section 0.

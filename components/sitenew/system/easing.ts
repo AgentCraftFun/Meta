@@ -72,10 +72,18 @@ export function cubicBezier(
   };
 }
 
-/** Cinematic ease-in-out-quint — the snap section→section transition curve. */
+/** Cinematic ease-in-out-quint — the original snap curve (kept for reference). */
 export const easeQuintInOut = cubicBezier(0.83, 0, 0.17, 1);
 
-/** Expo-out — the per-section content reveal curve (matches easeCss.expoOut). */
+/**
+ * The shipping snap transition curve — a slightly punchier ease-in-out. It
+ * "grabs" faster off the leading-edge fire (≈0.7 in-slope vs 0.83) while keeping
+ * the same long, soft settle, so transitions feel instant without losing the
+ * quiet-luxury landing.
+ */
+export const easeSnap = cubicBezier(0.7, 0, 0.2, 1);
+
+/** Expo-out — the per-section content reveal / recede curve. */
 export const easeExpoOut = cubicBezier(0.16, 1, 0.3, 1);
 
 /** Clamp helper. */

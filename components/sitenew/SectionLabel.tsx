@@ -9,6 +9,10 @@ type Props = {
 export default function SectionLabel({ index, label, align = 'left' }: Props) {
   return (
     <div
+      // Near-plane parallax accent for the section-snap depth effect — the
+      // eyebrow rushes slightly faster than the content block. Inert when snap
+      // is off (no inline transform is ever written).
+      data-snap-depth="1.2"
       className={[
         'flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.42em] text-cyan-400/85',
         align === 'center' ? 'justify-center' : '',
