@@ -25,8 +25,10 @@ export default function SceneMoon({ rotationSpeed = 0.04 }: { rotationSpeed?: nu
         metalness: 0.0,
         useBumpFromDay: true,
         bumpScale: 0.022,
-        emissive: '#4a5570',
-        emissiveIntensity: 0.1,
+        // Lifted baseline glow so the shadow side stays a SOLID grey moon
+        // rather than crushing to near-black and blending into the page bg.
+        emissive: '#5b6478',
+        emissiveIntensity: 0.2,
       }}
     />
   );

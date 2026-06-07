@@ -119,8 +119,10 @@ export default function MoonCanvas() {
             {/* Warm key + cool fill + soft ambient → a lit moon with a defined
                 terminator, matching the /moon scene's read. */}
             <directionalLight position={[5, 2, 3]} intensity={1.7} color="#fffaf0" />
-            <directionalLight position={[-4, -1, -3]} intensity={0.4} color="#4a90e2" />
-            <ambientLight intensity={0.2} color="#3a4570" />
+            {/* Lifted cool fill + ambient so the shadow side reads as a solid
+                moon, not a see-through dark crescent against the page bg. */}
+            <directionalLight position={[-4, -1, -3]} intensity={0.6} color="#5a86c0" />
+            <ambientLight intensity={0.34} color="#41506e" />
             <group rotation={[0.18, 0, 0.06]}>
               <SceneMoon rotationSpeed={0.04} />
             </group>

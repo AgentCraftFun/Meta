@@ -46,10 +46,10 @@ const FRAGMENT = /* glsl */ `
 
     float cosAngle = dot(normalize(vNormal), normalize(sunDirection));
 
-    // Lifted unlit floor (0.15 -> 0.28): the dark hemisphere stays a visible
-    // earth instead of crushing to near-black (which made the limb vanish into
-    // the page background and read as "transparent").
-    float lighting = mix(0.28, 1.3, smoothstep(-0.2, 0.5, cosAngle));
+    // Lifted unlit floor: the dark hemisphere stays a clearly SOLID earth (not
+    // a near-black disc that blends into the page bg and reads as see-through),
+    // while the lit side still blooms.
+    float lighting = mix(0.40, 1.3, smoothstep(-0.2, 0.5, cosAngle));
     vec3 dayLit = dayColor * lighting;
 
     float nightFactor = 1.0 - smoothstep(-0.3, 0.0, cosAngle);
@@ -73,11 +73,10 @@ const FRAGMENT = /* glsl */ `
     float specBoost = pow(max(0.0, cosAngle), 32.0) * oceanMask * 0.4;
     color += vec3(specBoost) * vec3(0.7, 0.85, 1.0);
 
-    // SOLID-DISC FLOOR: clamp the darkest pixel to a dark navy that's clearly
-    // brighter than the #05080F page bg, so the full sphere always reads as a
-    // solid, opaque ball with a defined edge all the way around (no see-through
-    // limb). Well below land/ocean tones, so it only affects the deepest shadow.
-    color = max(color, vec3(0.035, 0.05, 0.09));
+    // SOLID-DISC FLOOR: clamp the darkest pixel to a dark navy clearly brighter
+    // than the #05080F page bg (≈ 0.02,0.03,0.06), so the full sphere always
+    // reads as a solid, opaque ball with a defined edge — never see-through.
+    color = max(color, vec3(0.075, 0.10, 0.16));
 
     color = min(color, vec3(1.05));
 
