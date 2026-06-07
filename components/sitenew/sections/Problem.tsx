@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import CountUp from '../CountUp';
 import Decode from '../Decode';
 import FadeUp from '../FadeUp';
-import GridBackdrop from '../GridBackdrop';
 import Scanline from '../Scanline';
 import SectionLabel from '../SectionLabel';
 import Shimmer from '../Shimmer';
@@ -42,7 +41,6 @@ const STATS = [
 export default function Problem() {
   return (
     <section className="relative w-full overflow-hidden px-6 py-[140px] md:px-10">
-      <GridBackdrop step={72} color="rgba(34, 211, 238, 0.05)" />
       <Scanline />
 
       <div className="relative mx-auto max-w-[1240px]">

@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import Decode from '../Decode';
 import DrawLine from '../DrawLine';
 import FadeUp from '../FadeUp';
-import GridBackdrop from '../GridBackdrop';
 import SectionLabel from '../SectionLabel';
 import Shimmer from '../Shimmer';
 import TacticalFrame from '../TacticalFrame';
@@ -41,7 +40,6 @@ const STEPS = [
 export default function HowItWorks() {
   return (
     <section className="relative w-full overflow-hidden px-6 py-[140px] md:px-10">
-      <GridBackdrop step={72} color="rgba(34, 211, 238, 0.04)" />
 
       <div className="relative mx-auto max-w-[1240px]">
         <FadeUp>

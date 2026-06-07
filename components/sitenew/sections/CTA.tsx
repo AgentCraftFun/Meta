@@ -2,7 +2,6 @@
 
 import CTAButton from '../CTAButton';
 import FadeUp from '../FadeUp';
-import GridBackdrop from '../GridBackdrop';
 import SectionLabel from '../SectionLabel';
 import { useSceneStore } from '../system/useSceneStore';
 
@@ -86,7 +85,6 @@ export default function CTA() {
         }}
       />
 
-      <GridBackdrop step={96} color="rgba(34, 211, 238, 0.04)" />
 
       <div className="relative mx-auto flex max-w-[1100px] flex-col items-center text-center">
         <FadeUp>

@@ -101,6 +101,26 @@ export default function SceneCanvas() {
       className="pointer-events-none fixed inset-0"
       style={{ zIndex: z.earth, background: '#05080F' }}
     >
+      {/* Tactical grid — a single fixed layer BEHIND the globe canvas. The
+          opaque globe sphere occludes it (so the grid never veils the globe),
+          while it still shows through the transparent canvas in the content /
+          text areas. Replaces the old per-section grids that sat in the z-10
+          content layer ON TOP of the globe and made it look "see-through". */}
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(34, 211, 238, 0.05) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(34, 211, 238, 0.05) 1px, transparent 1px)
+          `,
+          backgroundSize: '72px 72px',
+          maskImage:
+            'radial-gradient(ellipse at center, black 55%, transparent 100%)',
+          WebkitMaskImage:
+            'radial-gradient(ellipse at center, black 55%, transparent 100%)',
+        }}
+      />
       <div
         id="globe-transform"
         className="absolute inset-0"
