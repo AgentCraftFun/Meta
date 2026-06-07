@@ -102,11 +102,15 @@ export default function GlobeStageController() {
         blend = smoothstep(1 - d / TRANS); // 0 while dwelling → 1 at the hand-off
       }
       const f = a + blend; // continuous index, used only for the in-scene spin
-      const tgt: Slot = lerpSlot(SLOTS[a], SLOTS[j], blend);
+      let tgt: Slot = lerpSlot(SLOTS[a], SLOTS[j], blend);
 
-      // (Product cutout rect-tracking removed for now — it could size the globe
-      //  to the small panel cell and was the likely "tiny glitch". Product uses
-      //  its plain slot until hero/problem/insight are dialled in.)
+      // DEV PLACEMENT TOOL override (only set when ?place is active): pin the
+      // active section's globe to the cx/cy/scale the user is dialling in live,
+      // so what they see is exactly what they'll get when it's written to SLOTS.
+      const place = (window as unknown as { __globePlace?: Record<number, { cx: number; cy: number; scale: number }> }).__globePlace;
+      if (place && place[a]) {
+        tgt = { ...tgt, cx: place[a].cx, cy: place[a].cy, scale: place[a].scale };
+      }
 
       const { scrollVelocity } = useSceneStore.getState();
       const blurTarget = Math.abs(scrollVelocity) > FAST_BLUR_SKIP ? 0 : tgt.blur;

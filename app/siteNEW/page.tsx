@@ -6,6 +6,7 @@ import Insight from '@/components/sitenew/sections/Insight';
 import Problem from '@/components/sitenew/sections/Problem';
 import Product from '@/components/sitenew/sections/Product';
 import Vision from '@/components/sitenew/sections/Vision';
+import GlobePlacer from '@/components/sitenew/scene/GlobePlacer';
 import GlobeStageController from '@/components/sitenew/scene/GlobeStageController';
 import SceneCanvas from '@/components/sitenew/scene/SceneCanvas';
 import BootSequence from '@/components/sitenew/system/BootSequence';
@@ -45,6 +46,8 @@ export default function LandingPage() {
       <SceneCanvas />
       {/* Travelling-globe scroll controller (damps the #globe-transform). */}
       <GlobeStageController />
+      {/* DEV-ONLY live placement tool — inert unless the URL has ?place. */}
+      <GlobePlacer />
       <BootSequence />
       <Grade />
       {/* Scroll → activeSection / sectionProgress for the camera + beacons. */}
