@@ -6,18 +6,25 @@ import Insight from '@/components/sitenew/sections/Insight';
 import Problem from '@/components/sitenew/sections/Problem';
 import Product from '@/components/sitenew/sections/Product';
 import Vision from '@/components/sitenew/sections/Vision';
+import BootSequence from '@/components/sitenew/system/BootSequence';
+import Grade from '@/components/sitenew/system/Grade';
+import SmoothScroll from '@/components/sitenew/system/SmoothScroll';
 
 export default function LandingPage() {
   return (
-    <main className="w-full bg-[#05080F] text-slate-100">
-      <Hero />
-      <Problem />
-      <Insight />
-      <Product />
-      <HowItWorks />
-      <Vision />
-      <CTA />
-      <Footer />
-    </main>
+    <SmoothScroll>
+      <BootSequence />
+      <Grade />
+      <main className="w-full bg-[#05080F] text-slate-100">
+        <Hero />
+        <Problem />
+        <Insight />
+        <Product />
+        <HowItWorks />
+        <Vision />
+        <CTA />
+        <Footer />
+      </main>
+    </SmoothScroll>
   );
 }
