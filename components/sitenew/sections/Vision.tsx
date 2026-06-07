@@ -51,6 +51,9 @@ const CARDS = [
       "See where the world's stories are forming, by country, in real time.",
     status: 'Shipping',
     visual: <EarthVisual />,
+    // Desktop-live: the real travelling globe docks here (slot §5); the visual
+    // area becomes a transparent cutout so it shows through.
+    cutout: true,
   },
   {
     key: 'moon',
@@ -61,6 +64,8 @@ const CARDS = [
       'See which tokens are launching around those narratives. Galaxy clusters by theme.',
     status: 'Q2 2026',
     visual: <MoonVisual />,
+    // Desktop-live: the real 3D moon (MoonCanvas) shows through this cutout.
+    cutout: true,
   },
   {
     key: 'bots',
@@ -71,10 +76,21 @@ const CARDS = [
       'Trade through integrated bots without leaving the terminal. One-click signal → trade.',
     status: 'Q3 2026',
     visual: <BotsVisual />,
+    cutout: false,
   },
 ];
 
 export default function Vision() {
+  // Desktop-live → Earth/Moon cards become transparent cutouts and the real
+  // 3D globe + moon (fixed z-0 canvases) show through. RM / mobile / SSR keep
+  // the 2D fallback visuals in solid cards. (Matches ProductMock's cutout gate.)
+  const [cutoutMode, setCutoutMode] = useState(false);
+  useEffect(() => {
+    const r = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const m = window.matchMedia('(max-width: 768px)').matches;
+    setCutoutMode(!r && !m);
+  }, []);
+
   return (
     <section className="relative w-full overflow-hidden px-6 py-[140px] md:px-10">
 
@@ -98,41 +114,59 @@ export default function Vision() {
         <div className="mt-16 grid grid-cols-1 gap-5 md:grid-cols-3">
           {CARDS.map((card, i) => {
             const theme = THEMES[card.theme];
+            // When the real 3D body docks here, the card is a transparent
+            // cutout: no opaque bg behind the visual area, and no tilt (the
+            // fixed globe/moon wouldn't tilt with it). The body keeps its bg.
+            const isCutout = Boolean(card.cutout) && cutoutMode;
+            const article = (
+              <article
+                className={`group relative flex h-full flex-col overflow-hidden transition-shadow duration-500 ${theme.glow} ${
+                  isCutout ? '' : 'bg-[#0B1220]'
+                }`}
+              >
+                {/* Status pill */}
+                <span
+                  className={`absolute right-5 top-5 z-10 border px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.4em] ${theme.pillBg}`}
+                >
+                  {card.status}
+                </span>
+
+                {/* Themed visual area — transparent cutout in live mode (the
+                    fixed globe/moon shows through), else the 2D fallback. */}
+                <div
+                  className={`relative aspect-[5/3] w-full overflow-hidden border-b border-white/5 ${
+                    isCutout ? '' : 'bg-[#06090F]'
+                  }`}
+                >
+                  {isCutout ? null : card.visual}
+                </div>
+
+                {/* Body (keeps the card surface even in cutout mode) */}
+                <div
+                  className={`relative flex flex-1 flex-col p-7 ${isCutout ? 'bg-[#0B1220]' : ''}`}
+                >
+                  <span
+                    className={`font-mono text-[11px] uppercase tracking-[0.4em] ${theme.text}`}
+                  >
+                    {card.subtitle}
+                  </span>
+                  <h3 className="mt-3 font-display text-[40px] font-bold leading-none tracking-[-0.025em] text-white">
+                    {card.title}
+                  </h3>
+                  <p className="mt-4 text-[14px] leading-relaxed text-slate-400">
+                    {card.description}
+                  </p>
+                </div>
+              </article>
+            );
             return (
               <FadeUp key={card.key} delay={i * 0.12}>
                 <TacticalFrame color={theme.ring} size={16} thickness={1.5}>
-                 <TiltCard className="h-full">
-                  <article
-                    className={`group relative flex h-full flex-col overflow-hidden bg-[#0B1220] transition-shadow duration-500 ${theme.glow}`}
-                  >
-                    {/* Status pill */}
-                    <span
-                      className={`absolute right-5 top-5 z-10 border px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.4em] ${theme.pillBg}`}
-                    >
-                      {card.status}
-                    </span>
-
-                    {/* Themed visual area */}
-                    <div className="relative aspect-[5/3] w-full overflow-hidden border-b border-white/5 bg-[#06090F]">
-                      {card.visual}
-                    </div>
-
-                    {/* Body */}
-                    <div className="relative flex flex-1 flex-col p-7">
-                      <span
-                        className={`font-mono text-[11px] uppercase tracking-[0.4em] ${theme.text}`}
-                      >
-                        {card.subtitle}
-                      </span>
-                      <h3 className="mt-3 font-display text-[40px] font-bold leading-none tracking-[-0.025em] text-white">
-                        {card.title}
-                      </h3>
-                      <p className="mt-4 text-[14px] leading-relaxed text-slate-400">
-                        {card.description}
-                      </p>
-                    </div>
-                  </article>
-                 </TiltCard>
+                  {isCutout ? (
+                    article
+                  ) : (
+                    <TiltCard className="h-full">{article}</TiltCard>
+                  )}
                 </TacticalFrame>
               </FadeUp>
             );

@@ -44,9 +44,13 @@ export const SLOTS: Slot[] = [
   { cx: 0.130, cy: 0.480, scale: 1.090, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 2 Insight
   { cx: 0.650, cy: 0.490, scale: 0.410, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 3 Product
   { cx: 0.510, cy: 0.500, scale: 1.250, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 4 HowItWorks
-  { cx: 0.5, cy: 0.5, scale: DIM_SCALE, bright: 0.55, opacity: 0.28, blur: 2, feather: 0 }, // 5 Vision (dim)
-  { cx: 0.5, cy: 0.5, scale: DIM_SCALE, bright: 0.5, opacity: 0.26, blur: 3, feather: 0 }, // 6 CTA (dim)
-  { cx: 0.5, cy: 0.5, scale: DIM_SCALE, bright: 0.5, opacity: 0.0, blur: 3, feather: 0 }, // 7 Footer (faded out)
+  // §5 Vision — the globe DOCKS onto the "Earth" product card (tuned via ?place:
+  // cx 0.23 / cy 0.52 / scale 0.44). Full visibility; it travels here from §4.
+  { cx: 0.230, cy: 0.520, scale: 0.440, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 5 Vision (Earth card)
+  // §6 CTA — back to a big centred planet behind the copy (preserves the prior
+  // clamped look now that §5 is a real travel slot).
+  { cx: 0.500, cy: 0.500, scale: 1.250, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 6 CTA (centred)
+  { cx: 0.5, cy: 0.5, scale: DIM_SCALE, bright: 0.5, opacity: 0.0, blur: 3, feather: 0 }, // 7 Footer (clamped to §6)
 ];
 
 /**
@@ -148,8 +152,9 @@ export function lerpSlot(a: Slot, b: Slot, t: number): Slot {
  * GlobePlacer overlay so what you tune is exactly what ships.
  * ================================================================== */
 
-/** Highest section index that travels this session (§0–§4). */
-export const LAST_SECTION = 4;
+/** Highest section index the globe travels to. §5 docks the globe onto the
+ *  Vision "Earth" card; §6 recentres it behind the CTA; §7 clamps to §6. */
+export const LAST_SECTION = 6;
 
 /**
  * Visible build marker — bump on every globe change so we can confirm at a

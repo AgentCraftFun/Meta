@@ -8,6 +8,7 @@ import Product from '@/components/sitenew/sections/Product';
 import Vision from '@/components/sitenew/sections/Vision';
 import GlobePlacer from '@/components/sitenew/scene/GlobePlacer';
 import GlobeStageController from '@/components/sitenew/scene/GlobeStageController';
+import MoonCanvas from '@/components/sitenew/scene/MoonCanvas';
 import SceneCanvas from '@/components/sitenew/scene/SceneCanvas';
 import BootSequence from '@/components/sitenew/system/BootSequence';
 import Grade from '@/components/sitenew/system/Grade';
@@ -52,6 +53,8 @@ export default function LandingPage() {
 
       {/* Persistent globe — one fixed canvas (z-0) behind the whole page. */}
       <SceneCanvas />
+      {/* §5 Vision moon — second fixed canvas (z-0), parked on the Moon card. */}
+      <MoonCanvas />
       {/* Travelling-globe scroll controller (damps the #globe-transform). */}
       <GlobeStageController />
       {/* DEV-ONLY live placement tool — inert unless the URL has ?place. */}

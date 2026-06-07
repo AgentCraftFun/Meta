@@ -40,4 +40,13 @@ for (const src of SOURCES) {
     console.log(`✓ ${src.out}_${tier.name}.webp`);
   }
 }
+
+// Moon — the /siteNEW Vision card shows a small moon, so a single 2k tier
+// replaces the 15MB 8k JPG the full /moon route uses.
+await sharp(join(SRC, '8k_moon.jpg'))
+  .resize({ width: 2048, height: 1024, fit: 'fill' })
+  .webp({ quality: 82, effort: 5 })
+  .toFile(join(OUT, 'moon_2k.webp'));
+console.log('✓ moon_2k.webp');
+
 console.log('done');
