@@ -28,14 +28,14 @@ export type Slot = {
 // is unused now (no clip; transparent canvas). cx/cy place the globe centre;
 // scale sizes it. All slots show the whole globe, just sized/placed differently.
 export const SLOTS: Slot[] = [
-  { cx: 0.7, cy: 0.5, scale: 1.05, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 0 Hero — big full globe, right
+  { cx: 0.7, cy: 0.5, scale: 1.0, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 0 Hero — big full globe (~97% vh), right
   { cx: 0.78, cy: 0.46, scale: 0.52, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 1 Problem — full globe, right (clears left text)
-  { cx: 0.18, cy: 0.5, scale: 0.72, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 2 Insight — big full globe, left
-  { cx: 0.62, cy: 0.5, scale: 0.42, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 3 Product — full globe in panel (rect-tracked)
-  { cx: 0.5, cy: 0.48, scale: 1.15, bright: 0.5, opacity: 0.26, blur: 2, feather: 0 }, // 4 HowItWorks — dim full backdrop
-  { cx: 0.5, cy: 0.46, scale: 1.2, bright: 0.5, opacity: 0.24, blur: 2, feather: 0 }, // 5 Vision — dim full backdrop
-  { cx: 0.5, cy: 0.55, scale: 1.25, bright: 0.45, opacity: 0.22, blur: 3, feather: 0 }, // 6 CTA — dim full backdrop
-  { cx: 0.5, cy: 0.55, scale: 1.25, bright: 0.45, opacity: 0.0, blur: 3, feather: 0 }, // 7 Footer — faded out
+  { cx: 0.18, cy: 0.5, scale: 0.7, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 2 Insight — big full globe, left
+  { cx: 0.64, cy: 0.5, scale: 0.5, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 3 Product — full globe near panel
+  { cx: 0.5, cy: 0.48, scale: 1.1, bright: 0.5, opacity: 0.26, blur: 2, feather: 0 }, // 4 HowItWorks — dim full backdrop
+  { cx: 0.5, cy: 0.46, scale: 1.15, bright: 0.5, opacity: 0.24, blur: 2, feather: 0 }, // 5 Vision — dim full backdrop
+  { cx: 0.5, cy: 0.55, scale: 1.2, bright: 0.45, opacity: 0.22, blur: 3, feather: 0 }, // 6 CTA — dim full backdrop
+  { cx: 0.5, cy: 0.55, scale: 1.2, bright: 0.45, opacity: 0.0, blur: 3, feather: 0 }, // 7 Footer — faded out
 ];
 
 /**
@@ -50,7 +50,7 @@ export const GLOBE_ORIGIN = { x: 0.5, y: 0.5 } as const;
  * (~0.85 with the pulled-back camera). Used to fit the globe into the Product
  * panel cutout.
  */
-export const GLOBE_DIAM_VH = 0.85;
+export const GLOBE_DIAM_VH = 0.97;
 
 /**
  * Clip-path circle centered on the globe (GLOBE_ORIGIN). `r` is the radius %.

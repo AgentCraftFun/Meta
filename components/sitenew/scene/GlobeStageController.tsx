@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { GLOBE_DAMP_LAMBDA } from '../system/motion';
 import { useSceneStore } from '../system/useSceneStore';
-import { GLOBE_DIAM_VH, GLOBE_ORIGIN, SLOTS, lerpSlot, type Slot } from './globeSlots';
+import { GLOBE_ORIGIN, SLOTS, lerpSlot, type Slot } from './globeSlots';
 
 /**
  * The travelling globe. ONE rAF loop damps the #globe-transform wrapper toward
@@ -24,7 +24,6 @@ import { GLOBE_DIAM_VH, GLOBE_ORIGIN, SLOTS, lerpSlot, type Slot } from './globe
  *
  * REDUCED-MOTION / mobile (≤768px): disabled — globe stays in hero framing.
  */
-const PRODUCT_SECTION = 3;
 const FAST_BLUR_SKIP = 40;
 
 function smoothstep(x: number): number {
@@ -40,7 +39,6 @@ export default function GlobeStageController() {
     if (reduced || mobile) return;
 
     let el: HTMLElement | null = null;
-    let cutout: HTMLElement | null = null;
     let sections: HTMLElement[] = [];
     let raf = 0;
     let last = performance.now();
@@ -70,7 +68,7 @@ export default function GlobeStageController() {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
       const center = vh / 2;
-      const BAND = 0.42 * vh;
+      const BAND = 0.3 * vh; // tighter band → each section dwells at its slot longer
       const n = sections.length;
 
       const rects = sections.map((s) => s.getBoundingClientRect());
@@ -85,24 +83,11 @@ export default function GlobeStageController() {
       f = Math.max(0, Math.min(n - 1, f));
       const i0 = Math.floor(f);
       const i1 = Math.min(i0 + 1, n - 1);
-      let tgt: Slot = lerpSlot(SLOTS[i0], SLOTS[i1], f - i0);
+      const tgt: Slot = lerpSlot(SLOTS[i0], SLOTS[i1], f - i0);
 
-      // Product: lock to the live panel cutout when it's the dominant section.
-      if (Math.round(f) === PRODUCT_SECTION) {
-        if (!cutout) cutout = document.getElementById('product-globe-cutout');
-        const r = cutout?.getBoundingClientRect();
-        if (r && r.width > 0) {
-          tgt = {
-            cx: (r.left + r.width / 2) / vw,
-            cy: (r.top + r.height / 2) / vh,
-            scale: r.height / (GLOBE_DIAM_VH * vh),
-            bright: 1,
-            opacity: 1,
-            blur: 0,
-            feather: 55,
-          };
-        }
-      }
+      // (Product cutout rect-tracking removed for now — it could size the globe
+      //  to the small panel cell and was the likely "tiny glitch". Product uses
+      //  its plain slot until hero/problem/insight are dialled in.)
 
       const { scrollVelocity } = useSceneStore.getState();
       const blurTarget = Math.abs(scrollVelocity) > FAST_BLUR_SKIP ? 0 : tgt.blur;

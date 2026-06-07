@@ -127,7 +127,7 @@ export default function SceneCanvas() {
             stencil: false,
             depth: true,
           }}
-          camera={{ position: [2.53, 0.79, 3.64], fov: 30, near: 0.1, far: 1000 }}
+          camera={{ position: [2.25, 0.7, 3.23], fov: 30, near: 0.1, far: 1000 }}
           onCreated={({ gl }) => {
             gl.toneMapping = ACESFilmicToneMapping;
             gl.toneMappingExposure = 0.85;
