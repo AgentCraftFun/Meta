@@ -191,6 +191,22 @@ export function buildAnchors(sections: HTMLElement[], vh: number, scroll: number
   return out;
 }
 
+/**
+ * The section the viewport is currently "on": the last section whose top has
+ * reached/passed the viewport centre, clamped to the travelling range. ONE
+ * definition, used by BOTH the controller and the placer, so the live page and
+ * the tuning overlay can never disagree about which slot to show.
+ */
+export function activeSection(): number {
+  const center = window.innerHeight / 2;
+  const sections = getSections();
+  let a = 0;
+  for (let i = 0; i < sections.length; i++) {
+    if (sections[i].getBoundingClientRect().top <= center + 0.5) a = i;
+  }
+  return Math.min(a, LAST_SECTION);
+}
+
 /** Continuous float section index for a scroll position. Clamped to [0,last]. */
 export function scrollToT(scroll: number, anchors: number[]): number {
   const lastIdx = anchors.length - 1;
