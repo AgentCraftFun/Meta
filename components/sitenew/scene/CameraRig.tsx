@@ -20,6 +20,8 @@ import { WAYPOINT_LOOK, WAYPOINT_POS } from './waypoints';
  */
 const PARALLAX_X = 0.1;
 const PARALLAX_Y = 0.07;
+/** Radians the globe rotates per section travelled (scroll-linked spin). */
+const SPIN_PER_SECTION = 2.2;
 
 export default function CameraRig({
   earthGroupRef,
@@ -36,6 +38,7 @@ export default function CameraRig({
   const lookCurrent = useRef(new THREE.Vector3().copy(WAYPOINT_LOOK[0]));
   const posTarget = useRef(new THREE.Vector3().copy(WAYPOINT_POS[0]));
   const lookTarget = useRef(new THREE.Vector3().copy(WAYPOINT_LOOK[0]));
+  const autoSpin = useRef(0);
 
   useEffect(() => {
     if (frozen) return;
@@ -50,10 +53,14 @@ export default function CameraRig({
   useFrame((_, delta) => {
     const dt = Math.min(delta, 0.05);
 
-    // SPIN FROZEN for static verification — the globe must be completely still
-    // so position can be confirmed. (Re-enable ambient spin later if desired.)
+    // Globe rotation: gentle ambient spin + a scroll-linked spin driven by the
+    // damped travel index from GlobeStageController, so the earth visibly turns
+    // as it travels between scenes. This rotates the GROUP only — the camera
+    // stays hard-locked (idx 0 below), so the canvas never resizes/reframes.
     if (!frozen && earthGroupRef.current) {
-      earthGroupRef.current.rotation.y = 0;
+      autoSpin.current += 0.04 * dt;
+      const travel = useSceneStore.getState().globeTravel;
+      earthGroupRef.current.rotation.y = autoSpin.current + travel * SPIN_PER_SECTION;
     }
 
     // CAMERA HARD-LOCKED to the Hero waypoint, unconditionally. The per-section

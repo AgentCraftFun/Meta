@@ -1,7 +1,18 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { GLOBE_BUILD_TAG, SLOTS, activeSection, globeTransform } from './globeSlots';
+import {
+  GLOBE_BUILD_TAG,
+  LAST_SECTION,
+  SLOTS,
+  buildAnchors,
+  getScroll,
+  getSections,
+  globeTransform,
+  scrollToT,
+  slotAt,
+  type Slot,
+} from './globeSlots';
 import { useSceneStore } from '../system/useSceneStore';
 
 /**
@@ -30,9 +41,14 @@ export default function GlobePlacer() {
   const [enabled, setEnabled] = useState(false);
   const dbgRef = useRef<HTMLPreElement>(null);
 
-  // Active section — the SAME function the live controller uses, so the overlay
-  // and the live page can never disagree about which slot is shown.
-  const getActive = () => activeSection();
+  // Continuous float t — the SAME model the live controller uses.
+  const currentT = () => {
+    const scroll = getScroll();
+    return scrollToT(scroll, buildAnchors(getSections(), window.innerHeight, scroll));
+  };
+  // Active section = nearest tuned slot (for the panel + which slot you tune).
+  const getActive = () =>
+    Math.max(0, Math.min(Math.round(currentT()), LAST_SECTION));
 
   // Apply a change to the active section's placement and re-render.
   const mutate = (cb: (p: { cx: number; cy: number; scale: number }) => void) => {
@@ -61,22 +77,29 @@ export default function GlobePlacer() {
     let cur = -1;
     const loop = () => {
       raf = requestAnimationFrame(loop);
-      const a = getActive();
+      const t = currentT();
+      const a = Math.max(0, Math.min(Math.round(t), LAST_SECTION));
       if (a !== cur) {
         cur = a;
         setActive(a);
       }
-      // HARD LOCK: render the active section's tuned slot directly — the EXACT
-      // same mapping the live controller uses (globeTransform of slot[active]),
-      // so what you see here is byte-identical to what ships.
+      // WYSIWYG: render the SAME slotAt(t) eased interpolation the live page
+      // uses (with your per-section overrides merged in), so scrubbing here is a
+      // true preview of the travel and a centred section shows its pure slot.
+      // Also publish travel so the globe's rotation previews too.
+      useSceneStore.getState().setGlobeTravel(t);
       const g = document.getElementById('globe-transform');
       if (g) {
-        const o = placeRef.current[a] ?? { cx: 0.5, cy: 0.5, scale: 1 };
+        const overridden: Slot[] = SLOTS.map((s, i) => {
+          const o = placeRef.current[i];
+          return o ? { ...s, cx: o.cx, cy: o.cy, scale: o.scale } : s;
+        });
+        const tgt = slotAt(t, overridden);
         const vw = window.innerWidth;
         const vh = window.innerHeight;
         const baseW = g.offsetWidth || vw;
         const baseH = g.offsetHeight || vh;
-        g.style.transform = globeTransform(o.cx, o.cy, o.scale, vw, vh, baseW, baseH);
+        g.style.transform = globeTransform(tgt.cx, tgt.cy, tgt.scale, vw, vh, baseW, baseH);
         g.style.filter = 'brightness(1)';
         g.style.opacity = '1';
 

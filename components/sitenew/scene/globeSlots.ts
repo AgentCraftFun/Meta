@@ -156,7 +156,7 @@ export const LAST_SECTION = 4;
  * glance which build is actually live (printed to console on load + shown in the
  * GLOBE PLACER panel). If you don't see this exact tag, you're on a stale build.
  */
-export const GLOBE_BUILD_TAG = 'globe-build-10 · TUNED SLOTS §0–§4';
+export const GLOBE_BUILD_TAG = 'globe-build-11 · SMOOTH TRAVEL + ROTATION';
 
 // Long horizontal traverses get a shallow orbital arc (subtle, vanishes at the
 // endpoints). Only applied when |Δcx| between two slots exceeds ARC_DCX.
