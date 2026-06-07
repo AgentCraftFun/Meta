@@ -52,6 +52,21 @@ export const CAMERA_LAMBDA = 4;
 export const RETICLE_LAMBDA = 6;
 
 /* ------------------------------------------------------------------ *
+ * TRAVELLING GLOBE
+ * ------------------------------------------------------------------ */
+
+/** Globe-travel damp lambda — buttery, never snaps (~0.07/frame @60fps). */
+export const GLOBE_DAMP_LAMBDA = 4.5;
+
+/** Alternative spring form for the globe travel (if used instead of damp). */
+export const globeSpring = {
+  type: 'spring',
+  stiffness: 90,
+  damping: 26,
+  mass: 1,
+} as const;
+
+/* ------------------------------------------------------------------ *
  * TIMING (seconds) + STAGGER
  * ------------------------------------------------------------------ */
 

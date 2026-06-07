@@ -101,7 +101,9 @@ function Scene({
       </group>
       <Atmosphere />
 
-      <CameraRig earthGroupRef={earthGroupRef} frozen={frozen} lockFlight={simplified} />
+      {/* Camera holds hero framing; the globe now travels via the
+          GlobeStageController's canvas-layer transform, not camera flight. */}
+      <CameraRig earthGroupRef={earthGroupRef} frozen={frozen} lockFlight />
       <BloomController bloomRef={bloomRef} />
       <PerfGuard onFast={setFast} />
 
@@ -163,28 +165,51 @@ export default function SceneCanvas() {
     typeof window !== 'undefined' &&
     window.matchMedia('(max-width: 768px)').matches;
 
+  // Soft radial feather so the canvas rectangle melts into the #05080F base
+  // when the globe travels (scales/translates). Centered on the globe's hero
+  // position; at hero scale the falloff is near the edges (≈ /siteview), and it
+  // becomes the disc edge when scaled down.
+  const feather =
+    'radial-gradient(circle at 68% 50%, #000 56%, rgba(0,0,0,0.85) 70%, transparent 84%)';
+
   return (
-    <div aria-hidden className="pointer-events-none fixed inset-0" style={{ zIndex: z.earth }}>
-      <Canvas
-        dpr={[1, 1.75]}
-        gl={{
-          antialias: true,
-          powerPreference: 'high-performance',
-          alpha: false,
-          stencil: false,
-          depth: true,
-        }}
-        camera={{ position: [1.6, 0.5, 2.3], fov: 30, near: 0.1, far: 1000 }}
-        onCreated={({ gl }) => {
-          gl.toneMapping = ACESFilmicToneMapping;
-          gl.toneMappingExposure = 0.85;
-          gl.outputColorSpace = SRGBColorSpace;
+    <div
+      id="globe-stage"
+      aria-hidden
+      className="pointer-events-none fixed inset-0"
+      style={{ zIndex: z.earth, background: '#05080F' }}
+    >
+      <div
+        id="globe-transform"
+        className="absolute inset-0"
+        style={{
+          transformOrigin: 'center center',
+          willChange: 'transform, filter, opacity',
+          maskImage: feather,
+          WebkitMaskImage: feather,
         }}
       >
-        <Suspense fallback={null}>
-          <Scene tier={tier} frozen={reduced} simplified={simplified} />
-        </Suspense>
-      </Canvas>
+        <Canvas
+          dpr={[1, 1.75]}
+          gl={{
+            antialias: true,
+            powerPreference: 'high-performance',
+            alpha: false,
+            stencil: false,
+            depth: true,
+          }}
+          camera={{ position: [1.6, 0.5, 2.3], fov: 30, near: 0.1, far: 1000 }}
+          onCreated={({ gl }) => {
+            gl.toneMapping = ACESFilmicToneMapping;
+            gl.toneMappingExposure = 0.85;
+            gl.outputColorSpace = SRGBColorSpace;
+          }}
+        >
+          <Suspense fallback={null}>
+            <Scene tier={tier} frozen={reduced} simplified={simplified} />
+          </Suspense>
+        </Canvas>
+      </div>
       <LoadingScreen />
     </div>
   );
