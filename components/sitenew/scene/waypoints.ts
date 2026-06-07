@@ -12,7 +12,7 @@ export type Waypoint = {
 };
 
 export const WAYPOINTS: Waypoint[] = [
-  { pos: [1.6, 0.5, 2.3], look: [-0.4, 0, 0], intent: 'Hero — planet right, headline clear' },
+  { pos: [2.53, 0.79, 3.64], look: [0, 0, 0], intent: 'Hero — full sphere centred in canvas (camera pulled back so it never crops); travel offsets it per slot' },
   { pos: [2.4, 0.3, 1.6], look: [0.2, 0, 0], intent: 'Problem — pull back, globe small/left' },
   { pos: [0.6, -0.2, 1.1], look: [0.0, 0, 0], intent: 'Insight — descend to surface (ignition)' },
   { pos: [0.9, 0.1, 1.4], look: [0.3, 0, 0], intent: 'Product — tilt, globe right, mock left' },

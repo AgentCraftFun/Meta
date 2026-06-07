@@ -23,34 +23,34 @@ export type Slot = {
   feather: number; // radial-mask transparent stop, %
 };
 
-// `feather` is now the CLIP-PATH circle radius (%): ≥100 = no visible clip
-// (full-bleed); ~55 = a circle hugging the globe (clean disc). The clip removes
-// the surrounding starfield so scaled slots never show a star-rectangle; the
-// canvas clears to #05080F so the clip edge is invisible against the page.
+// The globe is rendered as a FULL sphere centred in the canvas (camera pulled
+// back), at ~85% of viewport height at scale 1 — so it never crops. `feather`
+// is unused now (no clip; transparent canvas). cx/cy place the globe centre;
+// scale sizes it. All slots show the whole globe, just sized/placed differently.
 export const SLOTS: Slot[] = [
-  { cx: 0.68, cy: 0.5, scale: 1.0, bright: 1.0, opacity: 1.0, blur: 0, feather: 150 }, // 0 Hero — full-bleed right
-  { cx: 0.76, cy: 0.48, scale: 0.54, bright: 1.0, opacity: 1.0, blur: 0, feather: 55 }, // 1 Problem — big disc, right (clears left text column)
-  { cx: 0.15, cy: 0.5, scale: 0.66, bright: 1.0, opacity: 1.0, blur: 0, feather: 58 }, // 2 Insight — big disc, left (flow on the right)
-  { cx: 0.62, cy: 0.5, scale: 0.34, bright: 1.0, opacity: 1.0, blur: 0, feather: 55 }, // 3 Product — disc in panel (rect-tracked when active)
-  { cx: 0.5, cy: 0.46, scale: 0.95, bright: 0.5, opacity: 0.26, blur: 2, feather: 150 }, // 4 HowItWorks — dim full backdrop
-  { cx: 0.5, cy: 0.45, scale: 1.0, bright: 0.5, opacity: 0.24, blur: 2, feather: 150 }, // 5 Vision — dim full backdrop
-  { cx: 0.5, cy: 0.55, scale: 1.1, bright: 0.45, opacity: 0.22, blur: 3, feather: 150 }, // 6 CTA — dim full backdrop
-  { cx: 0.5, cy: 0.55, scale: 1.1, bright: 0.45, opacity: 0.0, blur: 3, feather: 150 }, // 7 Footer — faded out
+  { cx: 0.7, cy: 0.5, scale: 1.05, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 0 Hero — big full globe, right
+  { cx: 0.78, cy: 0.46, scale: 0.52, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 1 Problem — full globe, right (clears left text)
+  { cx: 0.18, cy: 0.5, scale: 0.72, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 2 Insight — big full globe, left
+  { cx: 0.62, cy: 0.5, scale: 0.42, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 3 Product — full globe in panel (rect-tracked)
+  { cx: 0.5, cy: 0.48, scale: 1.15, bright: 0.5, opacity: 0.26, blur: 2, feather: 0 }, // 4 HowItWorks — dim full backdrop
+  { cx: 0.5, cy: 0.46, scale: 1.2, bright: 0.5, opacity: 0.24, blur: 2, feather: 0 }, // 5 Vision — dim full backdrop
+  { cx: 0.5, cy: 0.55, scale: 1.25, bright: 0.45, opacity: 0.22, blur: 3, feather: 0 }, // 6 CTA — dim full backdrop
+  { cx: 0.5, cy: 0.55, scale: 1.25, bright: 0.45, opacity: 0.0, blur: 3, feather: 0 }, // 7 Footer — faded out
 ];
 
 /**
- * Globe's natural on-screen center at hero framing (matches slot 0). The
- * controller compensates for this so transform-origin can stay centered while
- * the globe still lands on each slot's target center.
+ * Globe's natural on-screen centre at scale-1 framing. The globe is now centred
+ * in the canvas (camera looks at origin), so this is dead-centre; the controller
+ * translates from here to each slot's target centre.
  */
-export const GLOBE_ORIGIN = { x: 0.68, y: 0.5 } as const;
+export const GLOBE_ORIGIN = { x: 0.5, y: 0.5 } as const;
 
 /**
- * Globe's on-screen DIAMETER at scale 1, as a fraction of viewport height.
- * The globe is larger than the viewport at hero (it bleeds), hence > 1. Used to
- * size the globe to fit the Product panel cutout.
+ * Globe's on-screen DIAMETER at scale 1, as a fraction of viewport height
+ * (~0.85 with the pulled-back camera). Used to fit the globe into the Product
+ * panel cutout.
  */
-export const GLOBE_DIAM_VH = 1.35;
+export const GLOBE_DIAM_VH = 0.85;
 
 /**
  * Clip-path circle centered on the globe (GLOBE_ORIGIN). `r` is the radius %.

@@ -70,26 +70,22 @@ export default function GlobeStageController() {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
       const center = vh / 2;
-      const BAND = 0.5 * vh;
+      const BAND = 0.42 * vh;
       const n = sections.length;
 
       const rects = sections.map((s) => s.getBoundingClientRect());
-      // current section = last whose top is at/above the viewport centre
-      let i = 0;
-      for (let kk = 0; kk < n; kk++) {
-        if (rects[kk].top <= center) i = kk;
+      // Continuous travel index: SUM how far each section boundary has crossed
+      // the viewport centre (each contributes 0→1 over a ±BAND window, centred
+      // on the boundary hitting screen centre). No section-flip → no jump/glitch.
+      let f = 0;
+      for (let b = 0; b < n - 1; b++) {
+        const boundaryY = rects[b + 1].top; // viewport-y of boundary b↔b+1
+        f += smoothstep((center - boundaryY + BAND) / (2 * BAND));
       }
-      // scrub toward the next slot in the band before section i's bottom boundary
-      let frac = 0;
-      if (i < n - 1) {
-        const boundary = rects[i].bottom;
-        if (center > boundary - BAND) {
-          frac = smoothstep((center - (boundary - BAND)) / BAND);
-        }
-      }
-      const f = i + frac; // continuous travel index
-
-      let tgt: Slot = lerpSlot(SLOTS[i], SLOTS[Math.min(i + 1, n - 1)], frac);
+      f = Math.max(0, Math.min(n - 1, f));
+      const i0 = Math.floor(f);
+      const i1 = Math.min(i0 + 1, n - 1);
+      let tgt: Slot = lerpSlot(SLOTS[i0], SLOTS[i1], f - i0);
 
       // Product: lock to the live panel cutout when it's the dominant section.
       if (Math.round(f) === PRODUCT_SECTION) {
