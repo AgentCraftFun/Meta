@@ -141,3 +141,114 @@ export function lerpSlot(a: Slot, b: Slot, t: number): Slot {
     feather: a.feather + (b.feather - a.feather) * k,
   };
 }
+
+/* ================================================================== *
+ * SHARED TRAVEL MODEL — ONE source of truth for "where the globe is at
+ * a given scroll", imported by BOTH the runtime controller AND the
+ * GlobePlacer overlay so what you tune is exactly what ships.
+ * ================================================================== */
+
+/** Highest section index that travels this session (§0–§4). */
+export const LAST_SECTION = 4;
+
+// Long horizontal traverses get a shallow orbital arc (subtle, vanishes at the
+// endpoints). Only applied when |Δcx| between two slots exceeds ARC_DCX.
+const ARC_DCX = 0.4;
+const ARC_AMOUNT = 0.06;
+
+const flerp = (a: number, b: number, e: number): number => a + (b - a) * e;
+
+/** Sorted list of section elements (index === data-sn-section). */
+export function getSections(): HTMLElement[] {
+  return Array.from(document.querySelectorAll<HTMLElement>('[data-sn-section]')).sort(
+    (a, b) => Number(a.dataset.snSection) - Number(b.dataset.snSection)
+  );
+}
+
+/** The ONE scroll source: Lenis's smoothed scroll if present, else scrollY. */
+export function getScroll(): number {
+  const lenis = (window as unknown as { __lenis?: { scroll: number } }).__lenis;
+  return lenis ? lenis.scroll : window.scrollY;
+}
+
+/**
+ * Absolute-document scroll positions at which t === section index.
+ *   anchor[0] = 0 (hero top); anchor[i>0] = the scroll at which section i is
+ *   CENTRED in the viewport. Computed once on mount/resize and cached — never
+ *   per frame — so ticker reflows can't shift them mid-scroll.
+ */
+export function buildAnchors(sections: HTMLElement[], vh: number, scroll: number): number[] {
+  const lastIdx = Math.min(LAST_SECTION, sections.length - 1);
+  const out: number[] = [];
+  for (let i = 0; i <= lastIdx; i++) {
+    if (i === 0) {
+      out[i] = 0;
+      continue;
+    }
+    const r = sections[i].getBoundingClientRect();
+    out[i] = r.top + scroll + r.height / 2 - vh / 2;
+  }
+  return out;
+}
+
+/** Continuous float section index for a scroll position. Clamped to [0,last]. */
+export function scrollToT(scroll: number, anchors: number[]): number {
+  const lastIdx = anchors.length - 1;
+  if (lastIdx <= 0 || scroll <= anchors[0]) return 0;
+  for (let i = 0; i < lastIdx; i++) {
+    if (scroll < anchors[i + 1]) {
+      const span = anchors[i + 1] - anchors[i];
+      const f = span > 0 ? (scroll - anchors[i]) / span : 0;
+      return i + (f < 0 ? 0 : f > 1 ? 1 : f);
+    }
+  }
+  return lastIdx;
+}
+
+/**
+ * Dwell-plateau ease. Flat (=0) while close to a section centre and flat (=1)
+ * while close to the next, with a smoothstep transition through the middle
+ * band. This is what makes the globe SIT exactly on a slot while its section
+ * is centred (so pausing never drifts) yet glide smoothly between slots.
+ */
+function dwellEase(f: number): number {
+  const A = 0.35;
+  const B = 0.65;
+  if (f <= A) return 0;
+  if (f >= B) return 1;
+  const x = (f - A) / (B - A);
+  return x * x * (3 - 2 * x);
+}
+
+/**
+ * THE shared interpolation: continuous t → an interpolated Slot.
+ *   • dwell-eased fractional part (rest-on-slot + smooth handoff)
+ *   • cx/cy linear, scale in LOG space (perceptually even shrink/grow)
+ *   • shallow arc on long horizontal traverses (endpoints exact)
+ * The controller damps toward this; the placer applies it directly. Same code
+ * ⇒ the overlay preview and the live travel are pixel-identical.
+ */
+export function slotAt(t: number, slots: Slot[]): Slot {
+  const lastIdx = Math.min(LAST_SECTION, slots.length - 1);
+  const lo = Math.max(0, Math.min(Math.floor(t), lastIdx));
+  const hi = Math.min(lo + 1, lastIdx);
+  const a = slots[lo];
+  const b = slots[hi];
+  const e = dwellEase(t - lo);
+
+  const cx = flerp(a.cx, b.cx, e);
+  let cy = flerp(a.cy, b.cy, e);
+  const scale = Math.exp(flerp(Math.log(a.scale), Math.log(b.scale), e));
+  if (Math.abs(b.cx - a.cx) > ARC_DCX) {
+    cy += -ARC_AMOUNT * Math.sin(Math.PI * e);
+  }
+  return {
+    cx,
+    cy,
+    scale,
+    bright: flerp(a.bright, b.bright, e),
+    opacity: flerp(a.opacity, b.opacity, e),
+    blur: flerp(a.blur, b.blur, e),
+    feather: flerp(a.feather, b.feather, e),
+  };
+}

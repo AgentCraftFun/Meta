@@ -1,7 +1,17 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { SLOTS, globeTransform } from './globeSlots';
+import {
+  SLOTS,
+  LAST_SECTION,
+  globeTransform,
+  buildAnchors,
+  getScroll,
+  getSections,
+  scrollToT,
+  slotAt,
+  type Slot,
+} from './globeSlots';
 
 /**
  * DEV-ONLY live globe placement tool. Inert unless the URL has `?place`.
@@ -28,18 +38,18 @@ export default function GlobePlacer() {
   const placeRef = useRef<Place>({});
   const [enabled, setEnabled] = useState(false);
 
-  // Find the active section (last whose top has passed viewport centre).
-  const getActive = () => {
-    const center = window.innerHeight / 2;
-    const secs = Array.from(
-      document.querySelectorAll<HTMLElement>('[data-sn-section]')
-    ).sort((a, b) => Number(a.dataset.snSection) - Number(b.dataset.snSection));
-    let a = 0;
-    secs.forEach((s, i) => {
-      if (s.getBoundingClientRect().top <= center + 0.5) a = i;
-    });
-    return a;
+  // Continuous float section index — the SAME shared model the runtime uses, so
+  // the overlay and the live travel can never disagree.
+  const currentT = () => {
+    const scroll = getScroll();
+    const anchors = buildAnchors(getSections(), window.innerHeight, scroll);
+    return scrollToT(scroll, anchors);
   };
+
+  // Active section = the section currently centred (nearest anchor). Matches the
+  // runtime's t exactly, so "the section you're tuning" lands its slot live.
+  const getActive = () =>
+    Math.max(0, Math.min(Math.round(currentT()), LAST_SECTION));
 
   // Apply a change to the active section's placement and re-render.
   const mutate = (cb: (p: { cx: number; cy: number; scale: number }) => void) => {
@@ -68,25 +78,31 @@ export default function GlobePlacer() {
     let cur = -1;
     const loop = () => {
       raf = requestAnimationFrame(loop);
-      const a = getActive();
+      const t = currentT();
+      const a = Math.max(0, Math.min(Math.round(t), LAST_SECTION));
       if (a !== cur) {
         cur = a;
         setActive(a);
       }
       // WYSIWYG: the overlay OWNS the globe while tuning (the controller stands
-      // down whenever __globePlace is set). Render the active section's tuned
-      // slot through the SAME globeTransform the runtime uses, snapped (no damp,
-      // no blend) so the on-screen position is exactly what will ship.
+      // down whenever __globePlace is set). Render the EXACT same slotAt(t)
+      // interpolation the runtime uses — only the per-section overrides are
+      // merged in — so the overlay preview is pixel-identical to what ships, and
+      // at a centred section it shows that section's pure (tuned) slot.
       const g = document.getElementById('globe-transform');
       if (g) {
-        const o = placeRef.current[a] ?? { cx: 0.5, cy: 0.5, scale: 1 };
+        const overridden: Slot[] = SLOTS.map((s, i) => {
+          const o = placeRef.current[i];
+          return o ? { ...s, cx: o.cx, cy: o.cy, scale: o.scale } : s;
+        });
+        const tgt = slotAt(t, overridden);
         const vw = window.innerWidth;
         const vh = window.innerHeight;
         const baseW = g.offsetWidth || vw;
         const baseH = g.offsetHeight || vh;
-        g.style.transform = globeTransform(o.cx, o.cy, o.scale, vw, vh, baseW, baseH);
-        g.style.filter = 'brightness(1)';
-        g.style.opacity = '1';
+        g.style.transform = globeTransform(tgt.cx, tgt.cy, tgt.scale, vw, vh, baseW, baseH);
+        g.style.filter = `brightness(${tgt.bright.toFixed(3)})`;
+        g.style.opacity = tgt.opacity.toFixed(3);
       }
     };
     raf = requestAnimationFrame(loop);
