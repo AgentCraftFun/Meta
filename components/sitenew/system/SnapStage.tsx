@@ -61,6 +61,7 @@ export default function SnapStage({ children }: { children: ReactNode }) {
   const setSnapEnabled = useSceneStore((s) => s.setSnapEnabled);
   const setSnapProgress = useSceneStore((s) => s.setSnapProgress);
   const setScrollProgress = useSceneStore((s) => s.setScrollProgress);
+  const signalArrival = useSceneStore((s) => s.signalArrival);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -173,6 +174,9 @@ export default function SnapStage({ children }: { children: ReactNode }) {
         animating = false;
         cooldownUntil = performance.now() + COOLDOWN;
         updateHash(active);
+        // The globe reads snapProgress directly (no damp), so it is now AT REST
+        // on this section's slot — signal the arrival the same frame it settles.
+        signalArrival(active);
         raf = 0;
         // Honor a queued direction now that this transition has finished
         // (interruptions never cancel violently — current finishes, then next).
@@ -471,7 +475,7 @@ export default function SnapStage({ children }: { children: ReactNode }) {
       if (resizeTimer) clearTimeout(resizeTimer);
       setSnapEnabled(false);
     };
-  }, [setSnapEnabled, setSnapProgress, setScrollProgress]);
+  }, [setSnapEnabled, setSnapProgress, setScrollProgress, signalArrival]);
 
   return (
     <div ref={rootRef}>
