@@ -39,11 +39,11 @@ export const SLOTS: Slot[] = [
   // §0–§4 are the EXACT cx/cy/scale hand-tuned against the live deploy this
   // session — do not round or "improve". All five are full-visibility travel
   // slots (bright 1, opacity 1, no blur).
-  { cx: 0.490, cy: 0.410, scale: 1.180, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 0 Hero (A)
-  { cx: 0.690, cy: 0.470, scale: 0.900, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 1 Problem (B)
-  { cx: 0.060, cy: 0.470, scale: 1.090, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 2 Insight (C)
-  { cx: 0.630, cy: 0.490, scale: 0.410, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 3 Product (D)
-  { cx: 0.350, cy: 0.500, scale: 1.250, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 4 HowItWorks
+  { cx: 0.670, cy: 0.530, scale: 1.480, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 0 Hero
+  { cx: 0.740, cy: 0.470, scale: 0.940, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 1 Problem
+  { cx: 0.130, cy: 0.480, scale: 1.090, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 2 Insight
+  { cx: 0.650, cy: 0.490, scale: 0.410, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 3 Product
+  { cx: 0.510, cy: 0.500, scale: 1.250, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 4 HowItWorks
   { cx: 0.5, cy: 0.5, scale: DIM_SCALE, bright: 0.55, opacity: 0.28, blur: 2, feather: 0 }, // 5 Vision (dim)
   { cx: 0.5, cy: 0.5, scale: DIM_SCALE, bright: 0.5, opacity: 0.26, blur: 3, feather: 0 }, // 6 CTA (dim)
   { cx: 0.5, cy: 0.5, scale: DIM_SCALE, bright: 0.5, opacity: 0.0, blur: 3, feather: 0 }, // 7 Footer (faded out)
@@ -156,7 +156,7 @@ export const LAST_SECTION = 4;
  * glance which build is actually live (printed to console on load + shown in the
  * GLOBE PLACER panel). If you don't see this exact tag, you're on a stale build.
  */
-export const GLOBE_BUILD_TAG = 'globe-build-9 · CANVAS-RESIZE FIX (offsetSize)';
+export const GLOBE_BUILD_TAG = 'globe-build-10 · TUNED SLOTS §0–§4';
 
 // Long horizontal traverses get a shallow orbital arc (subtle, vanishes at the
 // endpoints). Only applied when |Δcx| between two slots exceeds ARC_DCX.
