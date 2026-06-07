@@ -44,9 +44,10 @@ function BloomController({ bloomRef }: { bloomRef: React.MutableRefObject<{ inte
   return null;
 }
 
-/** Fast-scroll guard: above a velocity threshold drop dpr to 1 + signal the
- *  composer to go bloom-only; restore on settle (180ms calm). */
-function PerfGuard({ onFast }: { onFast: (v: boolean) => void }) {
+/** Fast-scroll guard: above a velocity threshold cap DPR to 1; restore on
+ *  settle (180ms calm). DPR only — the postprocessing stack is never toggled
+ *  (scene internals stay fixed); the CSS-blur skip lives in the globe controller. */
+function PerfGuard() {
   const setDpr = useThree((s) => s.setDpr);
   const fast = useRef(false);
   const calmTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -56,13 +57,11 @@ function PerfGuard({ onFast }: { onFast: (v: boolean) => void }) {
     if (v > FAST_SCROLL_THRESHOLD && !fast.current) {
       fast.current = true;
       setDpr(1);
-      onFast(true);
       if (calmTimer.current) clearTimeout(calmTimer.current);
     } else if (v <= FAST_SCROLL_THRESHOLD && fast.current && !calmTimer.current) {
       calmTimer.current = setTimeout(() => {
         fast.current = false;
         setDpr(Math.min(typeof window !== 'undefined' ? window.devicePixelRatio : 1.75, 1.75));
-        onFast(false);
         calmTimer.current = null;
       }, 180);
     }
@@ -82,7 +81,6 @@ function Scene({
   const earthGroupRef = useRef<THREE.Group>(null);
   const bloomRef = useRef<{ intensity: number } | null>(null);
   const caOffset = useMemo(() => new THREE.Vector2(0.0008, 0.0008), []);
-  const [fast, setFast] = useState(false);
 
   return (
     <>
@@ -105,43 +103,30 @@ function Scene({
           GlobeStageController's canvas-layer transform, not camera flight. */}
       <CameraRig earthGroupRef={earthGroupRef} frozen={frozen} lockFlight />
       <BloomController bloomRef={bloomRef} />
-      <PerfGuard onFast={setFast} />
+      <PerfGuard />
 
-      {/* Fast scroll → bloom-only composer (cheaper); full grade on settle. */}
-      {fast ? (
-        <EffectComposer multisampling={0}>
-          <Bloom
-            ref={bloomRef as never}
-            intensity={0.9}
-            luminanceThreshold={0.85}
-            luminanceSmoothing={0.5}
-            mipmapBlur
-            radius={0.65}
-            levels={7}
-          />
-        </EffectComposer>
-      ) : (
-        <EffectComposer multisampling={0}>
-          <Bloom
-            ref={bloomRef as never}
-            intensity={0.9}
-            luminanceThreshold={0.85}
-            luminanceSmoothing={0.5}
-            mipmapBlur
-            radius={0.65}
-            levels={7}
-          />
-          <HueSaturation hue={0} saturation={-0.05} />
-          <BrightnessContrast brightness={-0.03} contrast={0.15} />
-          <ChromaticAberration
-            blendFunction={BlendFunction.NORMAL}
-            offset={caOffset}
-            radialModulation={false}
-            modulationOffset={0}
-          />
-          <Vignette eskil={false} offset={0.2} darkness={0.85} />
-        </EffectComposer>
-      )}
+      {/* Postprocessing stack is fixed (never toggled) — keeps the globe crisp
+          and consistent; fast-scroll only caps DPR. */}
+      <EffectComposer multisampling={0}>
+        <Bloom
+          ref={bloomRef as never}
+          intensity={0.9}
+          luminanceThreshold={0.85}
+          luminanceSmoothing={0.5}
+          mipmapBlur
+          radius={0.65}
+          levels={7}
+        />
+        <HueSaturation hue={0} saturation={-0.05} />
+        <BrightnessContrast brightness={-0.03} contrast={0.15} />
+        <ChromaticAberration
+          blendFunction={BlendFunction.NORMAL}
+          offset={caOffset}
+          radialModulation={false}
+          modulationOffset={0}
+        />
+        <Vignette eskil={false} offset={0.2} darkness={0.85} />
+      </EffectComposer>
 
       <AdaptiveDpr pixelated={false} />
     </>

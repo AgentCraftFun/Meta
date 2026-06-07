@@ -48,11 +48,15 @@ export default function GlobeStageController() {
       const dt = Math.min((t - last) / 1000, 0.05);
       last = t;
 
-      const { activeSection, sectionProgress } = useSceneStore.getState();
+      const { activeSection, sectionProgress, scrollVelocity } = useSceneStore.getState();
       const a = Math.min(activeSection, MAX_WIRED);
       const from = SLOTS[a];
       const to = SLOTS[Math.min(a + 1, MAX_WIRED)];
       const tgt = lerpSlot(from, to, a < MAX_WIRED ? sectionProgress : 0);
+
+      // Fast-scroll guard: skip the (costly) blur recompute while flicking;
+      // it eases back in on settle. Travel itself never janks.
+      const blurTarget = Math.abs(scrollVelocity) > 40 ? 0 : tgt.blur;
 
       const vw = window.innerWidth;
       const vh = window.innerHeight;
@@ -65,7 +69,7 @@ export default function GlobeStageController() {
       cur.scale += (tgt.scale - cur.scale) * k;
       cur.bright += (tgt.bright - cur.bright) * k;
       cur.opacity += (tgt.opacity - cur.opacity) * k;
-      cur.blur += (tgt.blur - cur.blur) * k;
+      cur.blur += (blurTarget - cur.blur) * k;
 
       el.style.transform = `translate3d(${cur.tx.toFixed(2)}px, ${cur.ty.toFixed(2)}px, 0) scale(${cur.scale.toFixed(4)})`;
       el.style.filter =
