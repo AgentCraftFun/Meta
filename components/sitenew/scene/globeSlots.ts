@@ -25,7 +25,7 @@ export type Slot = {
 
 export const SLOTS: Slot[] = [
   { cx: 0.68, cy: 0.5, scale: 1.0, bright: 1.0, opacity: 1.0, blur: 0, feather: 150 }, // 0 Hero — crisp, full-right
-  { cx: 0.8, cy: 0.44, scale: 0.3, bright: 1.0, opacity: 1.0, blur: 0, feather: 48 }, // 1 Problem — small disc, clear upper-right
+  { cx: 0.82, cy: 0.4, scale: 0.28, bright: 1.0, opacity: 1.0, blur: 0, feather: 46 }, // 1 Problem — small disc, clear upper-right (left column ≤600px holds the text)
   { cx: 0.19, cy: 0.5, scale: 0.4, bright: 1.0, opacity: 1.0, blur: 0, feather: 52 }, // 2 Insight — disc, left of the flow
   { cx: 0.62, cy: 0.5, scale: 0.3, bright: 1.0, opacity: 1.0, blur: 0, feather: 50 }, // 3 Product — disc in panel (rect-tracked when active)
   { cx: 0.5, cy: 0.45, scale: 0.95, bright: 0.5, opacity: 0.26, blur: 2, feather: 120 }, // 4 HowItWorks — dim backdrop
