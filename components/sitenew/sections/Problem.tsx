@@ -89,31 +89,33 @@ export default function Problem() {
             </div>
           </FadeUp>
 
-          {/* Stat ledger — number-led list folded into the left column. */}
-          <div className="mt-9 border-t border-[#1E293B]/70">
+          {/* Stat ledger — number-led list folded into the left column. Kept
+              tight (small numbers, capped desc width) so it doesn't crowd the
+              globe in the right negative space. */}
+          <div className="mt-8 border-t border-[#1E293B]/70">
             {STATS.map((stat, i) => (
               <FadeUp key={stat.label} delay={0.4 + i * 0.08}>
-                <div className="grid grid-cols-[88px_1fr] items-baseline gap-5 border-b border-[#1E293B]/70 py-5 md:grid-cols-[116px_1fr] md:gap-7">
+                <div className="grid grid-cols-[64px_1fr] items-baseline gap-4 border-b border-[#1E293B]/70 py-4 md:grid-cols-[84px_1fr] md:gap-5">
                   <CountUp
                     value={stat.target}
                     duration={1.0}
                     prefix={stat.prefix}
                     suffix={stat.suffix}
-                    className="font-display text-[44px] font-bold leading-none tracking-[-0.03em] text-white md:text-[54px]"
+                    className="font-display text-[32px] font-bold leading-none tracking-[-0.03em] text-white md:text-[40px]"
                   />
-                  <div>
+                  <div className="max-w-[420px]">
                     <div className="flex items-center justify-between gap-3">
-                      <span className="font-mono text-[11px] uppercase tracking-[0.36em] text-cyan-300">
+                      <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-cyan-300">
                         {stat.label}
                       </span>
                       <span
                         aria-hidden
-                        className="font-mono text-[10px] tracking-[0.4em] text-cyan-400/40"
+                        className="font-mono text-[9px] tracking-[0.35em] text-cyan-400/40"
                       >
                         0{i + 1}
                       </span>
                     </div>
-                    <p className="mt-2 text-[14px] leading-relaxed text-slate-400">
+                    <p className="mt-1.5 text-[13px] leading-relaxed text-slate-400">
                       {stat.desc}
                     </p>
                   </div>
