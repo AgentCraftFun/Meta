@@ -102,15 +102,14 @@ export default function GlobeStageController() {
         blend = smoothstep(1 - d / TRANS); // 0 while dwelling → 1 at the hand-off
       }
       const f = a + blend; // continuous index, used only for the in-scene spin
-      let tgt: Slot = lerpSlot(SLOTS[a], SLOTS[j], blend);
 
-      // DEV PLACEMENT TOOL override (only set when ?place is active): pin the
-      // active section's globe to the cx/cy/scale the user is dialling in live,
-      // so what they see is exactly what they'll get when it's written to SLOTS.
+      // DEV PLACEMENT TOOL override (only set when ?place is active). Apply it to
+      // BOTH the current and next slot BEFORE the blend, so the tool interpolates
+      // between sections exactly like production — a smooth slide, never a snap.
       const place = (window as unknown as { __globePlace?: Record<number, { cx: number; cy: number; scale: number }> }).__globePlace;
-      if (place && place[a]) {
-        tgt = { ...tgt, cx: place[a].cx, cy: place[a].cy, scale: place[a].scale };
-      }
+      const slotA: Slot = place && place[a] ? { ...SLOTS[a], ...place[a] } : SLOTS[a];
+      const slotB: Slot = place && place[j] ? { ...SLOTS[j], ...place[j] } : SLOTS[j];
+      const tgt: Slot = lerpSlot(slotA, slotB, blend);
 
       const { scrollVelocity } = useSceneStore.getState();
       const blurTarget = Math.abs(scrollVelocity) > FAST_BLUR_SKIP ? 0 : tgt.blur;
