@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { GLOBE_DAMP_LAMBDA } from '../system/motion';
 import { useSceneStore } from '../system/useSceneStore';
-import { GLOBE_DIAM_VH, GLOBE_ORIGIN, SLOTS, clipCircle, lerpSlot, type Slot } from './globeSlots';
+import { GLOBE_DIAM_VH, GLOBE_ORIGIN, SLOTS, lerpSlot, type Slot } from './globeSlots';
 
 /**
  * The travelling globe. ONE rAF loop damps the #globe-transform wrapper toward
@@ -44,7 +44,6 @@ export default function GlobeStageController() {
     let sections: HTMLElement[] = [];
     let raf = 0;
     let last = performance.now();
-    let clipWritten = -999;
     const cur = {
       tx: 0, ty: 0, scale: 1, bright: 1, opacity: 1, blur: 0, feather: SLOTS[0].feather, travel: 0,
     };
@@ -133,14 +132,6 @@ export default function GlobeStageController() {
 
       // publish damped travel index for the in-scene spin
       useSceneStore.getState().setGlobeTravel(cur.travel);
-
-      // clip-path circle — throttled to meaningful changes
-      if (Math.abs(cur.feather - clipWritten) > 0.4) {
-        const c = clipCircle(cur.feather);
-        el.style.setProperty('clip-path', c);
-        el.style.setProperty('-webkit-clip-path', c);
-        clipWritten = cur.feather;
-      }
     };
 
     raf = requestAnimationFrame(loop);

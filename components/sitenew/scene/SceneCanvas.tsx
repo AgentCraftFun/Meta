@@ -1,22 +1,12 @@
 'use client';
 
-import { AdaptiveDpr, Stars } from '@react-three/drei';
+import { AdaptiveDpr } from '@react-three/drei';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import {
-  Bloom,
-  BrightnessContrast,
-  ChromaticAberration,
-  EffectComposer,
-  HueSaturation,
-  Vignette,
-} from '@react-three/postprocessing';
-import { BlendFunction } from 'postprocessing';
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { ACESFilmicToneMapping, SRGBColorSpace } from 'three';
 import Atmosphere from '@/components/celestial/Atmosphere';
 import LoadingScreen from '@/components/celestial/LoadingScreen';
-import ShootingStar from '@/components/celestial/ShootingStar';
 import { SUN_POSITION } from '@/lib/sun';
 import { useReducedMotion } from '@/lib/useReducedMotion';
 import { z } from '../system/motion';
@@ -27,22 +17,9 @@ import HeroBeacon from './HeroBeacon';
 import LightHeroFallback from './LightHeroFallback';
 import SceneEarth from './SceneEarth';
 import SceneClouds from './SceneClouds';
-import { INSIGHT_SECTION } from './waypoints';
-import { SLOTS, clipCircle } from './globeSlots';
 import { pickTextureTier, shouldUseFallback, type TextureTier } from './deviceTier';
 
 const FAST_SCROLL_THRESHOLD = 35;
-
-/** Eases bloom 0.9 → 1.3 during the Insight descent, back out afterwards. */
-function BloomController({ bloomRef }: { bloomRef: React.MutableRefObject<{ intensity: number } | null> }) {
-  useFrame((_, delta) => {
-    const b = bloomRef.current;
-    if (!b) return;
-    const target = useSceneStore.getState().activeSection === INSIGHT_SECTION ? 1.3 : 0.9;
-    b.intensity = THREE.MathUtils.damp(b.intensity, target, 3, Math.min(delta, 0.05));
-  });
-  return null;
-}
 
 /** Fast-scroll guard: above a velocity threshold cap DPR to 1; restore on
  *  settle (180ms calm). DPR only — the postprocessing stack is never toggled
@@ -79,16 +56,13 @@ function Scene({
   simplified: boolean;
 }) {
   const earthGroupRef = useRef<THREE.Group>(null);
-  const bloomRef = useRef<{ intensity: number } | null>(null);
-  const caOffset = useMemo(() => new THREE.Vector2(0.0008, 0.0008), []);
 
   return (
     <>
-      {/* No SpaceGradient: the canvas clears to #05080F (page colour) so the
-          clip-path circle edge is invisible against the page. */}
-      <Stars radius={300} depth={60} count={4000} factor={2} saturation={0.3} fade speed={0.3} />
-      <ShootingStar />
-
+      {/* Transparent canvas: ONLY the globe sphere is rendered (no full-screen
+          stars / space-gradient), so there is no rectangle to clip — the sphere
+          is naturally circular and scales/moves cleanly. The page #05080F shows
+          through everywhere else. */}
       <directionalLight position={SUN_POSITION} intensity={2.0} color="#fffaf0" />
       <ambientLight intensity={0.05} color="#1a2540" />
 
@@ -98,36 +72,14 @@ function Scene({
         <HeroBeacon lat={38} lng={-97} />
         <BeaconField simplified={simplified} frozen={frozen} />
       </group>
-      <Atmosphere />
+      {/* Stronger atmospheric rim to compensate for no bloom (bloom needs a
+          composer, which breaks canvas transparency → rectangle). */}
+      <Atmosphere intensity={2.6} />
 
-      {/* Camera holds hero framing; the globe now travels via the
-          GlobeStageController's canvas-layer transform, not camera flight. */}
+      {/* Camera holds hero framing; the globe travels via the controller's
+          canvas-layer transform + scroll-linked spin. */}
       <CameraRig earthGroupRef={earthGroupRef} frozen={frozen} lockFlight />
-      <BloomController bloomRef={bloomRef} />
       <PerfGuard />
-
-      {/* Postprocessing stack is fixed (never toggled) — keeps the globe crisp
-          and consistent; fast-scroll only caps DPR. */}
-      <EffectComposer multisampling={0}>
-        <Bloom
-          ref={bloomRef as never}
-          intensity={0.9}
-          luminanceThreshold={0.85}
-          luminanceSmoothing={0.5}
-          mipmapBlur
-          radius={0.65}
-          levels={7}
-        />
-        <HueSaturation hue={0} saturation={-0.05} />
-        <BrightnessContrast brightness={-0.03} contrast={0.15} />
-        <ChromaticAberration
-          blendFunction={BlendFunction.NORMAL}
-          offset={caOffset}
-          radialModulation={false}
-          modulationOffset={0}
-        />
-        <Vignette eskil={false} offset={0.2} darkness={0.85} />
-      </EffectComposer>
 
       <AdaptiveDpr pixelated={false} />
     </>
@@ -151,10 +103,6 @@ export default function SceneCanvas() {
     typeof window !== 'undefined' &&
     window.matchMedia('(max-width: 768px)').matches;
 
-  // Default clip = hero (full-bleed). The controller updates it per slot so
-  // scaled-down slots become clean circular discs (no star-rectangle).
-  const defaultClip = clipCircle(SLOTS[0].feather);
-
   return (
     <div
       id="globe-stage"
@@ -168,8 +116,6 @@ export default function SceneCanvas() {
         style={{
           transformOrigin: 'center center',
           willChange: 'transform, filter, opacity',
-          clipPath: defaultClip,
-          WebkitClipPath: defaultClip,
         }}
       >
         <Canvas
@@ -177,7 +123,7 @@ export default function SceneCanvas() {
           gl={{
             antialias: true,
             powerPreference: 'high-performance',
-            alpha: false,
+            alpha: true,
             stencil: false,
             depth: true,
           }}
@@ -186,7 +132,7 @@ export default function SceneCanvas() {
             gl.toneMapping = ACESFilmicToneMapping;
             gl.toneMappingExposure = 0.85;
             gl.outputColorSpace = SRGBColorSpace;
-            gl.setClearColor('#05080F', 1); // match the page so the clip edge is seamless
+            gl.setClearColor(0x000000, 0); // transparent — page #05080F shows through
           }}
         >
           <Suspense fallback={null}>
