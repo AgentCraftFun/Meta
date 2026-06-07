@@ -6,7 +6,6 @@ import Insight from '@/components/sitenew/sections/Insight';
 import Problem from '@/components/sitenew/sections/Problem';
 import Product from '@/components/sitenew/sections/Product';
 import Vision from '@/components/sitenew/sections/Vision';
-import GlobeDebug from '@/components/sitenew/scene/GlobeDebug';
 import GlobeStageController from '@/components/sitenew/scene/GlobeStageController';
 import SceneCanvas from '@/components/sitenew/scene/SceneCanvas';
 import BootSequence from '@/components/sitenew/system/BootSequence';
@@ -46,8 +45,6 @@ export default function LandingPage() {
       <SceneCanvas />
       {/* Travelling-globe scroll controller (damps the #globe-transform). */}
       <GlobeStageController />
-      {/* TEMP diagnostic overlay — remove once travel is dialled in. */}
-      <GlobeDebug />
       <BootSequence />
       <Grade />
       {/* Scroll → activeSection / sectionProgress for the camera + beacons. */}

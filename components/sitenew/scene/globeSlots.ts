@@ -24,14 +24,21 @@ export type Slot = {
 };
 
 // The globe is rendered as a FULL sphere centred in the canvas (camera pulled
-// back), at ~85% of viewport height at scale 1 — so it never crops. `feather`
+// back), at ~0.93 of viewport height at scale 1 — so it never crops. `feather`
 // is unused now (no clip; transparent canvas). cx/cy place the globe centre;
 // scale sizes it. All slots show the whole globe, just sized/placed differently.
+//
+// SIZING NOTE: the "story" slots (Hero/Problem/Insight/Product) must stay LARGE
+// (scale ~0.9–1.0 → a big disc that hugs one side, matching the design mockup).
+// Previously they dropped to 0.5–0.7, so the first scroll shrank the globe by
+// half — that abrupt collapse to a small disc read as a "glitch". Keep these
+// near 1.0 and only OFFSET them left/right (via cx) into the section's negative
+// space; do NOT shrink them. Only the dim "console" backdrops (4–7) go full-bleed.
 export const SLOTS: Slot[] = [
-  { cx: 0.7, cy: 0.5, scale: 1.0, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 0 Hero — big full globe (~97% vh), right
-  { cx: 0.78, cy: 0.46, scale: 0.52, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 1 Problem — full globe, right (clears left text)
-  { cx: 0.18, cy: 0.5, scale: 0.7, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 2 Insight — big full globe, left
-  { cx: 0.64, cy: 0.5, scale: 0.5, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 3 Product — full globe near panel
+  { cx: 0.7, cy: 0.5, scale: 1.0, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 0 Hero — big full globe (~93% vh), right
+  { cx: 0.74, cy: 0.5, scale: 0.92, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 1 Problem — big globe hugging the RIGHT (clears the left text column)
+  { cx: 0.15, cy: 0.5, scale: 0.9, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 2 Insight — big globe hugging the LEFT (clears the right content column)
+  { cx: 0.66, cy: 0.5, scale: 0.72, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 3 Product — large globe RIGHT, behind/through the product-mock cutout
   { cx: 0.5, cy: 0.48, scale: 1.1, bright: 0.5, opacity: 0.26, blur: 2, feather: 0 }, // 4 HowItWorks — dim full backdrop
   { cx: 0.5, cy: 0.46, scale: 1.15, bright: 0.5, opacity: 0.24, blur: 2, feather: 0 }, // 5 Vision — dim full backdrop
   { cx: 0.5, cy: 0.55, scale: 1.2, bright: 0.45, opacity: 0.22, blur: 3, feather: 0 }, // 6 CTA — dim full backdrop
