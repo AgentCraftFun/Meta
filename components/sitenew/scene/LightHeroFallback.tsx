@@ -27,6 +27,9 @@ export default function LightHeroFallback() {
           transform: 'translateY(-50%)',
           width: 'min(78vh, 70vw)',
           height: 'min(78vh, 70vw)',
+          // Faint so it reads as a static backdrop and every section stays
+          // legible (no travel on RM/mobile to move it out of the way).
+          opacity: 0.55,
         }}
       >
         {/* atmosphere glow */}

@@ -62,7 +62,11 @@ export function isMobileLowPower(): boolean {
   return isNarrow() && (isSaveData() || isLowMemory() || cores <= 4);
 }
 
-/** Should we render the static fallback instead of the live canvas? */
+/**
+ * Should we render the static fallback instead of the live canvas?
+ * Reduced-motion, no-WebGL, OR any narrow (≤768) viewport — mobile gets the
+ * static lighter-tier globe (no heavy WebGL, no travel) for perf + space.
+ */
 export function shouldUseFallback(reducedMotion: boolean): boolean {
-  return reducedMotion || !hasWebGL() || isMobileLowPower();
+  return reducedMotion || !hasWebGL() || isNarrow() || isMobileLowPower();
 }
