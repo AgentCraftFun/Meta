@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { GLOBE_DAMP_LAMBDA } from '../system/motion';
+import { isSnapEnabled, onSnapModeChange } from '../system/snapMode';
 import { useSceneStore } from '../system/useSceneStore';
 import {
   GLOBE_BUILD_TAG,
@@ -12,6 +13,7 @@ import {
   globeTransform,
   scrollToT,
   slotAt,
+  slotAtSmooth,
 } from './globeSlots';
 
 /**
@@ -49,6 +51,20 @@ function damp(curV: number, tgtV: number, k: number, eps: number): number {
 }
 
 export default function GlobeStageController() {
+  // Re-initialise the controller (and thus pick the right branch) if the snap
+  // mode flips at runtime — RM toggle, pointer change, or crossing 768px.
+  const [epoch, setEpoch] = useState(0);
+  useEffect(() => {
+    let last = isSnapEnabled();
+    return onSnapModeChange(() => {
+      const now = isSnapEnabled();
+      if (now !== last) {
+        last = now;
+        setEpoch((e) => e + 1);
+      }
+    });
+  }, []);
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -79,6 +95,57 @@ export default function GlobeStageController() {
       }
       anchors = buildAnchors(getSections(), vh, getScroll());
     };
+
+    // ---- SECTION-SNAP: globe follows the snap progress `p` --------------
+    // On desktop/fine-pointer the page is locked to one section at a time and
+    // SnapStage tweens `snapProgress` (the single cinematic `p`). The globe
+    // reads it DIRECTLY through slotAtSmooth (no dwell, no extra damp) so its
+    // travel is the SAME 1.1s quint motion as the section pan — perfect sync,
+    // lands exactly on each tuned slot. We do not read scroll/anchors here.
+    if (isSnapEnabled()) {
+      measure();
+      const settleS = window.setTimeout(measure, 300);
+      window.addEventListener('load', measure);
+
+      let rafS = 0;
+      const loopS = () => {
+        rafS = requestAnimationFrame(loopS);
+        // Let the ?place tuning overlay own the transform when open.
+        if ((window as unknown as { __globePlace?: unknown }).__globePlace) return;
+        if (document.hidden) return;
+        const g = findEl();
+        if (!g) {
+          measure();
+          return;
+        }
+        const t = useSceneStore.getState().snapProgress;
+        const s = slotAtSmooth(t, SLOTS);
+        g.style.transform = globeTransform(s.cx, s.cy, s.scale, vw, vh, baseW, baseH);
+        g.style.filter =
+          s.blur > 0.05
+            ? `brightness(${s.bright.toFixed(3)}) blur(${s.blur.toFixed(2)}px)`
+            : `brightness(${s.bright.toFixed(3)})`;
+        g.style.opacity = s.opacity.toFixed(3);
+        // Feed the same `p` to the camera rig's scroll-linked globe spin.
+        useSceneStore.getState().setGlobeTravel(t);
+      };
+      rafS = requestAnimationFrame(loopS);
+
+      let rtS: ReturnType<typeof setTimeout> | null = null;
+      const onResizeS = () => {
+        if (rtS) clearTimeout(rtS);
+        rtS = setTimeout(measure, 150);
+      };
+      window.addEventListener('resize', onResizeS);
+
+      return () => {
+        cancelAnimationFrame(rafS);
+        if (rtS) clearTimeout(rtS);
+        window.clearTimeout(settleS);
+        window.removeEventListener('resize', onResizeS);
+        window.removeEventListener('load', measure);
+      };
+    }
 
     // ---- REDUCED-MOTION / MOBILE: park at hero slot, no loop -------------
     if (reduced || mobile) {
@@ -191,7 +258,8 @@ export default function GlobeStageController() {
       window.removeEventListener('resize', onResize);
       window.removeEventListener('load', measure);
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [epoch]);
 
   return null;
 }

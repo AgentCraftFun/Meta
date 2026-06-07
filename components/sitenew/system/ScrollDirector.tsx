@@ -3,6 +3,7 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useEffect } from 'react';
+import { isSnapEnabled } from './snapMode';
 import { useSceneStore } from './useSceneStore';
 
 /**
@@ -25,6 +26,9 @@ export default function ScrollDirector() {
   useEffect(() => {
     if (reduced) return;
     if (typeof window === 'undefined') return;
+    // In section-snap the page does not free-scroll, so GSAP ScrollTriggers
+    // would never fire — SnapStage publishes the progress instead.
+    if (isSnapEnabled()) return;
 
     gsap.registerPlugin(ScrollTrigger);
 

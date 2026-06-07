@@ -17,6 +17,12 @@ export type SceneState = {
   sectionProgress: number;
   /** Continuous travel position (0→7, damped) — drives scroll-linked globe spin. */
   globeTravel: number;
+  /** Section-snap active (desktop/fine-pointer/no-RM). When true the page is
+   *  locked to one section and `snapProgress` drives the globe instead of scroll. */
+  snapEnabled: boolean;
+  /** The single animated section-snap progress `p` (float section index). Tweens
+   *  current→target over each transition; the globe reads this as its `t`. */
+  snapProgress: number;
   /** Instantaneous scroll velocity (px/frame-ish) for the fast-scroll guard. */
   scrollVelocity: number;
   /** DEV telemetry: live camera pos + canvas size, shown in the GlobePlacer. */
@@ -30,6 +36,8 @@ export type SceneState = {
   setActiveSection: (i: number) => void;
   setSectionProgress: (p: number) => void;
   setGlobeTravel: (v: number) => void;
+  setSnapEnabled: (v: boolean) => void;
+  setSnapProgress: (v: number) => void;
   setScrollVelocity: (v: number) => void;
   setSceneDebug: (v: string) => void;
   setReducedMotion: (v: boolean) => void;
@@ -41,6 +49,8 @@ export const useSceneStore = create<SceneState>((set) => ({
   activeSection: 0,
   sectionProgress: 0,
   globeTravel: 0,
+  snapEnabled: false,
+  snapProgress: 0,
   scrollVelocity: 0,
   sceneDebug: '',
   reducedMotion: false,
@@ -50,6 +60,8 @@ export const useSceneStore = create<SceneState>((set) => ({
   setActiveSection: (i) => set({ activeSection: i }),
   setSectionProgress: (p) => set({ sectionProgress: p }),
   setGlobeTravel: (v) => set({ globeTravel: v }),
+  setSnapEnabled: (v) => set({ snapEnabled: v }),
+  setSnapProgress: (v) => set({ snapProgress: v }),
   setScrollVelocity: (v) => set({ scrollVelocity: v }),
   setSceneDebug: (v) => set({ sceneDebug: v }),
   setReducedMotion: (v) => set({ reducedMotion: v }),
