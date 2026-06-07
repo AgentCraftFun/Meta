@@ -23,15 +23,19 @@ export type Slot = {
   feather: number; // radial-mask transparent stop, %
 };
 
+// `feather` is now the CLIP-PATH circle radius (%): ≥100 = no visible clip
+// (full-bleed); ~55 = a circle hugging the globe (clean disc). The clip removes
+// the surrounding starfield so scaled slots never show a star-rectangle; the
+// canvas clears to #05080F so the clip edge is invisible against the page.
 export const SLOTS: Slot[] = [
-  { cx: 0.68, cy: 0.5, scale: 1.0, bright: 1.0, opacity: 1.0, blur: 0, feather: 150 }, // 0 Hero — full-bleed right (no mask)
-  { cx: 0.76, cy: 0.48, scale: 0.52, bright: 1.0, opacity: 1.0, blur: 0, feather: 60 }, // 1 Problem — big disc, right (clears left text column)
-  { cx: 0.16, cy: 0.5, scale: 0.6, bright: 1.0, opacity: 1.0, blur: 0, feather: 60 }, // 2 Insight — big disc, left (flow on the right)
-  { cx: 0.62, cy: 0.5, scale: 0.34, bright: 1.0, opacity: 1.0, blur: 0, feather: 60 }, // 3 Product — disc in panel (rect-tracked when active)
-  { cx: 0.5, cy: 0.46, scale: 0.95, bright: 0.5, opacity: 0.26, blur: 2, feather: 120 }, // 4 HowItWorks — dim full backdrop
-  { cx: 0.5, cy: 0.45, scale: 1.0, bright: 0.5, opacity: 0.24, blur: 2, feather: 130 }, // 5 Vision — dim full backdrop
-  { cx: 0.5, cy: 0.55, scale: 1.1, bright: 0.45, opacity: 0.22, blur: 3, feather: 140 }, // 6 CTA — dim full backdrop
-  { cx: 0.5, cy: 0.55, scale: 1.1, bright: 0.45, opacity: 0.0, blur: 3, feather: 140 }, // 7 Footer — faded out
+  { cx: 0.68, cy: 0.5, scale: 1.0, bright: 1.0, opacity: 1.0, blur: 0, feather: 150 }, // 0 Hero — full-bleed right
+  { cx: 0.76, cy: 0.48, scale: 0.54, bright: 1.0, opacity: 1.0, blur: 0, feather: 55 }, // 1 Problem — big disc, right (clears left text column)
+  { cx: 0.15, cy: 0.5, scale: 0.66, bright: 1.0, opacity: 1.0, blur: 0, feather: 58 }, // 2 Insight — big disc, left (flow on the right)
+  { cx: 0.62, cy: 0.5, scale: 0.34, bright: 1.0, opacity: 1.0, blur: 0, feather: 55 }, // 3 Product — disc in panel (rect-tracked when active)
+  { cx: 0.5, cy: 0.46, scale: 0.95, bright: 0.5, opacity: 0.26, blur: 2, feather: 150 }, // 4 HowItWorks — dim full backdrop
+  { cx: 0.5, cy: 0.45, scale: 1.0, bright: 0.5, opacity: 0.24, blur: 2, feather: 150 }, // 5 Vision — dim full backdrop
+  { cx: 0.5, cy: 0.55, scale: 1.1, bright: 0.45, opacity: 0.22, blur: 3, feather: 150 }, // 6 CTA — dim full backdrop
+  { cx: 0.5, cy: 0.55, scale: 1.1, bright: 0.45, opacity: 0.0, blur: 3, feather: 150 }, // 7 Footer — faded out
 ];
 
 /**
@@ -48,10 +52,13 @@ export const GLOBE_ORIGIN = { x: 0.68, y: 0.5 } as const;
  */
 export const GLOBE_DIAM_VH = 1.35;
 
-/** Radial edge-feather mask string (shared by SceneCanvas default + controller). */
-export function featherMask(t: number): string {
-  const black = (t - 16).toFixed(1);
-  return `radial-gradient(circle at ${GLOBE_ORIGIN.x * 100}% ${GLOBE_ORIGIN.y * 100}%, #000 ${black}%, transparent ${t.toFixed(1)}%)`;
+/**
+ * Clip-path circle centered on the globe (GLOBE_ORIGIN). `r` is the radius %.
+ * ≥100 → effectively no clip (full-bleed); ~55 → a circle hugging the globe.
+ * Hardware-accelerated and reliable with transform/filter (unlike mask-image).
+ */
+export function clipCircle(r: number): string {
+  return `circle(${r.toFixed(1)}% at ${GLOBE_ORIGIN.x * 100}% ${GLOBE_ORIGIN.y * 100}%)`;
 }
 
 export function lerpSlot(a: Slot, b: Slot, t: number): Slot {

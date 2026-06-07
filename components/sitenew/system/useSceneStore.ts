@@ -15,6 +15,8 @@ export type SceneState = {
   activeSection: number;
   /** Local scroll progress 0→1 within the active section. */
   sectionProgress: number;
+  /** Continuous travel position (0→7, damped) — drives scroll-linked globe spin. */
+  globeTravel: number;
   /** Instantaneous scroll velocity (px/frame-ish) for the fast-scroll guard. */
   scrollVelocity: number;
   /** OS prefers-reduced-motion — set once on mount. */
@@ -25,6 +27,7 @@ export type SceneState = {
   setScrollProgress: (p: number) => void;
   setActiveSection: (i: number) => void;
   setSectionProgress: (p: number) => void;
+  setGlobeTravel: (v: number) => void;
   setScrollVelocity: (v: number) => void;
   setReducedMotion: (v: boolean) => void;
   setBooted: (v: boolean) => void;
@@ -34,6 +37,7 @@ export const useSceneStore = create<SceneState>((set) => ({
   scrollProgress: 0,
   activeSection: 0,
   sectionProgress: 0,
+  globeTravel: 0,
   scrollVelocity: 0,
   reducedMotion: false,
   booted: false,
@@ -41,6 +45,7 @@ export const useSceneStore = create<SceneState>((set) => ({
   setScrollProgress: (p) => set({ scrollProgress: p }),
   setActiveSection: (i) => set({ activeSection: i }),
   setSectionProgress: (p) => set({ sectionProgress: p }),
+  setGlobeTravel: (v) => set({ globeTravel: v }),
   setScrollVelocity: (v) => set({ scrollVelocity: v }),
   setReducedMotion: (v) => set({ reducedMotion: v }),
   setBooted: (v) => set({ booted: v }),

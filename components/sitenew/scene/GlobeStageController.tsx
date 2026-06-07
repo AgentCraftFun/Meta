@@ -3,28 +3,34 @@
 import { useEffect } from 'react';
 import { GLOBE_DAMP_LAMBDA } from '../system/motion';
 import { useSceneStore } from '../system/useSceneStore';
-import { GLOBE_DIAM_VH, GLOBE_ORIGIN, SLOTS, featherMask, lerpSlot, type Slot } from './globeSlots';
+import { GLOBE_DIAM_VH, GLOBE_ORIGIN, SLOTS, clipCircle, lerpSlot, type Slot } from './globeSlots';
 
 /**
  * The travelling globe. ONE rAF loop damps the #globe-transform wrapper toward
  * the slot for wherever the page is scrolled.
  *
- * TARGETING: the globe sits exactly on slot[i] when section i's CENTER is at the
- * viewport center, and glides slot[i]→slot[i+1] as you scroll between their
- * centers. (Previously it used per-section progress which is 0.5 at center — that
- * left the hero stuck halfway to the Problem slot, shrunk + boxed.)
+ * TARGETING (boundary-band, height-independent): the globe DWELLS on slot[i]
+ * while section i fills the viewport, then scrubs slot[i]→slot[i+1] across a
+ * band as section i's bottom boundary crosses the viewport centre. This works
+ * regardless of section height (fixes the tall-Insight lag).
  *
- * Applies transform (translate3d+scale), filter (brightness/blur), opacity, and
- * a radial feather mask so scaled-down slots are clean soft discs (feather ≥100
- * → no mask = full-bleed for hero + dim backdrops).
+ * SHAPE: clip-path circle (not mask-image — that was unreliable with
+ * filter+transform). The canvas clears to #05080F so the clip edge is invisible.
  *
- * Product (section 3): target taken from the live panel cutout's rect so the
- * globe sits framed INSIDE the panel.
+ * SPIN: writes a damped continuous travel index to the store; CameraRig turns
+ * the globe by it, so the globe visibly rotates as it travels.
+ *
+ * Product (section 3): target taken from the live panel cutout's rect.
  *
  * REDUCED-MOTION / mobile (≤768px): disabled — globe stays in hero framing.
  */
 const PRODUCT_SECTION = 3;
 const FAST_BLUR_SKIP = 40;
+
+function smoothstep(x: number): number {
+  const t = x < 0 ? 0 : x > 1 ? 1 : x;
+  return t * t * (3 - 2 * t);
+}
 
 export default function GlobeStageController() {
   useEffect(() => {
@@ -38,8 +44,10 @@ export default function GlobeStageController() {
     let sections: HTMLElement[] = [];
     let raf = 0;
     let last = performance.now();
-    let maskWritten = -999;
-    const cur = { tx: 0, ty: 0, scale: 1, bright: 1, opacity: 1, blur: 0, feather: SLOTS[0].feather };
+    let clipWritten = -999;
+    const cur = {
+      tx: 0, ty: 0, scale: 1, bright: 1, opacity: 1, blur: 0, feather: SLOTS[0].feather, travel: 0,
+    };
 
     const loop = (t: number) => {
       raf = requestAnimationFrame(loop);
@@ -62,30 +70,30 @@ export default function GlobeStageController() {
 
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-      const vc = vh / 2;
+      const center = vh / 2;
+      const BAND = 0.5 * vh;
+      const n = sections.length;
 
-      // Continuous section position from each section's center vs viewport center.
-      const centers = sections.map((s) => {
-        const r = s.getBoundingClientRect();
-        return r.top + r.height / 2;
-      });
+      const rects = sections.map((s) => s.getBoundingClientRect());
+      // current section = last whose top is at/above the viewport centre
       let i = 0;
-      for (let k = 0; k < centers.length; k++) {
-        if (centers[k] <= vc) i = k;
+      for (let kk = 0; kk < n; kk++) {
+        if (rects[kk].top <= center) i = kk;
       }
+      // scrub toward the next slot in the band before section i's bottom boundary
       let frac = 0;
-      if (i < centers.length - 1) {
-        const span = centers[i + 1] - centers[i];
-        frac = span > 0 ? (vc - centers[i]) / span : 0;
-        frac = frac < 0 ? 0 : frac > 1 ? 1 : frac;
+      if (i < n - 1) {
+        const boundary = rects[i].bottom;
+        if (center > boundary - BAND) {
+          frac = smoothstep((center - (boundary - BAND)) / BAND);
+        }
       }
-      const f = i + frac; // continuous index
+      const f = i + frac; // continuous travel index
 
-      let tgt: Slot = lerpSlot(SLOTS[i], SLOTS[Math.min(i + 1, SLOTS.length - 1)], frac);
+      let tgt: Slot = lerpSlot(SLOTS[i], SLOTS[Math.min(i + 1, n - 1)], frac);
 
       // Product: lock to the live panel cutout when it's the dominant section.
-      const dominant = Math.round(f);
-      if (dominant === PRODUCT_SECTION) {
+      if (Math.round(f) === PRODUCT_SECTION) {
         if (!cutout) cutout = document.getElementById('product-globe-cutout');
         const r = cutout?.getBoundingClientRect();
         if (r && r.width > 0) {
@@ -96,7 +104,7 @@ export default function GlobeStageController() {
             bright: 1,
             opacity: 1,
             blur: 0,
-            feather: 60,
+            feather: 55,
           };
         }
       }
@@ -114,6 +122,7 @@ export default function GlobeStageController() {
       cur.opacity += (tgt.opacity - cur.opacity) * k;
       cur.blur += (blurTarget - cur.blur) * k;
       cur.feather += (tgt.feather - cur.feather) * k;
+      cur.travel += (f - cur.travel) * k;
 
       el.style.transform = `translate3d(${cur.tx.toFixed(2)}px, ${cur.ty.toFixed(2)}px, 0) scale(${cur.scale.toFixed(4)})`;
       el.style.filter =
@@ -122,12 +131,15 @@ export default function GlobeStageController() {
           : `brightness(${cur.bright.toFixed(3)})`;
       el.style.opacity = cur.opacity.toFixed(3);
 
-      // feather ≥100 → no mask (full-bleed). else radial disc. Throttled.
-      if (Math.abs(cur.feather - maskWritten) > 0.5) {
-        const m = cur.feather >= 100 ? 'none' : featherMask(cur.feather);
-        el.style.setProperty('mask-image', m);
-        el.style.setProperty('-webkit-mask-image', m);
-        maskWritten = cur.feather;
+      // publish damped travel index for the in-scene spin
+      useSceneStore.getState().setGlobeTravel(cur.travel);
+
+      // clip-path circle — throttled to meaningful changes
+      if (Math.abs(cur.feather - clipWritten) > 0.4) {
+        const c = clipCircle(cur.feather);
+        el.style.setProperty('clip-path', c);
+        el.style.setProperty('-webkit-clip-path', c);
+        clipWritten = cur.feather;
       }
     };
 

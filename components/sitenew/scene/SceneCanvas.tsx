@@ -17,7 +17,6 @@ import { ACESFilmicToneMapping, SRGBColorSpace } from 'three';
 import Atmosphere from '@/components/celestial/Atmosphere';
 import LoadingScreen from '@/components/celestial/LoadingScreen';
 import ShootingStar from '@/components/celestial/ShootingStar';
-import SpaceGradient from '@/components/celestial/SpaceGradient';
 import { SUN_POSITION } from '@/lib/sun';
 import { useReducedMotion } from '@/lib/useReducedMotion';
 import { z } from '../system/motion';
@@ -29,7 +28,7 @@ import LightHeroFallback from './LightHeroFallback';
 import SceneEarth from './SceneEarth';
 import SceneClouds from './SceneClouds';
 import { INSIGHT_SECTION } from './waypoints';
-import { SLOTS, featherMask } from './globeSlots';
+import { SLOTS, clipCircle } from './globeSlots';
 import { pickTextureTier, shouldUseFallback, type TextureTier } from './deviceTier';
 
 const FAST_SCROLL_THRESHOLD = 35;
@@ -85,7 +84,8 @@ function Scene({
 
   return (
     <>
-      <SpaceGradient />
+      {/* No SpaceGradient: the canvas clears to #05080F (page colour) so the
+          clip-path circle edge is invisible against the page. */}
       <Stars radius={300} depth={60} count={4000} factor={2} saturation={0.3} fade speed={0.3} />
       <ShootingStar />
 
@@ -151,9 +151,9 @@ export default function SceneCanvas() {
     typeof window !== 'undefined' &&
     window.matchMedia('(max-width: 768px)').matches;
 
-  // Default = no mask (hero is full-bleed). The controller applies a radial
-  // feather only on scaled-down disc slots; ≥100 feather stays maskless.
-  const defaultMask = SLOTS[0].feather >= 100 ? 'none' : featherMask(SLOTS[0].feather);
+  // Default clip = hero (full-bleed). The controller updates it per slot so
+  // scaled-down slots become clean circular discs (no star-rectangle).
+  const defaultClip = clipCircle(SLOTS[0].feather);
 
   return (
     <div
@@ -168,8 +168,8 @@ export default function SceneCanvas() {
         style={{
           transformOrigin: 'center center',
           willChange: 'transform, filter, opacity',
-          maskImage: defaultMask,
-          WebkitMaskImage: defaultMask,
+          clipPath: defaultClip,
+          WebkitClipPath: defaultClip,
         }}
       >
         <Canvas
@@ -186,6 +186,7 @@ export default function SceneCanvas() {
             gl.toneMapping = ACESFilmicToneMapping;
             gl.toneMappingExposure = 0.85;
             gl.outputColorSpace = SRGBColorSpace;
+            gl.setClearColor('#05080F', 1); // match the page so the clip edge is seamless
           }}
         >
           <Suspense fallback={null}>

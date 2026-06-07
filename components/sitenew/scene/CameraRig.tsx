@@ -20,6 +20,8 @@ import { WAYPOINT_LOOK, WAYPOINT_POS } from './waypoints';
  */
 const PARALLAX_X = 0.1;
 const PARALLAX_Y = 0.07;
+/** Radians of deliberate globe spin per section travelled (on top of auto-spin). */
+const SPIN_PER_SECTION = 2.2;
 
 export default function CameraRig({
   earthGroupRef,
@@ -36,6 +38,7 @@ export default function CameraRig({
   const lookCurrent = useRef(new THREE.Vector3().copy(WAYPOINT_LOOK[0]));
   const posTarget = useRef(new THREE.Vector3().copy(WAYPOINT_POS[0]));
   const lookTarget = useRef(new THREE.Vector3().copy(WAYPOINT_LOOK[0]));
+  const autoSpin = useRef(0);
 
   useEffect(() => {
     if (frozen) return;
@@ -50,8 +53,12 @@ export default function CameraRig({
   useFrame((_, delta) => {
     const dt = Math.min(delta, 0.05);
 
+    // Gentle constant auto-spin + a deliberate scroll-linked spin so the globe
+    // visibly rotates as it travels between slots.
     if (!frozen && earthGroupRef.current) {
-      earthGroupRef.current.rotation.y += 0.04 * dt;
+      autoSpin.current += 0.04 * dt;
+      const travel = useSceneStore.getState().globeTravel;
+      earthGroupRef.current.rotation.y = autoSpin.current + travel * SPIN_PER_SECTION;
     }
 
     // Which waypoint? Hero (0) when frozen/locked, else the active section.
