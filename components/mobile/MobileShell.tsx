@@ -16,7 +16,7 @@ type Props = {
 
 /** Routes that intentionally bypass the mobile shell. /siteview is
  *  responsive marketing; /design is a dev surface. */
-const PASSTHROUGH = ['/siteview', '/design'];
+const PASSTHROUGH = ['/siteview', '/siteNEW', '/design'];
 
 /**
  * Viewport-aware shell. Mounted in app/layout.tsx around `children`:
