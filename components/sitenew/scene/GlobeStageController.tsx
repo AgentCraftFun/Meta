@@ -3,24 +3,23 @@
 import { useEffect } from 'react';
 import { GLOBE_DAMP_LAMBDA } from '../system/motion';
 import { useSceneStore } from '../system/useSceneStore';
-import { GLOBE_ORIGIN, SLOTS, lerpSlot } from './globeSlots';
+import { GLOBE_DIAM_VH, GLOBE_ORIGIN, SLOTS, featherMask, lerpSlot, type Slot } from './globeSlots';
 
 /**
- * The travelling globe. ONE rAF loop reads smoothed scroll (activeSection +
- * sectionProgress from the store) and damps the #globe-transform wrapper toward
- * the current slot using GLOBE_DAMP_LAMBDA — buttery, never snaps.
+ * The travelling globe. ONE rAF loop damps the #globe-transform wrapper toward
+ * the active slot (GLOBE_DAMP_LAMBDA) using activeSection + sectionProgress.
  *
- * Applies ONLY transform (translate3d + scale), filter (brightness/blur) and
- * opacity. transform-origin is centered; the slot's target center is reached by
- * compensating for the globe's natural hero offset (GLOBE_ORIGIN).
+ * Applies transform (translate3d + scale), filter (brightness/blur), opacity,
+ * and the radial feather mask (so every slot is a clean soft-edged disc). The
+ * mask string is only re-written when it changes meaningfully (throttled).
  *
- * All 8 slots wired: Hero (full) → Problem (disc R) → Insight (disc L) →
- * Product/HowItWorks/Vision/CTA (dim blurred backdrop) → Footer (fade out).
+ * Product (section 3): the target is taken from the live panel cutout's rect so
+ * the globe sits framed INSIDE the panel as it scrolls.
  *
- * REDUCED-MOTION / mobile (≤768px): controller disabled — the globe stays in
- * hero framing (identity transform), no travel.
+ * REDUCED-MOTION / mobile (≤768px): controller disabled — globe hero framing.
  */
-const MAX_WIRED = 7;
+const PRODUCT_SECTION = 3;
+const FAST_BLUR_SKIP = 40;
 
 export default function GlobeStageController() {
   useEffect(() => {
@@ -30,9 +29,11 @@ export default function GlobeStageController() {
     if (reduced || mobile) return; // globe hero-only, no travel
 
     let el: HTMLElement | null = null;
+    let cutout: HTMLElement | null = null;
     let raf = 0;
     let last = performance.now();
-    const cur = { tx: 0, ty: 0, scale: 1, bright: 1, opacity: 1, blur: 0 };
+    let maskWritten = -1;
+    const cur = { tx: 0, ty: 0, scale: 1, bright: 1, opacity: 1, blur: 0, feather: SLOTS[0].feather };
 
     const loop = (t: number) => {
       raf = requestAnimationFrame(loop);
@@ -49,17 +50,32 @@ export default function GlobeStageController() {
       last = t;
 
       const { activeSection, sectionProgress, scrollVelocity } = useSceneStore.getState();
-      const a = Math.min(activeSection, MAX_WIRED);
-      const from = SLOTS[a];
-      const to = SLOTS[Math.min(a + 1, MAX_WIRED)];
-      const tgt = lerpSlot(from, to, a < MAX_WIRED ? sectionProgress : 0);
-
-      // Fast-scroll guard: skip the (costly) blur recompute while flicking;
-      // it eases back in on settle. Travel itself never janks.
-      const blurTarget = Math.abs(scrollVelocity) > 40 ? 0 : tgt.blur;
-
       const vw = window.innerWidth;
       const vh = window.innerHeight;
+
+      const a = Math.min(activeSection, SLOTS.length - 1);
+      const from = SLOTS[a];
+      const to = SLOTS[Math.min(a + 1, SLOTS.length - 1)];
+      let tgt: Slot = lerpSlot(from, to, sectionProgress);
+
+      // Product: lock the globe to the live panel cutout (framed in the panel).
+      if (activeSection === PRODUCT_SECTION) {
+        if (!cutout) cutout = document.getElementById('product-globe-cutout');
+        const r = cutout?.getBoundingClientRect();
+        if (r && r.width > 0) {
+          tgt = {
+            cx: (r.left + r.width / 2) / vw,
+            cy: (r.top + r.height / 2) / vh,
+            scale: r.height / (GLOBE_DIAM_VH * vh),
+            bright: 1,
+            opacity: 1,
+            blur: 0,
+            feather: 50,
+          };
+        }
+      }
+
+      const blurTarget = Math.abs(scrollVelocity) > FAST_BLUR_SKIP ? 0 : tgt.blur;
       const txTarget = (tgt.cx - 0.5 - (GLOBE_ORIGIN.x - 0.5) * tgt.scale) * vw;
       const tyTarget = (tgt.cy - 0.5 - (GLOBE_ORIGIN.y - 0.5) * tgt.scale) * vh;
 
@@ -70,6 +86,7 @@ export default function GlobeStageController() {
       cur.bright += (tgt.bright - cur.bright) * k;
       cur.opacity += (tgt.opacity - cur.opacity) * k;
       cur.blur += (blurTarget - cur.blur) * k;
+      cur.feather += (tgt.feather - cur.feather) * k;
 
       el.style.transform = `translate3d(${cur.tx.toFixed(2)}px, ${cur.ty.toFixed(2)}px, 0) scale(${cur.scale.toFixed(4)})`;
       el.style.filter =
@@ -77,6 +94,14 @@ export default function GlobeStageController() {
           ? `brightness(${cur.bright.toFixed(3)}) blur(${cur.blur.toFixed(2)}px)`
           : `brightness(${cur.bright.toFixed(3)})`;
       el.style.opacity = cur.opacity.toFixed(3);
+
+      // Re-write the feather mask only when it shifts meaningfully (throttled).
+      if (Math.abs(cur.feather - maskWritten) > 0.5) {
+        const m = featherMask(cur.feather);
+        el.style.setProperty('mask-image', m);
+        el.style.setProperty('-webkit-mask-image', m);
+        maskWritten = cur.feather;
+      }
     };
 
     raf = requestAnimationFrame(loop);

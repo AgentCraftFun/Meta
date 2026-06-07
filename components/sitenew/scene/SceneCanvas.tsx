@@ -29,6 +29,7 @@ import LightHeroFallback from './LightHeroFallback';
 import SceneEarth from './SceneEarth';
 import SceneClouds from './SceneClouds';
 import { INSIGHT_SECTION } from './waypoints';
+import { SLOTS, featherMask } from './globeSlots';
 import { pickTextureTier, shouldUseFallback, type TextureTier } from './deviceTier';
 
 const FAST_SCROLL_THRESHOLD = 35;
@@ -150,12 +151,10 @@ export default function SceneCanvas() {
     typeof window !== 'undefined' &&
     window.matchMedia('(max-width: 768px)').matches;
 
-  // Soft radial feather so the canvas rectangle melts into the #05080F base
-  // when the globe travels (scales/translates). Centered on the globe's hero
-  // position; at hero scale the falloff is near the edges (≈ /siteview), and it
-  // becomes the disc edge when scaled down.
-  const feather =
-    'radial-gradient(circle at 68% 50%, #000 56%, rgba(0,0,0,0.85) 70%, transparent 84%)';
+  // Soft radial feather so the canvas rectangle melts into the #05080F base.
+  // Default = hero feather (full-bleed); the controller re-writes it per slot so
+  // every non-hero slot becomes a clean soft-edged disc.
+  const feather = featherMask(SLOTS[0].feather);
 
   return (
     <div
