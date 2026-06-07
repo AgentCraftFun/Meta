@@ -23,6 +23,12 @@ export type SceneState = {
   /** The single animated section-snap progress `p` (float section index). Tweens
    *  current→target over each transition; the globe reads this as its `t`. */
   snapProgress: number;
+  /** Index of the section a snap transition just SETTLED on (globe at rest).
+   *  -1 until the first arrival. Paired with `arrivalNonce`. */
+  arrivedSection: number;
+  /** Increments once per snap arrival — lets a section play a one-shot "locked"
+   *  reaction the exact frame the globe comes to rest (re-arms each arrival). */
+  arrivalNonce: number;
   /** Instantaneous scroll velocity (px/frame-ish) for the fast-scroll guard. */
   scrollVelocity: number;
   /** DEV telemetry: live camera pos + canvas size, shown in the GlobePlacer. */
@@ -38,6 +44,8 @@ export type SceneState = {
   setGlobeTravel: (v: number) => void;
   setSnapEnabled: (v: boolean) => void;
   setSnapProgress: (v: number) => void;
+  /** Signal that a snap transition settled on `section` (globe at rest). */
+  signalArrival: (section: number) => void;
   setScrollVelocity: (v: number) => void;
   setSceneDebug: (v: string) => void;
   setReducedMotion: (v: boolean) => void;
@@ -51,6 +59,8 @@ export const useSceneStore = create<SceneState>((set) => ({
   globeTravel: 0,
   snapEnabled: false,
   snapProgress: 0,
+  arrivedSection: -1,
+  arrivalNonce: 0,
   scrollVelocity: 0,
   sceneDebug: '',
   reducedMotion: false,
@@ -62,6 +72,8 @@ export const useSceneStore = create<SceneState>((set) => ({
   setGlobeTravel: (v) => set({ globeTravel: v }),
   setSnapEnabled: (v) => set({ snapEnabled: v }),
   setSnapProgress: (v) => set({ snapProgress: v }),
+  signalArrival: (section) =>
+    set((s) => ({ arrivedSection: section, arrivalNonce: s.arrivalNonce + 1 })),
   setScrollVelocity: (v) => set({ scrollVelocity: v }),
   setSceneDebug: (v) => set({ sceneDebug: v }),
   setReducedMotion: (v) => set({ reducedMotion: v }),

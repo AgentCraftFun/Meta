@@ -1,6 +1,6 @@
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useAnimationControls } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import Decode from '../Decode';
 import FadeUp from '../FadeUp';
@@ -56,6 +56,38 @@ const HEAT_COLOR: Record<string, { dot: string; bar: string; ring: string }> = {
     bar: 'bg-amber-400/85',
     ring: 'border-amber-400/55',
   },
+};
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * §3 "LOCK-IN" reaction tuning. When the travelling globe SETTLES into the live
+ * panel (snap transition completes on §3), the frame acknowledges it with one
+ * weighted "target acquired" beat — felt more than seen. ONE small overshoot,
+ * never a bounce. transform / opacity / filter only.
+ * ────────────────────────────────────────────────────────────────────────── */
+// §3 Product is the 4th section (index 3) in the page's SECTIONS order.
+const PRODUCT_INDEX = 3;
+// Gentle back-out — overshoots its target ONCE (~one weighted settle), no boing.
+const BACK_OUT: [number, number, number, number] = [0.34, 1.4, 0.64, 1];
+const BRACKET_LOOSE = 6; // px the brackets start loose, then snap+overshoot tight
+const PANEL_DIP = 0.992; // panel micro-recoil floor (0.8% inward dip, then back)
+const FRAME = { col: 'rgba(34, 211, 238, 0.45)', size: 16, th: 1.5 } as const;
+// Four corner brackets + the diagonal each is "loose" along (away from its corner).
+const CORNERS = [
+  { k: 'tl', dx: -1, dy: -1, css: { left: -1, top: -1, borderTopWidth: FRAME.th, borderLeftWidth: FRAME.th } },
+  { k: 'tr', dx: 1, dy: -1, css: { right: -1, top: -1, borderTopWidth: FRAME.th, borderRightWidth: FRAME.th } },
+  { k: 'bl', dx: -1, dy: 1, css: { left: -1, bottom: -1, borderBottomWidth: FRAME.th, borderLeftWidth: FRAME.th } },
+  { k: 'br', dx: 1, dy: 1, css: { right: -1, bottom: -1, borderBottomWidth: FRAME.th, borderRightWidth: FRAME.th } },
+] as const;
+
+const bracketVariants = {
+  rest: { x: 0, y: 0 },
+  // Snap from `loose` (away from corner) to 0, the back-out adding the single
+  // ~0.5px overshoot PAST the corner — the felt weight of the lock.
+  lock: ({ dx, dy }: { dx: number; dy: number }) => ({
+    x: [BRACKET_LOOSE * dx, 0],
+    y: [BRACKET_LOOSE * dy, 0],
+    transition: { duration: 0.26, ease: BACK_OUT },
+  }),
 };
 
 export default function Product() {
@@ -184,13 +216,89 @@ function ProductMock() {
 
   const byRank = (rank: string) => MOCK_NARRATIVES.find((n) => n.rank === rank)!;
 
+  // ── LOCK-IN reaction ──────────────────────────────────────────────────────
+  // Fire ONCE the exact frame the globe settles on §3 (arrivalNonce ticks from
+  // SnapStage when the snap tween completes — globe reads snapProgress with no
+  // damp, so it is AT REST then). Re-arms automatically each arrival. Snap is
+  // off under reduced-motion / mobile, so the nonce never ticks there.
+  const arrivalNonce = useSceneStore((s) => s.arrivalNonce);
+  const arrivedSection = useSceneStore((s) => s.arrivedSection);
+  const brackets = useAnimationControls();
+  const panel = useAnimationControls();
+  const rim = useAnimationControls();
+  const ring = useAnimationControls();
+  const dot = useAnimationControls();
+
+  useEffect(() => {
+    if (reduced) return;
+    if (arrivalNonce === 0 || arrivedSection !== PRODUCT_INDEX) return;
+    // 1 — corner brackets snap tight with one tiny overshoot (the felt weight).
+    brackets.start('lock');
+    // 2 — panel micro-recoil: a faint dip inward then back (NOT a pulse out).
+    panel.start({
+      scale: [1, PANEL_DIP, 1],
+      transition: { duration: 0.28, times: [0, 0.4, 1], ease: BACK_OUT },
+    });
+    // 3 — rim flash: border brightness flares then eases back (120ms up/220 down).
+    rim.start({
+      opacity: [0, 1, 0],
+      transition: { duration: 0.34, times: [0, 0.35, 1], ease: 'easeOut' },
+    });
+    // 4 — globe ring ping + live-dot kick.
+    ring.start({
+      scale: [0.9, 1.3],
+      opacity: [0.6, 0],
+      transition: { duration: 0.5, ease: 'easeOut' },
+    });
+    dot.start({
+      scale: [1, 1.4, 1],
+      filter: ['brightness(1)', 'brightness(1.9)', 'brightness(1)'],
+      transition: { duration: 0.3, times: [0, 0.45, 1], ease: 'easeOut' },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [arrivalNonce, arrivedSection, reduced]);
+
   return (
-    <TacticalFrame color="rgba(34, 211, 238, 0.45)" size={16} thickness={1.5}>
+    <motion.div className="relative" animate={panel}>
+      {/* Animatable corner brackets (replaces TacticalFrame so the lock beat can
+          drive them). At rest they are pixel-identical to the static frame. */}
+      {CORNERS.map((c) => (
+        <motion.span
+          key={c.k}
+          aria-hidden
+          custom={{ dx: c.dx, dy: c.dy }}
+          variants={bracketVariants}
+          initial="rest"
+          animate={brackets}
+          className="pointer-events-none absolute z-10"
+          style={{
+            width: FRAME.size,
+            height: FRAME.size,
+            borderStyle: 'solid',
+            borderColor: FRAME.col,
+            borderWidth: 0,
+            ...c.css,
+          }}
+        />
+      ))}
+      {/* Rim flash overlay — a brighter cyan border that flares on lock. */}
+      <motion.span
+        aria-hidden
+        className="pointer-events-none absolute -inset-px z-10 rounded-sm"
+        style={{ border: '1.5px solid rgba(34, 211, 238, 0.9)' }}
+        initial={{ opacity: 0 }}
+        animate={rim}
+      />
+
       <div className="overflow-hidden rounded-sm shadow-[0_30px_80px_-30px_rgba(34,211,238,0.22)]">
         {/* Top bar */}
         <div className="flex items-center justify-between border-b border-[#1E293B] bg-[#0B1220] px-4 py-3">
           <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.32em] text-white">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.85)]" />
+            <motion.span
+              aria-hidden
+              animate={dot}
+              className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.85)]"
+            />
             MetaMap · Live
           </div>
           <div className="flex items-center gap-1 font-mono text-[9px] uppercase tracking-[0.32em]">
@@ -226,6 +334,24 @@ function ProductMock() {
             }`}
           >
             {!cutoutMode && <MockGlobeBackdrop />}
+            {/* Lock-in ring ping — one thin cyan ring expands past the globe and
+                fades. Centred on the cutout (where the settled globe sits). */}
+            {cutoutMode && (
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                <motion.span
+                  aria-hidden
+                  className="rounded-full"
+                  style={{
+                    width: '52%',
+                    aspectRatio: '1 / 1',
+                    border: '1px solid rgba(34, 211, 238, 0.8)',
+                    boxShadow: '0 0 12px rgba(34, 211, 238, 0.5)',
+                  }}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={ring}
+                />
+              </div>
+            )}
           </div>
 
           {/* Side panel */}
@@ -270,7 +396,7 @@ function ProductMock() {
           </div>
         </div>
       </div>
-    </TacticalFrame>
+    </motion.div>
   );
 }
 
