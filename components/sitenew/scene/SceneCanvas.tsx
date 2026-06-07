@@ -164,7 +164,7 @@ export default function SceneCanvas() {
     window.matchMedia('(max-width: 768px)').matches;
 
   return (
-    <div className="pointer-events-none fixed inset-0" style={{ zIndex: z.earth }}>
+    <div aria-hidden className="pointer-events-none fixed inset-0" style={{ zIndex: z.earth }}>
       <Canvas
         dpr={[1, 1.75]}
         gl={{

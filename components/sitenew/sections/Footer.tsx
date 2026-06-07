@@ -2,7 +2,7 @@
 
 const LINKS = [
   { label: 'Twitter', href: 'https://x.com' },
-  { label: 'Docs', href: '/docs' },
+  { label: 'Terminal', href: '/terminal' },
   { label: 'API', href: '/api/health' },
 ];
 
