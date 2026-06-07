@@ -1,9 +1,13 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import Decode from '../Decode';
 import FadeUp from '../FadeUp';
 import GridBackdrop from '../GridBackdrop';
 import SectionLabel from '../SectionLabel';
+import Shimmer from '../Shimmer';
 import TacticalFrame from '../TacticalFrame';
+import { useSceneStore } from '../system/useSceneStore';
 
 type Theme = {
   ring: string;
@@ -80,15 +84,11 @@ export default function Vision() {
           <SectionLabel index="05" label="Vision" align="center" />
         </FadeUp>
 
-        <FadeUp delay={0.1}>
+        <Decode className="text-center">
           <h2 className="mt-8 text-center font-display text-[40px] font-bold leading-[1.04] tracking-[-0.025em] text-white md:text-[60px]">
-            The all-in-one terminal for{' '}
-            <span className="bg-gradient-to-r from-cyan-300 to-cyan-500 bg-clip-text text-transparent">
-              on-chain traders
-            </span>
-            .
+            The all-in-one terminal for <Shimmer>on-chain traders</Shimmer>.
           </h2>
-        </FadeUp>
+        </Decode>
 
         <FadeUp delay={0.2}>
           <p className="mx-auto mt-6 max-w-[720px] text-center text-[16px] leading-snug text-slate-400 md:text-[18px]">
@@ -232,10 +232,22 @@ function MoonVisual() {
             opacity={0.85}
             style={{
               filter: `drop-shadow(0 0 4px rgba(251, 191, 36, 0.85))`,
+              animation: `sn-twinkle ${2.4 + (i % 4) * 0.6}s ease-in-out ${i * 0.3}s infinite`,
             }}
           />
         ))}
       </svg>
+      <style jsx>{`
+        @keyframes sn-twinkle {
+          0%,
+          100% {
+            opacity: 0.85;
+          }
+          50% {
+            opacity: 0.3;
+          }
+        }
+      `}</style>
       <span className="absolute right-6 top-5 font-mono text-[8px] uppercase tracking-[0.4em] text-amber-400/60">
         Galaxy / Tokens
       </span>
@@ -243,21 +255,50 @@ function MoonVisual() {
   );
 }
 
+type Line = { tone: 'cyan' | 'red' | 'green' | 'muted'; label?: string; text: string };
+
+const BASE_LINES: Line[] = [
+  { label: '$', tone: 'muted', text: 'metamap signal --watch breaking' },
+  { tone: 'muted', text: '>  Listening on 38 countries…' },
+  { tone: 'cyan', text: '⚑  US · Spot ETH ETF inflows · vol 94' },
+  { tone: 'red', text: '⚑  CN · PBOC RRR cut · vol 91 · ▲ +81%' },
+  { tone: 'muted', text: '$  trade --token $RRR --size 0.5e' },
+  { tone: 'green', text: '✓  Filled · 0.5 ETH @ 0.000142 · slippage 0.4%' },
+];
+
+// Pool the feed cycles through — a new line types in every 4s.
+const FEED_LINES: Line[] = [
+  { tone: 'red', text: '⚑  TR · CBRT 250bps hike · vol 76' },
+  { tone: 'cyan', text: '⚑  IN · RBI digital rupee pilot · vol 70' },
+  { tone: 'green', text: '✓  Filled · 0.3 ETH @ 0.000088 · slippage 0.6%' },
+  { tone: 'red', text: '⚑  JP · BoJ YCC tweak leaked · vol 68 · ▲ +54%' },
+  { tone: 'muted', text: '>  Re-ranking narratives…' },
+];
+
 function BotsVisual() {
+  const reduced = useSceneStore((s) => s.reducedMotion);
+  const [lines, setLines] = useState<Line[]>(BASE_LINES);
+
+  useEffect(() => {
+    if (reduced) return;
+    let i = 0;
+    const id = setInterval(() => {
+      if (document.hidden) return;
+      const next = FEED_LINES[i % FEED_LINES.length];
+      i++;
+      setLines((prev) => [...prev.slice(-5), next]);
+    }, 4000);
+    return () => clearInterval(id);
+  }, [reduced]);
+
   return (
     <div className="absolute inset-0 flex flex-col justify-end overflow-hidden bg-[#06090F] p-4 font-mono text-[10px] leading-snug">
-      {/* Faux terminal lines */}
       <div className="flex flex-col gap-1.5 opacity-90">
-        <TerminalLine label="$" tone="muted">
-          metamap signal --watch breaking
-        </TerminalLine>
-        <TerminalLine tone="muted">{'>'}  Listening on 38 countries…</TerminalLine>
-        <TerminalLine tone="cyan">{'⚑'}  US · Spot ETH ETF inflows · vol 94</TerminalLine>
-        <TerminalLine tone="red">{'⚑'}  CN · PBOC RRR cut · vol 91 · ▲ +81%</TerminalLine>
-        <TerminalLine tone="muted">{'$'}  trade --token $RRR --size 0.5e</TerminalLine>
-        <TerminalLine tone="green">
-          {'✓'}  Filled · 0.5 ETH @ 0.000142 · slippage 0.4%
-        </TerminalLine>
+        {lines.map((l, idx) => (
+          <TerminalLine key={`${idx}-${l.text}`} label={l.label} tone={l.tone}>
+            {l.text}
+          </TerminalLine>
+        ))}
       </div>
       <span
         aria-hidden

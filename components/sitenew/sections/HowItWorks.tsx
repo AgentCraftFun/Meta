@@ -1,10 +1,14 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Decode from '../Decode';
+import DrawLine from '../DrawLine';
 import FadeUp from '../FadeUp';
 import GridBackdrop from '../GridBackdrop';
 import SectionLabel from '../SectionLabel';
+import Shimmer from '../Shimmer';
 import TacticalFrame from '../TacticalFrame';
+import { spring } from '../system/motion';
 
 const STEPS = [
   {
@@ -43,31 +47,21 @@ export default function HowItWorks() {
           <SectionLabel index="04" label="How It Works" align="center" />
         </FadeUp>
 
-        <FadeUp delay={0.1}>
+        <Decode className="text-center">
           <h2 className="mt-8 text-center font-display text-[40px] font-bold leading-[1.04] tracking-[-0.025em] text-white md:text-[60px]">
-            From tweet to beacon in{' '}
-            <span className="bg-gradient-to-r from-cyan-300 to-cyan-500 bg-clip-text text-transparent">
-              under 5 minutes
-            </span>
-            .
+            From tweet to beacon in <Shimmer>under 5 minutes</Shimmer>.
           </h2>
-        </FadeUp>
+        </Decode>
 
         {/* Pipeline */}
         <div className="relative mt-20">
-          {/* Animated horizontal pipeline track behind the cards (desktop only) */}
-          <motion.div
-            initial={{ opacity: 0, scaleX: 0 }}
-            whileInView={{ opacity: 1, scaleX: 1 }}
-            viewport={{ once: true, amount: 0.4 }}
-            transition={{ duration: 1.2, ease: 'easeOut' }}
+          {/* Horizontal pipeline track behind the cards — draws on (desktop) */}
+          <div
             aria-hidden
-            className="pointer-events-none absolute left-0 right-0 top-[80px] hidden h-px origin-left md:block"
-            style={{
-              background:
-                'linear-gradient(90deg, transparent, rgba(34,211,238,0.35) 8%, rgba(34,211,238,0.7) 50%, rgba(34,211,238,0.35) 92%, transparent)',
-            }}
-          />
+            className="pointer-events-none absolute left-0 right-0 top-[80px] hidden h-px md:block"
+          >
+            <DrawLine orientation="h" length={100} stroke="rgba(34,211,238,0.7)" />
+          </div>
 
           <div className="grid grid-cols-1 gap-5 md:grid-cols-4">
             {STEPS.map((step, i) => (
@@ -121,7 +115,7 @@ function StepCard({
         initial={{ scale: 0, opacity: 0 }}
         whileInView={{ scale: 1, opacity: 1 }}
         viewport={{ once: true, amount: 0.4 }}
-        transition={{ duration: 0.5, delay: 0.4 + index * 0.12, ease: 'easeOut' }}
+        transition={{ ...spring.snappy, delay: 0.5 + index * 0.12 }}
         aria-hidden
         className="pointer-events-none absolute left-1/2 top-[80px] hidden h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-300 shadow-[0_0_16px_rgba(34,211,238,0.85)] md:block"
       />

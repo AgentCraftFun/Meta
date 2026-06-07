@@ -1,9 +1,12 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Decode from '../Decode';
+import DrawLine from '../DrawLine';
 import FadeUp from '../FadeUp';
 import GridBackdrop from '../GridBackdrop';
 import SectionLabel from '../SectionLabel';
+import Shimmer from '../Shimmer';
 import TacticalFrame from '../TacticalFrame';
 
 const STEPS = [
@@ -43,15 +46,11 @@ export default function Insight() {
           <SectionLabel index="02" label="The Insight" align="center" />
         </FadeUp>
 
-        <FadeUp delay={0.1}>
+        <Decode className="text-center">
           <h2 className="mt-8 text-center font-display text-[48px] font-bold leading-[1.02] tracking-[-0.03em] text-white md:text-[80px]">
-            Attention precedes{' '}
-            <span className="bg-gradient-to-r from-cyan-300 to-cyan-500 bg-clip-text text-transparent">
-              capital
-            </span>
-            .
+            Attention precedes <Shimmer>capital</Shimmer>.
           </h2>
-        </FadeUp>
+        </Decode>
 
         <FadeUp delay={0.2}>
           <p className="mx-auto mt-6 max-w-[760px] text-center text-[18px] leading-snug text-slate-400 md:text-[20px]">
@@ -131,28 +130,23 @@ function Cell({
         </TacticalFrame>
       </FadeUp>
       {!isLast && (
-        <motion.div
-          initial={{ opacity: 0, scaleX: 0 }}
-          whileInView={{ opacity: 1, scaleX: 1 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.6, ease: 'easeOut', delay: index * 0.12 + 0.2 }}
-          className="relative hidden origin-left items-center justify-center md:flex"
-        >
-          <span
-            aria-hidden
-            className="block h-px w-full"
-            style={{
-              background:
-                'linear-gradient(90deg, rgba(34,211,238,0.6), rgba(34,211,238,0.2))',
-            }}
-          />
-          <span
+        <div className="relative hidden items-center justify-center md:flex">
+          {/* connector draws on as you arrive */}
+          <div className="h-px w-full">
+            <DrawLine orientation="h" length={100} delay={index * 0.12 + 0.2} />
+          </div>
+          {/* chevron pops in after the line completes (0.4s snappy) */}
+          <motion.span
             aria-hidden
             className="absolute right-0 top-1/2 -translate-y-1/2 text-cyan-300"
+            initial={{ scale: 0, opacity: 0 }}
+            whileInView={{ scale: 1, opacity: 1 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30, mass: 0.8, delay: index * 0.12 + 0.7 }}
           >
             ▶
-          </span>
-        </motion.div>
+          </motion.span>
+        </div>
       )}
     </>
   );

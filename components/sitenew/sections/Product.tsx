@@ -1,9 +1,15 @@
 'use client';
 
+import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import Decode from '../Decode';
 import FadeUp from '../FadeUp';
 import GridBackdrop from '../GridBackdrop';
 import SectionLabel from '../SectionLabel';
+import Shimmer from '../Shimmer';
 import TacticalFrame from '../TacticalFrame';
+import { spring } from '../system/motion';
+import { useSceneStore } from '../system/useSceneStore';
 
 const FEATURES = [
   {
@@ -65,15 +71,12 @@ export default function Product() {
         <div className="mt-12 grid grid-cols-1 items-start gap-12 md:grid-cols-2 md:gap-20">
           {/* Left — text */}
           <div>
-            <FadeUp delay={0.1}>
+            <Decode>
               <h2 className="font-display text-[40px] font-bold leading-[1.04] tracking-[-0.025em] text-white md:text-[56px]">
                 A 3D earth that shows you{' '}
-                <span className="bg-gradient-to-r from-cyan-300 to-cyan-500 bg-clip-text text-transparent">
-                  what the world is talking about
-                </span>
-                .
+                <Shimmer>what the world is talking about</Shimmer>.
               </h2>
-            </FadeUp>
+            </Decode>
 
             <ul className="mt-14 grid grid-cols-1 gap-3">
               {FEATURES.map((f, i) => (
@@ -137,7 +140,41 @@ function FeatureRow({
   );
 }
 
+const WINDOWS = ['Breaking', '24h', '7d'] as const;
+
 function ProductMock() {
+  const reduced = useSceneStore((s) => s.reducedMotion);
+  const [win, setWin] = useState(1); // index into WINDOWS
+  const [order, setOrder] = useState(() => MOCK_NARRATIVES.map((n) => n.rank));
+
+  // Live simulation: cycle the time-window every 5s, reorder narratives every 6s.
+  useEffect(() => {
+    if (reduced) return;
+    const w = setInterval(() => setWin((p) => (p + 1) % WINDOWS.length), 5000);
+    const r = setInterval(() => {
+      setOrder((prev) => {
+        // rotate by one, then nudge the new leader to the front for variety
+        const next = [...prev];
+        next.push(next.shift() as string);
+        return next;
+      });
+    }, 6000);
+    const onHidden = () => {
+      if (document.hidden) {
+        clearInterval(w);
+        clearInterval(r);
+      }
+    };
+    document.addEventListener('visibilitychange', onHidden);
+    return () => {
+      clearInterval(w);
+      clearInterval(r);
+      document.removeEventListener('visibilitychange', onHidden);
+    };
+  }, [reduced]);
+
+  const byRank = (rank: string) => MOCK_NARRATIVES.find((n) => n.rank === rank)!;
+
   return (
     <TacticalFrame color="rgba(34, 211, 238, 0.45)" size={16} thickness={1.5}>
       <div className="overflow-hidden rounded-sm bg-[#0B1220] shadow-[0_30px_80px_-30px_rgba(34,211,238,0.22)]">
@@ -148,11 +185,25 @@ function ProductMock() {
             MetaMap · Live
           </div>
           <div className="flex items-center gap-1 font-mono text-[9px] uppercase tracking-[0.32em]">
-            <span className="border border-transparent px-2 py-1 text-slate-500">
-              Breaking
-            </span>
-            <span className="bg-cyan-300/95 px-2 py-1 text-black">24h</span>
-            <span className="border border-transparent px-2 py-1 text-slate-500">7d</span>
+            {WINDOWS.map((label, i) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => setWin(i)}
+                className="relative px-2 py-1"
+              >
+                {win === i && (
+                  <motion.span
+                    layoutId="mock-window"
+                    className="absolute inset-0 bg-cyan-300/95"
+                    transition={spring.soft}
+                  />
+                )}
+                <span className={`relative z-10 ${win === i ? 'text-black' : 'text-slate-500'}`}>
+                  {label}
+                </span>
+              </button>
+            ))}
           </div>
         </div>
 
@@ -168,38 +219,38 @@ function ProductMock() {
               🇺🇸 United States · #1
             </div>
             <ol className="flex flex-col gap-2">
-              {MOCK_NARRATIVES.map((n) => {
-                const c = HEAT_COLOR[n.heat] ?? HEAT_COLOR.amber;
-                return (
-                  <li
-                    key={n.rank}
-                    className={`rounded-sm border ${c.ring} bg-black/30 px-2.5 py-2`}
-                  >
-                    <div className="flex items-start gap-1.5">
-                      <span className="font-mono text-[9px] tabular-nums text-slate-500">
-                        #{n.rank}
-                      </span>
-                      <span
-                        className={`mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full ${c.dot}`}
-                      />
-                      <p className="text-[10.5px] font-medium leading-snug text-white">
-                        {n.title}
-                      </p>
-                    </div>
-                    <div className="mt-1.5 flex items-center gap-2">
-                      <div className="h-[2px] flex-1 bg-white/10">
-                        <div
-                          className={`h-full ${c.bar}`}
-                          style={{ width: `${n.vol}%` }}
-                        />
+              <AnimatePresence initial={false}>
+                {order.map((rank, idx) => {
+                  const n = byRank(rank);
+                  const c = HEAT_COLOR[n.heat] ?? HEAT_COLOR.amber;
+                  return (
+                    <motion.li
+                      key={rank}
+                      layout
+                      transition={reduced ? { duration: 0 } : spring.soft}
+                      className={`rounded-sm border ${c.ring} bg-black/30 px-2.5 py-2`}
+                    >
+                      <div className="flex items-start gap-1.5">
+                        <span className="font-mono text-[9px] tabular-nums text-slate-500">
+                          #{String(idx + 1).padStart(2, '0')}
+                        </span>
+                        <span className={`mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full ${c.dot}`} />
+                        <p className="text-[10.5px] font-medium leading-snug text-white">
+                          {n.title}
+                        </p>
                       </div>
-                      <span className="text-[9px] tabular-nums text-emerald-300/85">
-                        ▲ {n.mom}%
-                      </span>
-                    </div>
-                  </li>
-                );
-              })}
+                      <div className="mt-1.5 flex items-center gap-2">
+                        <div className="h-[2px] flex-1 bg-white/10">
+                          <div className={`h-full ${c.bar}`} style={{ width: `${n.vol}%` }} />
+                        </div>
+                        <span className="text-[9px] tabular-nums text-emerald-300/85">
+                          ▲ {n.mom}%
+                        </span>
+                      </div>
+                    </motion.li>
+                  );
+                })}
+              </AnimatePresence>
             </ol>
           </div>
         </div>

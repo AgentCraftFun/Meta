@@ -1,14 +1,17 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import type { ReactNode } from 'react';
+import { motion, useInView } from 'framer-motion';
+import { useRef, type ReactNode } from 'react';
 import { color, ease } from './system/motion';
 import { useSceneStore } from './system/useSceneStore';
 
 type Props = {
   children: ReactNode;
-  /** Start the reveal when true. */
-  play: boolean;
+  /**
+   * Controlled trigger. When omitted, Decode self-triggers once on scroll-in
+   * (used for section headlines); Hero passes `play={booted}` explicitly.
+   */
+  play?: boolean;
   delay?: number;
   className?: string;
 };
@@ -21,13 +24,17 @@ type Props = {
  */
 export default function Decode({ children, play, delay = 0, className }: Props) {
   const reduced = useSceneStore((s) => s.reducedMotion);
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: '-15%' });
+  const active = play ?? inView;
 
   if (reduced) {
     return (
       <motion.div
+        ref={ref}
         className={className}
         initial={{ opacity: 0 }}
-        animate={play ? { opacity: 1 } : { opacity: 0 }}
+        animate={active ? { opacity: 1 } : { opacity: 0 }}
         transition={{ duration: 0.3, delay, ease: ease.expoOut }}
       >
         {children}
@@ -36,24 +43,21 @@ export default function Decode({ children, play, delay = 0, className }: Props) 
   }
 
   return (
-    <div className={`relative ${className ?? ''}`}>
+    <div ref={ref} className={`relative ${className ?? ''}`}>
       <motion.div
         initial={{ clipPath: 'inset(0 100% 0 0)' }}
-        animate={play ? { clipPath: 'inset(0 0% 0 0)' } : { clipPath: 'inset(0 100% 0 0)' }}
+        animate={active ? { clipPath: 'inset(0 0% 0 0)' } : { clipPath: 'inset(0 100% 0 0)' }}
         transition={{ duration: 0.7, delay, ease: ease.quartIO }}
       >
         {children}
       </motion.div>
-      {/* cyan edge-line riding the reveal front */}
       <motion.span
         aria-hidden
         className="pointer-events-none absolute inset-y-0 w-[2px]"
         style={{ background: color.cyan, boxShadow: `0 0 12px ${color.cyan}` }}
         initial={{ left: '0%', opacity: 0 }}
         animate={
-          play
-            ? { left: ['0%', '100%'], opacity: [0, 1, 1, 0] }
-            : { left: '0%', opacity: 0 }
+          active ? { left: ['0%', '100%'], opacity: [0, 1, 1, 0] } : { left: '0%', opacity: 0 }
         }
         transition={{ duration: 0.7, delay, ease: ease.quartIO }}
       />
