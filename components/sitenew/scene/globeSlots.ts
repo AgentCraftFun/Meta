@@ -151,6 +151,13 @@ export function lerpSlot(a: Slot, b: Slot, t: number): Slot {
 /** Highest section index that travels this session (§0–§4). */
 export const LAST_SECTION = 4;
 
+/**
+ * Visible build marker — bump on every globe change so we can confirm at a
+ * glance which build is actually live (printed to console on load + shown in the
+ * GLOBE PLACER panel). If you don't see this exact tag, you're on a stale build.
+ */
+export const GLOBE_BUILD_TAG = 'globe-build-7 · STATIC + CAMERA-LOCK';
+
 // Long horizontal traverses get a shallow orbital arc (subtle, vanishes at the
 // endpoints). Only applied when |Δcx| between two slots exceeds ARC_DCX.
 const ARC_DCX = 0.4;

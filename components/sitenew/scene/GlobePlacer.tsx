@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { SLOTS, activeSection, globeTransform } from './globeSlots';
+import { GLOBE_BUILD_TAG, SLOTS, activeSection, globeTransform } from './globeSlots';
 
 /**
  * DEV-ONLY live globe placement tool. Inert unless the URL has `?place`.
@@ -142,6 +142,9 @@ export default function GlobePlacer() {
     >
       <div style={{ color: '#fff', fontWeight: 'bold', marginBottom: 4 }}>
         GLOBE PLACER · §{active} {LABELS[active]}
+      </div>
+      <div style={{ color: '#7CFFB2', fontSize: 10, marginBottom: 6, opacity: 0.85 }}>
+        {GLOBE_BUILD_TAG}
       </div>
       <div style={{ color: '#fff', fontSize: 14, marginBottom: 8 }}>
         cx {p.cx.toFixed(3)} · cy {p.cy.toFixed(3)} · <b>scale {p.scale.toFixed(3)}</b>

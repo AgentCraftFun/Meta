@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { SLOTS, activeSection, globeTransform } from './globeSlots';
+import { GLOBE_BUILD_TAG, SLOTS, activeSection, globeTransform } from './globeSlots';
 
 /**
  * THE TRAVELLING GLOBE — STATIC HARD-LOCK mode.
@@ -30,6 +30,10 @@ export default function GlobeStageController() {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const mobile = window.matchMedia('(max-width: 768px)').matches;
     const DEBUG = new URLSearchParams(window.location.search).has('globedebug');
+
+    // Build marker — confirms which build is live (see GLOBE_BUILD_TAG).
+    // eslint-disable-next-line no-console
+    console.info(`[globe] BUILD ${GLOBE_BUILD_TAG} — camera locked, static slots`);
 
     let gEl: HTMLElement | null = null;
     const findEl = (): HTMLElement | null => {
