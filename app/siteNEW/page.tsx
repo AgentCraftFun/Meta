@@ -15,6 +15,7 @@ import LiveSignal from '@/components/sitenew/system/LiveSignal';
 import Reticle from '@/components/sitenew/system/Reticle';
 import ScrollDirector from '@/components/sitenew/system/ScrollDirector';
 import SmoothScroll from '@/components/sitenew/system/SmoothScroll';
+import SnapScroll from '@/components/sitenew/system/SnapScroll';
 
 export { metadata } from './metadata';
 
@@ -52,6 +53,9 @@ export default function LandingPage() {
       <Grade />
       {/* Scroll → activeSection / sectionProgress for the camera + beacons. */}
       <ScrollDirector />
+      {/* Desktop/fine-pointer only: section-locked scroll snapping (one gesture
+          = one buttery quint transition; globe glides in sync via scroll). */}
+      <SnapScroll />
       {/* Hero targeting-reticle cursor. */}
       <Reticle />
       {/* Ambient live-signal strip (ticker + refresh clock). */}
