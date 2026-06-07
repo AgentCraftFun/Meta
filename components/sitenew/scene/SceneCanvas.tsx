@@ -1,7 +1,7 @@
 'use client';
 
 import { AdaptiveDpr, Stars } from '@react-three/drei';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import {
   Bloom,
   BrightnessContrast,
@@ -21,33 +21,68 @@ import SpaceGradient from '@/components/celestial/SpaceGradient';
 import { SUN_POSITION } from '@/lib/sun';
 import { useReducedMotion } from '@/lib/useReducedMotion';
 import { z } from '../system/motion';
+import { useSceneStore } from '../system/useSceneStore';
+import BeaconField from './BeaconField';
 import CameraRig from './CameraRig';
 import HeroBeacon from './HeroBeacon';
 import LightHeroFallback from './LightHeroFallback';
 import SceneEarth from './SceneEarth';
 import SceneClouds from './SceneClouds';
+import { INSIGHT_SECTION } from './waypoints';
 import { pickTextureTier, shouldUseFallback, type TextureTier } from './deviceTier';
 
-/**
- * The persistent globe. ONE fixed canvas (z-0) behind the whole page. Reuses
- * the read-only celestial chrome (SpaceGradient, ShootingStar, Atmosphere) and
- * the product's bloom→hue→contrast→chromatic→vignette grade. The earth itself
- * uses the device-tiered optimized textures via <SceneEarth>/<SceneClouds>.
- *
- * Fallback (reduced-motion / mobile-low-power / no-WebGL) renders a static
- * non-WebGL frame instead — zero canvas, zero animation.
- *
- * PHASE 2: camera persists + rotates at waypoint 0. No scroll flight yet.
- */
+const FAST_SCROLL_THRESHOLD = 35;
+
+/** Eases bloom 0.9 → 1.3 during the Insight descent, back out afterwards. */
+function BloomController({ bloomRef }: { bloomRef: React.MutableRefObject<{ intensity: number } | null> }) {
+  useFrame((_, delta) => {
+    const b = bloomRef.current;
+    if (!b) return;
+    const target = useSceneStore.getState().activeSection === INSIGHT_SECTION ? 1.3 : 0.9;
+    b.intensity = THREE.MathUtils.damp(b.intensity, target, 3, Math.min(delta, 0.05));
+  });
+  return null;
+}
+
+/** Fast-scroll guard: above a velocity threshold drop dpr to 1 + signal the
+ *  composer to go bloom-only; restore on settle (180ms calm). */
+function PerfGuard({ onFast }: { onFast: (v: boolean) => void }) {
+  const setDpr = useThree((s) => s.setDpr);
+  const fast = useRef(false);
+  const calmTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useFrame(() => {
+    const v = Math.abs(useSceneStore.getState().scrollVelocity);
+    if (v > FAST_SCROLL_THRESHOLD && !fast.current) {
+      fast.current = true;
+      setDpr(1);
+      onFast(true);
+      if (calmTimer.current) clearTimeout(calmTimer.current);
+    } else if (v <= FAST_SCROLL_THRESHOLD && fast.current && !calmTimer.current) {
+      calmTimer.current = setTimeout(() => {
+        fast.current = false;
+        setDpr(Math.min(typeof window !== 'undefined' ? window.devicePixelRatio : 1.75, 1.75));
+        onFast(false);
+        calmTimer.current = null;
+      }, 180);
+    }
+  });
+  return null;
+}
+
 function Scene({
   tier,
   frozen,
+  simplified,
 }: {
   tier: TextureTier;
   frozen: boolean;
+  simplified: boolean;
 }) {
   const earthGroupRef = useRef<THREE.Group>(null);
+  const bloomRef = useRef<{ intensity: number } | null>(null);
   const caOffset = useMemo(() => new THREE.Vector2(0.0008, 0.0008), []);
+  const [fast, setFast] = useState(false);
 
   return (
     <>
@@ -61,32 +96,50 @@ function Scene({
       <group ref={earthGroupRef}>
         <SceneEarth tier={tier} />
         <SceneClouds tier={tier} frozen={frozen} />
-        {/* First beacon — ignites once scroll begins (Phase 3). */}
         <HeroBeacon lat={38} lng={-97} />
+        <BeaconField simplified={simplified} frozen={frozen} />
       </group>
       <Atmosphere />
 
-      <CameraRig earthGroupRef={earthGroupRef} frozen={frozen} />
+      <CameraRig earthGroupRef={earthGroupRef} frozen={frozen} lockFlight={simplified} />
+      <BloomController bloomRef={bloomRef} />
+      <PerfGuard onFast={setFast} />
 
-      <EffectComposer multisampling={0}>
-        <Bloom
-          intensity={0.9}
-          luminanceThreshold={0.85}
-          luminanceSmoothing={0.5}
-          mipmapBlur
-          radius={0.65}
-          levels={7}
-        />
-        <HueSaturation hue={0} saturation={-0.05} />
-        <BrightnessContrast brightness={-0.03} contrast={0.15} />
-        <ChromaticAberration
-          blendFunction={BlendFunction.NORMAL}
-          offset={caOffset}
-          radialModulation={false}
-          modulationOffset={0}
-        />
-        <Vignette eskil={false} offset={0.2} darkness={0.85} />
-      </EffectComposer>
+      {/* Fast scroll → bloom-only composer (cheaper); full grade on settle. */}
+      {fast ? (
+        <EffectComposer multisampling={0}>
+          <Bloom
+            ref={bloomRef as never}
+            intensity={0.9}
+            luminanceThreshold={0.85}
+            luminanceSmoothing={0.5}
+            mipmapBlur
+            radius={0.65}
+            levels={7}
+          />
+        </EffectComposer>
+      ) : (
+        <EffectComposer multisampling={0}>
+          <Bloom
+            ref={bloomRef as never}
+            intensity={0.9}
+            luminanceThreshold={0.85}
+            luminanceSmoothing={0.5}
+            mipmapBlur
+            radius={0.65}
+            levels={7}
+          />
+          <HueSaturation hue={0} saturation={-0.05} />
+          <BrightnessContrast brightness={-0.03} contrast={0.15} />
+          <ChromaticAberration
+            blendFunction={BlendFunction.NORMAL}
+            offset={caOffset}
+            radialModulation={false}
+            modulationOffset={0}
+          />
+          <Vignette eskil={false} offset={0.2} darkness={0.85} />
+        </EffectComposer>
+      )}
 
       <AdaptiveDpr pixelated={false} />
     </>
@@ -99,8 +152,6 @@ export default function SceneCanvas() {
 
   useEffect(() => setMounted(true), []);
 
-  // SSR / first paint: render nothing (avoids hydration mismatch + lets us
-  // read window for capability detection on the client only).
   if (!mounted) return null;
 
   if (shouldUseFallback(reduced)) {
@@ -108,6 +159,9 @@ export default function SceneCanvas() {
   }
 
   const tier = pickTextureTier();
+  const simplified =
+    typeof window !== 'undefined' &&
+    window.matchMedia('(max-width: 768px)').matches;
 
   return (
     <div className="pointer-events-none fixed inset-0" style={{ zIndex: z.earth }}>
@@ -128,7 +182,7 @@ export default function SceneCanvas() {
         }}
       >
         <Suspense fallback={null}>
-          <Scene tier={tier} frozen={reduced} />
+          <Scene tier={tier} frozen={reduced} simplified={simplified} />
         </Suspense>
       </Canvas>
       <LoadingScreen />

@@ -9,7 +9,11 @@ import Vision from '@/components/sitenew/sections/Vision';
 import SceneCanvas from '@/components/sitenew/scene/SceneCanvas';
 import BootSequence from '@/components/sitenew/system/BootSequence';
 import Grade from '@/components/sitenew/system/Grade';
+import ScrollDirector from '@/components/sitenew/system/ScrollDirector';
 import SmoothScroll from '@/components/sitenew/system/SmoothScroll';
+
+// Section order — index aligns with the camera waypoint table.
+const SECTIONS = [Hero, Problem, Insight, Product, HowItWorks, Vision, CTA, Footer];
 
 export default function LandingPage() {
   return (
@@ -18,16 +22,15 @@ export default function LandingPage() {
       <SceneCanvas />
       <BootSequence />
       <Grade />
+      {/* Scroll → activeSection / sectionProgress for the camera + beacons. */}
+      <ScrollDirector />
       {/* Content floats over the globe; transparent main, z-10. */}
       <main className="relative z-10 w-full text-slate-100">
-        <Hero />
-        <Problem />
-        <Insight />
-        <Product />
-        <HowItWorks />
-        <Vision />
-        <CTA />
-        <Footer />
+        {SECTIONS.map((Section, i) => (
+          <div key={i} data-sn-section={i}>
+            <Section />
+          </div>
+        ))}
       </main>
     </SmoothScroll>
   );

@@ -1,5 +1,6 @@
 'use client';
 
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
 import { useEffect, type ReactNode } from 'react';
 import { useSceneStore } from './useSceneStore';
@@ -15,6 +16,7 @@ import { useSceneStore } from './useSceneStore';
 export default function SmoothScroll({ children }: { children: ReactNode }) {
   const setReducedMotion = useSceneStore((s) => s.setReducedMotion);
   const setScrollProgress = useSceneStore((s) => s.setScrollProgress);
+  const setScrollVelocity = useSceneStore((s) => s.setScrollVelocity);
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -35,12 +37,18 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
       return () => window.removeEventListener('scroll', onScroll);
     }
 
-    // Smooth path: Lenis drives scroll + emits normalized progress.
+    // Smooth path: Lenis drives scroll + emits normalized progress + velocity,
+    // and keeps GSAP ScrollTrigger (the ScrollDirector) in sync each frame.
     const lenis = new Lenis({ lerp: 0.1, duration: 1.2 });
 
-    lenis.on('scroll', ({ scroll, limit }: { scroll: number; limit: number }) => {
-      setScrollProgress(limit > 0 ? Math.min(1, Math.max(0, scroll / limit)) : 0);
-    });
+    lenis.on(
+      'scroll',
+      ({ scroll, limit, velocity }: { scroll: number; limit: number; velocity: number }) => {
+        setScrollProgress(limit > 0 ? Math.min(1, Math.max(0, scroll / limit)) : 0);
+        setScrollVelocity(velocity);
+        ScrollTrigger.update();
+      }
+    );
 
     let raf = 0;
     const loop = (time: number) => {
@@ -53,7 +61,7 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
       cancelAnimationFrame(raf);
       lenis.destroy();
     };
-  }, [setReducedMotion, setScrollProgress]);
+  }, [setReducedMotion, setScrollProgress, setScrollVelocity]);
 
   return <>{children}</>;
 }
