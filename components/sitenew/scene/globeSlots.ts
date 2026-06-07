@@ -39,10 +39,10 @@ export const SLOTS: Slot[] = [
   // §0–§4 are the EXACT cx/cy/scale hand-tuned against the live deploy this
   // session — do not round or "improve". All five are full-visibility travel
   // slots (bright 1, opacity 1, no blur).
-  { cx: 0.560, cy: 0.420, scale: 1.280, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 0 Hero
-  { cx: 0.800, cy: 0.550, scale: 1.100, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 1 Problem
-  { cx: 0.090, cy: 0.470, scale: 1.090, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 2 Insight
-  { cx: 0.990, cy: 0.760, scale: 1.090, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 3 Product
+  { cx: 0.490, cy: 0.410, scale: 1.180, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 0 Hero (A)
+  { cx: 0.690, cy: 0.470, scale: 0.900, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 1 Problem (B)
+  { cx: 0.060, cy: 0.470, scale: 1.090, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 2 Insight (C)
+  { cx: 0.630, cy: 0.490, scale: 0.410, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 3 Product (D)
   { cx: 0.350, cy: 0.500, scale: 1.250, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 4 HowItWorks
   { cx: 0.5, cy: 0.5, scale: DIM_SCALE, bright: 0.55, opacity: 0.28, blur: 2, feather: 0 }, // 5 Vision (dim)
   { cx: 0.5, cy: 0.5, scale: DIM_SCALE, bright: 0.5, opacity: 0.26, blur: 3, feather: 0 }, // 6 CTA (dim)

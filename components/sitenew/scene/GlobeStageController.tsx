@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { GLOBE_DAMP_LAMBDA } from '../system/motion';
 import { useSceneStore } from '../system/useSceneStore';
-import { SLOTS, globeTransform, globeCenterPx, lerpSlot, type Slot } from './globeSlots';
+import { SLOTS, globeTransform, globeCenterPx, type Slot } from './globeSlots';
 
 /**
  * THE TRAVELLING GLOBE — one continuous, damped pipeline that converges and
@@ -36,10 +36,21 @@ const LAST_SECTION = 4;
 const FAST_BLUR_SKIP = 40;
 // Convergence epsilons (snap-and-stop). Fractions for cx/cy so it's resolution-
 // independent (~0.3px at 1080p); small absolutes for the rest.
-const EPS_FRAC = 0.0003;
+const EPS_FRAC = 0.0004;
 const EPS_SCALE = 0.0005;
 const EPS_FILTER = 0.002;
 const MAX_DT = 1 / 30;
+// Long horizontal traverses (|Δcx| over this) get a shallow arc so they read
+// like an orbit, not a whip. Endpoints are untouched (sin(0)=sin(π)=0).
+const ARC_DCX = 0.4;
+const ARC_AMOUNT = 0.06;
+
+const lerp = (a: number, b: number, e: number): number => a + (b - a) * e;
+/** smoothstep — eases in AND out, zero velocity at both ends. */
+const smoothstep = (x: number): number => {
+  const c = x < 0 ? 0 : x > 1 ? 1 : x;
+  return c * c * (3 - 2 * c);
+};
 
 // Module-level guard: a StrictMode / HMR double-mount must not start a 2nd loop.
 let LOOP_ACTIVE = false;
@@ -159,7 +170,9 @@ export default function GlobeStageController() {
       travel: 0,
     };
 
-    // Pure function of P: → { slot target, float index t }.
+    // Pure function of P: → { eased slot target, float index t }.
+    // Pipeline: P → continuous t → smoothstep the fractional part → interpolate
+    // (cx/cy linear, scale in LOG space) → shallow arc on long traverses.
     const targetFor = (P: number): { s: Slot; t: number } => {
       const lastIdx = anchors.length - 1;
       let tt: number;
@@ -178,7 +191,31 @@ export default function GlobeStageController() {
       }
       const lo = Math.floor(tt);
       const hi = Math.min(lo + 1, Math.max(lastIdx, 0));
-      return { s: lerpSlot(SLOTS[lo], SLOTS[hi], tt - lo), t: tt };
+      const a = SLOTS[lo];
+      const b = SLOTS[hi];
+      const e = smoothstep(tt - lo); // eases out of A and into B
+
+      const cx = lerp(a.cx, b.cx, e);
+      let cy = lerp(a.cy, b.cy, e);
+      // LOG-space scale so a big shrink/grow (e.g. B 0.900 → D 0.410) reads
+      // perceptually even instead of lurching.
+      const scale = Math.exp(lerp(Math.log(a.scale), Math.log(b.scale), e));
+      // Shallow orbital arc on long horizontal traverses (e.g. B→C). Vanishes
+      // at both endpoints, so the globe still lands exactly on the tuned cy.
+      if (Math.abs(b.cx - a.cx) > ARC_DCX) {
+        cy += -ARC_AMOUNT * Math.sin(Math.PI * e);
+      }
+
+      const s: Slot = {
+        cx,
+        cy,
+        scale,
+        bright: lerp(a.bright, b.bright, e),
+        opacity: lerp(a.opacity, b.opacity, e),
+        blur: lerp(a.blur, b.blur, e),
+        feather: lerp(a.feather, b.feather, e),
+      };
+      return { s, t: tt };
     };
 
     let raf = 0;
