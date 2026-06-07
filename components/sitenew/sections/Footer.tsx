@@ -26,9 +26,14 @@ export default function Footer() {
               href={link.href}
               target={link.href.startsWith('http') ? '_blank' : undefined}
               rel={link.href.startsWith('http') ? 'noreferrer' : undefined}
-              className="font-mono text-[11px] uppercase tracking-[0.32em] text-slate-400 transition-colors hover:text-cyan-300"
+              className="group relative inline-block font-mono text-[11px] uppercase tracking-[0.32em] text-slate-400 transition-colors hover:text-cyan-300"
             >
               {link.label}
+              {/* underline grows left→right on hover (0.2s powerOut) */}
+              <span
+                aria-hidden
+                className="absolute -bottom-1 left-0 h-px w-full origin-left scale-x-0 bg-cyan-300 transition-transform duration-200 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100"
+              />
             </a>
           ))}
         </nav>

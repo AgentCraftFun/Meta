@@ -8,7 +8,6 @@ import GridBackdrop from '../GridBackdrop';
 import Scanline from '../Scanline';
 import SectionLabel from '../SectionLabel';
 import Shimmer from '../Shimmer';
-import TacticalFrame from '../TacticalFrame';
 import { ease } from '../system/motion';
 
 const TABS = [
@@ -79,18 +78,30 @@ export default function Problem() {
         <FadeUp delay={0.3}>
           <div className="mt-14 flex flex-wrap gap-3">
             {TABS.map((tab) => (
-              <TacticalFrame
-                key={tab.name}
-                color="rgba(148, 163, 184, 0.35)"
-                size={8}
-              >
-                <div className="flex items-center gap-3 bg-[#0B1220]/80 px-5 py-3 font-mono text-[12px] uppercase tracking-[0.28em] text-slate-300 backdrop-blur-sm">
-                  <span className="h-1 w-1 rounded-full bg-slate-500" />
+              <div key={tab.name} className="group relative">
+                {/* corner brackets snap inward on hover (0.2s powerOut) */}
+                {(['tl', 'tr', 'bl', 'br'] as const).map((corner) => (
+                  <span
+                    key={corner}
+                    aria-hidden
+                    className={[
+                      'pointer-events-none absolute z-10 h-2 w-2 border-cyan-300/70 transition-transform duration-200 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
+                      corner === 'tl' && '-left-1 -top-1 border-l border-t group-hover:translate-x-1 group-hover:translate-y-1',
+                      corner === 'tr' && '-right-1 -top-1 border-r border-t group-hover:-translate-x-1 group-hover:translate-y-1',
+                      corner === 'bl' && '-bottom-1 -left-1 border-b border-l group-hover:translate-x-1 group-hover:-translate-y-1',
+                      corner === 'br' && '-bottom-1 -right-1 border-b border-r group-hover:-translate-x-1 group-hover:-translate-y-1',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                  />
+                ))}
+                <div className="flex items-center gap-3 bg-[#0B1220]/80 px-5 py-3 font-mono text-[12px] uppercase tracking-[0.28em] text-slate-300 backdrop-blur-sm transition-colors duration-200 group-hover:text-slate-100">
+                  <span className="h-1 w-1 rounded-full bg-slate-500 transition-colors group-hover:bg-cyan-300" />
                   {tab.name}
                   <span className="text-slate-600">·</span>
                   <span className="text-slate-500">{tab.status}</span>
                 </div>
-              </TacticalFrame>
+              </div>
             ))}
           </div>
         </FadeUp>

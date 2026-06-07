@@ -7,6 +7,7 @@ import GridBackdrop from '../GridBackdrop';
 import SectionLabel from '../SectionLabel';
 import Shimmer from '../Shimmer';
 import TacticalFrame from '../TacticalFrame';
+import TiltCard from '../TiltCard';
 import { useSceneStore } from '../system/useSceneStore';
 
 type Theme = {
@@ -102,6 +103,7 @@ export default function Vision() {
             return (
               <FadeUp key={card.key} delay={i * 0.12}>
                 <TacticalFrame color={theme.ring} size={16} thickness={1.5}>
+                 <TiltCard className="h-full">
                   <article
                     className={`group relative flex h-full flex-col overflow-hidden bg-[#0B1220] transition-shadow duration-500 ${theme.glow}`}
                   >
@@ -132,6 +134,7 @@ export default function Vision() {
                       </p>
                     </div>
                   </article>
+                 </TiltCard>
                 </TacticalFrame>
               </FadeUp>
             );

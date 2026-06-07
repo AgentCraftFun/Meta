@@ -8,6 +8,7 @@ import GridBackdrop from '../GridBackdrop';
 import SectionLabel from '../SectionLabel';
 import Shimmer from '../Shimmer';
 import TacticalFrame from '../TacticalFrame';
+import TiltCard from '../TiltCard';
 import { spring } from '../system/motion';
 
 const STEPS = [
@@ -126,6 +127,7 @@ function StepCard({
       />
 
       <TacticalFrame color="rgba(34, 211, 238, 0.4)" size={12}>
+       <TiltCard className="h-full">
         <div className="relative h-full bg-[#0B1220] p-6">
           <div className="flex items-center justify-between">
             <span className="font-mono text-[11px] uppercase tracking-[0.4em] text-cyan-300">
@@ -147,6 +149,7 @@ function StepCard({
             {step.desc}
           </p>
         </div>
+       </TiltCard>
       </TacticalFrame>
     </div>
   );

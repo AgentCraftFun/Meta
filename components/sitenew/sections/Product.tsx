@@ -8,6 +8,7 @@ import GridBackdrop from '../GridBackdrop';
 import SectionLabel from '../SectionLabel';
 import Shimmer from '../Shimmer';
 import TacticalFrame from '../TacticalFrame';
+import TiltCard from '../TiltCard';
 import { spring } from '../system/motion';
 import { useSceneStore } from '../system/useSceneStore';
 
@@ -116,6 +117,7 @@ function FeatureRow({
   return (
     <li className="group relative">
       <TacticalFrame color="rgba(34, 211, 238, 0.18)" size={10}>
+       <TiltCard>
         <div className="flex items-start gap-5 bg-[#0B1220]/55 p-5 transition-colors duration-200 group-hover:bg-[#111A2E]/85">
           <span className="mt-1 flex h-10 w-10 flex-shrink-0 items-center justify-center border border-cyan-400/35 bg-cyan-400/10 text-cyan-300">
             <Icon />
@@ -135,6 +137,7 @@ function FeatureRow({
             </p>
           </div>
         </div>
+       </TiltCard>
       </TacticalFrame>
     </li>
   );

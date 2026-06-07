@@ -9,6 +9,7 @@ import Vision from '@/components/sitenew/sections/Vision';
 import SceneCanvas from '@/components/sitenew/scene/SceneCanvas';
 import BootSequence from '@/components/sitenew/system/BootSequence';
 import Grade from '@/components/sitenew/system/Grade';
+import Reticle from '@/components/sitenew/system/Reticle';
 import ScrollDirector from '@/components/sitenew/system/ScrollDirector';
 import SmoothScroll from '@/components/sitenew/system/SmoothScroll';
 
@@ -24,6 +25,8 @@ export default function LandingPage() {
       <Grade />
       {/* Scroll → activeSection / sectionProgress for the camera + beacons. */}
       <ScrollDirector />
+      {/* Hero targeting-reticle cursor. */}
+      <Reticle />
       {/* Content floats over the globe; transparent main, z-10. */}
       <main className="relative z-10 w-full text-slate-100">
         {SECTIONS.map((Section, i) => (
