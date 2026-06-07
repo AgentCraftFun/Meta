@@ -1,41 +1,28 @@
 'use client';
 
 import { useSceneStore } from './useSceneStore';
-import { z } from './motion';
 
 /**
- * Cinematic grade overlay. Fixed, full-bleed, pointer-events-none, z-30.
- * Three stacked layers:
- *   1. vertical gradient  #070B14 → #05080F
- *   2. radial vignette    transparent center → rgba(5,8,15,0.6) edges
- *   3. film grain         feTurbulence @ 0.04, mix-blend-overlay, drifting
+ * Subtle grade overlay. Fixed, full-bleed, pointer-events-none, z-20 (with the
+ * ticker). Deliberately minimal so it NEVER veils or desaturates the globe —
+ * the hero must read with /siteview-level crispness:
+ *   - NO full-bleed navy tint / vertical gradient (removed — that was the veil)
+ *   - film grain @ 0.02, drifting
+ *   - vignette = CORNERS ONLY (fully-transparent large center, edge alpha 0.22)
  *
- * REDUCED-MOTION: grain + vignette render static (no drift keyframe).
+ * REDUCED-MOTION: grain static.
  */
 export default function Grade() {
   const reducedMotion = useSceneStore((s) => s.reducedMotion);
 
   return (
-    <div
-      aria-hidden
-      className="pointer-events-none fixed inset-0"
-      style={{ zIndex: z.grade }}
-    >
-      {/* vertical gradient */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: 'linear-gradient(to bottom, #070B14, #05080F)',
-          opacity: 0.5,
-        }}
-      />
-
-      {/* radial vignette */}
+    <div aria-hidden className="pointer-events-none fixed inset-0" style={{ zIndex: 20 }}>
+      {/* corner-only vignette — transparent center, faint edges */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            'radial-gradient(ellipse at center, rgba(5,8,15,0) 45%, rgba(5,8,15,0.6) 100%)',
+            'radial-gradient(ellipse at center, rgba(5,8,15,0) 62%, rgba(5,8,15,0.22) 100%)',
         }}
       />
 
@@ -47,7 +34,7 @@ export default function Grade() {
           left: '-50%',
           width: '200%',
           height: '200%',
-          opacity: 0.04,
+          opacity: 0.02,
           mixBlendMode: 'overlay',
           backgroundImage:
             "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",

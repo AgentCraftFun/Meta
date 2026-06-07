@@ -8,7 +8,7 @@ const LINKS = [
 
 export default function Footer() {
   return (
-    <footer className="w-full border-t border-[#1E293B] bg-[#05080F]/80 px-6 py-[60px] md:px-10">
+    <footer className="w-full border-t border-[#1E293B] px-6 py-[60px] md:px-10">
       <div className="mx-auto flex max-w-[1240px] flex-col items-start gap-8 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-col gap-1">
           <span className="font-sans text-[16px] font-black uppercase tracking-[0.32em] text-white">

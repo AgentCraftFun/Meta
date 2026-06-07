@@ -30,7 +30,7 @@ function RadarSweep() {
 
 export default function CTA() {
   return (
-    <section className="relative w-full overflow-hidden bg-[#05080F]/70 px-6 py-[180px] md:px-10">
+    <section className="relative w-full overflow-hidden px-6 py-[180px] md:px-10">
       {/* Concentric orbital rings — slow rotation */}
       <div
         aria-hidden
