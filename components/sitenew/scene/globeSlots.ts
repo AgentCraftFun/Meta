@@ -24,25 +24,28 @@ export type Slot = {
 };
 
 // The globe is rendered as a FULL sphere centred in the canvas (camera pulled
-// back), at ~0.93 of viewport height at scale 1 — so it never crops. `feather`
-// is unused now (no clip; transparent canvas). cx/cy place the globe centre;
-// scale sizes it. All slots show the whole globe, just sized/placed differently.
+// back), at ~0.93 of viewport height at scale 1. cx/cy place the globe centre;
+// scale sizes it.
 //
-// SIZING NOTE: the "story" slots (Hero/Problem/Insight/Product) must stay LARGE
-// (scale ~0.9–1.0 → a big disc that hugs one side, matching the design mockup).
-// Previously they dropped to 0.5–0.7, so the first scroll shrank the globe by
-// half — that abrupt collapse to a small disc read as a "glitch". Keep these
-// near 1.0 and only OFFSET them left/right (via cx) into the section's negative
-// space; do NOT shrink them. Only the dim "console" backdrops (4–7) go full-bleed.
+// ANTI-GLITCH (important): every "story" section uses the SAME large scale, so
+// the globe NEVER resizes as you scroll — it only travels (cx/cy) and rotates.
+// Previously each slot had a different (smaller) resting scale, so after the
+// Lenis smooth-scroll settled the globe damped DOWN to a smaller size ~1s after
+// you landed — that late shrink read as a "glitch". Keeping one scale removes
+// the size delta entirely; the dim "console" backdrops keep the same size too
+// and only drop brightness/opacity. Scale 1.25 stays crisp (< dpr cap 2.0, so
+// the canvas is still super-sampled when CSS-scaled).
+const STORY_SCALE = 1.25;
+
 export const SLOTS: Slot[] = [
-  { cx: 0.64, cy: 0.5, scale: 1.4, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 0 Hero — BIG cropped globe bleeding off the right edge (~1.3 vh), matches the reference. Stays crisp: 1.4 < dpr 2 so the canvas is still super-sampled.
-  { cx: 0.74, cy: 0.5, scale: 0.92, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 1 Problem — big globe hugging the RIGHT (clears the left text column)
-  { cx: 0.15, cy: 0.5, scale: 0.9, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 2 Insight — big globe hugging the LEFT (clears the right content column)
-  { cx: 0.66, cy: 0.5, scale: 0.72, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 3 Product — large globe RIGHT, behind/through the product-mock cutout
-  { cx: 0.5, cy: 0.48, scale: 1.1, bright: 0.5, opacity: 0.26, blur: 2, feather: 0 }, // 4 HowItWorks — dim full backdrop
-  { cx: 0.5, cy: 0.46, scale: 1.15, bright: 0.5, opacity: 0.24, blur: 2, feather: 0 }, // 5 Vision — dim full backdrop
-  { cx: 0.5, cy: 0.55, scale: 1.2, bright: 0.45, opacity: 0.22, blur: 3, feather: 0 }, // 6 CTA — dim full backdrop
-  { cx: 0.5, cy: 0.55, scale: 1.2, bright: 0.45, opacity: 0.0, blur: 3, feather: 0 }, // 7 Footer — faded out
+  { cx: 0.64, cy: 0.5, scale: STORY_SCALE, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 0 Hero — big globe, right-of-centre, bleeds off the edges
+  { cx: 0.76, cy: 0.5, scale: STORY_SCALE, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 1 Problem — same size, hugs the RIGHT (clears the left text)
+  { cx: 0.12, cy: 0.5, scale: STORY_SCALE, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 2 Insight — same size, hugs the LEFT (clears the right content)
+  { cx: 0.66, cy: 0.5, scale: STORY_SCALE, bright: 1.0, opacity: 1.0, blur: 0, feather: 0 }, // 3 Product — same size, right, behind the product-mock cutout
+  { cx: 0.5, cy: 0.5, scale: STORY_SCALE, bright: 0.55, opacity: 0.3, blur: 2, feather: 0 }, // 4 HowItWorks — same size, centred, dim backdrop
+  { cx: 0.5, cy: 0.5, scale: STORY_SCALE, bright: 0.55, opacity: 0.28, blur: 2, feather: 0 }, // 5 Vision — dim backdrop
+  { cx: 0.5, cy: 0.5, scale: STORY_SCALE, bright: 0.5, opacity: 0.26, blur: 3, feather: 0 }, // 6 CTA — dim backdrop
+  { cx: 0.5, cy: 0.5, scale: STORY_SCALE, bright: 0.5, opacity: 0.0, blur: 3, feather: 0 }, // 7 Footer — faded out
 ];
 
 /**

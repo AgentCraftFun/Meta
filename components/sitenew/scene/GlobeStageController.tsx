@@ -42,8 +42,16 @@ export default function GlobeStageController() {
     let sections: HTMLElement[] = [];
     let raf = 0;
     let last = performance.now();
+    // Start AT slot 0 so there's no scale/opacity pop on first paint (the globe
+    // would otherwise damp from scale 1 up to the hero scale right as it loads).
     const cur = {
-      tx: 0, ty: 0, scale: 1, bright: 1, opacity: 1, blur: 0, feather: SLOTS[0].feather, travel: 0,
+      tx: 0, ty: 0,
+      scale: SLOTS[0].scale,
+      bright: SLOTS[0].bright,
+      opacity: SLOTS[0].opacity,
+      blur: SLOTS[0].blur,
+      feather: SLOTS[0].feather,
+      travel: 0,
     };
 
     const loop = (t: number) => {

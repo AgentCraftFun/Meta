@@ -68,7 +68,7 @@ function Scene({
       </group>
       {/* Subtle atmospheric rim — kept light so the globe reads crisp (a strong
           rim hazes the silhouette and washes the surface). */}
-      <Atmosphere intensity={1.4} />
+      <Atmosphere intensity={1.1} />
 
       {/* Camera holds hero framing; the globe travels via the controller's
           canvas-layer transform + scroll-linked spin. */}
