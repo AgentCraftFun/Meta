@@ -13,6 +13,7 @@ import { z } from '../system/motion';
 import { useSceneStore } from '../system/useSceneStore';
 import CameraRig from './CameraRig';
 import LightHeroFallback from './LightHeroFallback';
+import SceneBeacons from './SceneBeacons';
 import SceneEarth from './SceneEarth';
 import SceneClouds from './SceneClouds';
 import { pickTextureTier, shouldUseFallback, type TextureTier } from './deviceTier';
@@ -65,6 +66,9 @@ function Scene({
       <group ref={earthGroupRef}>
         <SceneEarth tier={tier} />
         <SceneClouds tier={tier} frozen={frozen} />
+        {/* §3 surface beacons — rise from the globe only while it's in the
+            Product panel; spin with the planet (children of this group). */}
+        <SceneBeacons />
       </group>
       {/* Subtle atmospheric rim — kept light so the globe reads crisp (a strong
           rim hazes the silhouette and washes the surface). */}
