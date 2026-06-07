@@ -8,9 +8,10 @@ import { SLOTS } from './globeSlots';
  *
  * Usage on the live site: visit /siteNEW?place=1
  *   • Scroll normally to the section you want to position.
- *   • Arrow keys  → move the globe (Shift = bigger step)
- *   • [ and ]     → shrink / grow the globe (Shift = bigger step)
- *   • C           → copy the full SLOTS block to the clipboard
+ *   • Arrow keys → move the globe (Shift = bigger step)
+ *   • [ ] or - = → shrink / grow the globe (Shift = bigger step)
+ *   • on-screen buttons do the same (move + scale)
+ *   • C → copy the full SLOTS block to the clipboard
  * The globe updates LIVE to exactly what you set (WYSIWYG), and the panel
  * shows the cx / cy / scale for the section you're on. Send me the copied
  * block (or a screenshot of the panel) and I paste the numbers straight in.
@@ -19,11 +20,38 @@ const LABELS = ['Hero', 'Problem', 'Insight', 'Product', 'HowItWorks', 'Vision',
 
 type Place = Record<number, { cx: number; cy: number; scale: number }>;
 
+const round = (v: number) => Math.round(v * 1000) / 1000;
+
 export default function GlobePlacer() {
   const [active, setActive] = useState(0);
   const [, force] = useState(0);
   const placeRef = useRef<Place>({});
   const [enabled, setEnabled] = useState(false);
+
+  // Find the active section (last whose top has passed viewport centre).
+  const getActive = () => {
+    const center = window.innerHeight / 2;
+    const secs = Array.from(
+      document.querySelectorAll<HTMLElement>('[data-sn-section]')
+    ).sort((a, b) => Number(a.dataset.snSection) - Number(b.dataset.snSection));
+    let a = 0;
+    secs.forEach((s, i) => {
+      if (s.getBoundingClientRect().top <= center + 0.5) a = i;
+    });
+    return a;
+  };
+
+  // Apply a change to the active section's placement and re-render.
+  const mutate = (cb: (p: { cx: number; cy: number; scale: number }) => void) => {
+    const a = getActive();
+    const p = placeRef.current[a] ?? { cx: 0.5, cy: 0.5, scale: 1 };
+    cb(p);
+    p.cx = round(p.cx);
+    p.cy = round(p.cy);
+    p.scale = round(Math.max(0.2, p.scale));
+    placeRef.current[a] = p;
+    force((n) => n + 1);
+  };
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -36,22 +64,11 @@ export default function GlobePlacer() {
     placeRef.current = place;
     (window as unknown as { __globePlace?: Place }).__globePlace = place;
 
-    const sections = () =>
-      Array.from(document.querySelectorAll<HTMLElement>('[data-sn-section]')).sort(
-        (a, b) => Number(a.dataset.snSection) - Number(b.dataset.snSection)
-      );
-
-    // Track the active section (last whose top passed viewport centre) each frame.
     let raf = 0;
     let cur = -1;
     const loop = () => {
       raf = requestAnimationFrame(loop);
-      const secs = sections();
-      const center = window.innerHeight / 2;
-      let a = 0;
-      secs.forEach((s, i) => {
-        if (s.getBoundingClientRect().top <= center + 0.5) a = i;
-      });
+      const a = getActive();
       if (a !== cur) {
         cur = a;
         setActive(a);
@@ -60,38 +77,26 @@ export default function GlobePlacer() {
     raf = requestAnimationFrame(loop);
 
     const onKey = (e: KeyboardEvent) => {
-      const center = window.innerHeight / 2;
-      const secs = sections();
-      let a = 0;
-      secs.forEach((s, i) => {
-        if (s.getBoundingClientRect().top <= center + 0.5) a = i;
-      });
-      const p = placeRef.current[a] ?? { cx: 0.5, cy: 0.5, scale: 1 };
       const big = e.shiftKey;
       const posStep = big ? 0.04 : 0.01;
-      const sclStep = big ? 0.05 : 0.02;
+      const sclStep = big ? 0.1 : 0.02;
       let handled = true;
       switch (e.key) {
-        case 'ArrowLeft': p.cx -= posStep; break;
-        case 'ArrowRight': p.cx += posStep; break;
-        case 'ArrowUp': p.cy -= posStep; break;
-        case 'ArrowDown': p.cy += posStep; break;
-        case '[': p.scale = Math.max(0.2, p.scale - sclStep); break;
-        case ']': p.scale += sclStep; break;
+        case 'ArrowLeft': mutate((p) => (p.cx -= posStep)); break;
+        case 'ArrowRight': mutate((p) => (p.cx += posStep)); break;
+        case 'ArrowUp': mutate((p) => (p.cy -= posStep)); break;
+        case 'ArrowDown': mutate((p) => (p.cy += posStep)); break;
+        case '[':
+        case '-':
+        case '_': mutate((p) => (p.scale -= sclStep)); break;
+        case ']':
+        case '=':
+        case '+': mutate((p) => (p.scale += sclStep)); break;
         case 'c':
-        case 'C':
-          navigator.clipboard?.writeText(slotsText(placeRef.current));
-          break;
+        case 'C': navigator.clipboard?.writeText(slotsText(placeRef.current)); break;
         default: handled = false;
       }
-      if (handled) {
-        e.preventDefault();
-        p.cx = Math.round(p.cx * 1000) / 1000;
-        p.cy = Math.round(p.cy * 1000) / 1000;
-        p.scale = Math.round(p.scale * 1000) / 1000;
-        placeRef.current[a] = p;
-        force((n) => n + 1);
-      }
+      if (handled) e.preventDefault();
     };
     window.addEventListener('keydown', onKey);
 
@@ -100,32 +105,66 @@ export default function GlobePlacer() {
       window.removeEventListener('keydown', onKey);
       delete (window as unknown as { __globePlace?: Place }).__globePlace;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!enabled) return null;
   const p = placeRef.current[active] ?? { cx: 0.5, cy: 0.5, scale: 1 };
+
+  const Btn = ({ label, on }: { label: string; on: () => void }) => (
+    <button
+      type="button"
+      onMouseDown={(e) => e.preventDefault()}
+      onClick={on}
+      style={{
+        font: '13px monospace', color: '#05080F', background: '#7CFFB2',
+        border: 'none', borderRadius: 4, padding: '4px 0', cursor: 'pointer',
+        fontWeight: 'bold', minWidth: 34,
+      }}
+    >
+      {label}
+    </button>
+  );
 
   return (
     <div
       style={{
         position: 'fixed', left: 12, top: 12, zIndex: 100000,
         font: '12px/1.5 monospace', color: '#7CFFB2',
-        background: 'rgba(0,0,0,0.82)', border: '1px solid #1f5', borderRadius: 6,
-        padding: '10px 12px', width: 320, pointerEvents: 'auto', whiteSpace: 'pre-wrap',
+        background: 'rgba(0,0,0,0.85)', border: '1px solid #1f5', borderRadius: 6,
+        padding: '10px 12px', width: 340, pointerEvents: 'auto',
       }}
     >
       <div style={{ color: '#fff', fontWeight: 'bold', marginBottom: 4 }}>
         GLOBE PLACER · §{active} {LABELS[active]}
       </div>
-      <div style={{ color: '#fff', fontSize: 14 }}>
-        cx {p.cx.toFixed(3)}  cy {p.cy.toFixed(3)}  scale {p.scale.toFixed(3)}
+      <div style={{ color: '#fff', fontSize: 14, marginBottom: 8 }}>
+        cx {p.cx.toFixed(3)} · cy {p.cy.toFixed(3)} · <b>scale {p.scale.toFixed(3)}</b>
       </div>
-      <div style={{ color: '#9aa', marginTop: 6 }}>
-        ←→ move x · ↑↓ move y · [ ] size · Shift=big · C=copy all
+
+      {/* SIZE controls — the headline action */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+        <span style={{ width: 46, color: '#9aa' }}>SIZE</span>
+        <Btn label="––" on={() => mutate((q) => (q.scale -= 0.1))} />
+        <Btn label="–" on={() => mutate((q) => (q.scale -= 0.02))} />
+        <Btn label="+" on={() => mutate((q) => (q.scale += 0.02))} />
+        <Btn label="++" on={() => mutate((q) => (q.scale += 0.1))} />
       </div>
-      <div style={{ color: '#9aa', marginTop: 6 }}>
-        Scroll to a section, position its globe, then press C and send me the copy
-        (or screenshot this box).
+
+      {/* POSITION controls */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+        <span style={{ width: 46, color: '#9aa' }}>MOVE</span>
+        <Btn label="◀" on={() => mutate((q) => (q.cx -= 0.01))} />
+        <Btn label="▶" on={() => mutate((q) => (q.cx += 0.01))} />
+        <Btn label="▲" on={() => mutate((q) => (q.cy -= 0.01))} />
+        <Btn label="▼" on={() => mutate((q) => (q.cy += 0.01))} />
+      </div>
+
+      <div style={{ color: '#9aa' }}>
+        keys: ←→↑↓ move · [ ] or - + size · Shift = big · C = copy all
+      </div>
+      <div style={{ color: '#9aa', marginTop: 4 }}>
+        Set each section, press C, send me the copy.
       </div>
     </div>
   );
