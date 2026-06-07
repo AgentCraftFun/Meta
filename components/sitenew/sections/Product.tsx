@@ -150,6 +150,16 @@ function ProductMock() {
   const [win, setWin] = useState(1); // index into WINDOWS
   const [order, setOrder] = useState(() => MOCK_NARRATIVES.map((n) => n.rank));
 
+  // Desktop-live → the panel's globe cell is a transparent CUTOUT and the ONE
+  // travelling globe shows through it (controller tracks #product-globe-cutout).
+  // RM / mobile / SSR → keep a static globe in the cell (no empty hole).
+  const [cutoutMode, setCutoutMode] = useState(false);
+  useEffect(() => {
+    const r = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const m = window.matchMedia('(max-width: 768px)').matches;
+    setCutoutMode(!r && !m);
+  }, []);
+
   // Live simulation: cycle the time-window every 5s, reorder narratives every 6s.
   useEffect(() => {
     if (reduced) return;
@@ -180,9 +190,9 @@ function ProductMock() {
 
   return (
     <TacticalFrame color="rgba(34, 211, 238, 0.45)" size={16} thickness={1.5}>
-      <div className="overflow-hidden rounded-sm bg-[#0B1220] shadow-[0_30px_80px_-30px_rgba(34,211,238,0.22)]">
+      <div className="overflow-hidden rounded-sm shadow-[0_30px_80px_-30px_rgba(34,211,238,0.22)]">
         {/* Top bar */}
-        <div className="flex items-center justify-between border-b border-[#1E293B] bg-black/30 px-4 py-3">
+        <div className="flex items-center justify-between border-b border-[#1E293B] bg-[#0B1220] px-4 py-3">
           <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.32em] text-white">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.85)]" />
             MetaMap · Live
@@ -211,13 +221,19 @@ function ProductMock() {
         </div>
 
         <div className="grid grid-cols-[1fr_220px]">
-          {/* Globe area */}
-          <div className="relative aspect-[5/4] overflow-hidden border-r border-[#1E293B] bg-gradient-to-b from-[#03060B] to-[#070C18]">
-            <MockGlobeBackdrop />
+          {/* Globe area — transparent CUTOUT on desktop-live (the real
+              travelling globe shows through), static globe otherwise. */}
+          <div
+            id="product-globe-cutout"
+            className={`relative aspect-[5/4] overflow-hidden border-r border-[#1E293B] ${
+              cutoutMode ? '' : 'bg-gradient-to-b from-[#03060B] to-[#070C18]'
+            }`}
+          >
+            {!cutoutMode && <MockGlobeBackdrop />}
           </div>
 
           {/* Side panel */}
-          <div className="flex flex-col gap-2 p-3">
+          <div className="flex flex-col gap-2 bg-[#0B1220] p-3">
             <div className="font-mono text-[9px] uppercase tracking-[0.32em] text-slate-500">
               🇺🇸 United States · #1
             </div>

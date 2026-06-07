@@ -66,11 +66,13 @@ export default function GlobeStageController() {
           tgt = {
             cx: (r.left + r.width / 2) / vw,
             cy: (r.top + r.height / 2) / vh,
+            // Fit the globe diameter to the cutout height.
             scale: r.height / (GLOBE_DIAM_VH * vh),
             bright: 1,
             opacity: 1,
             blur: 0,
-            feather: 50,
+            // ~58 makes the soft disc ≈ the globe so it fills the cutout cleanly.
+            feather: 58,
           };
         }
       }
