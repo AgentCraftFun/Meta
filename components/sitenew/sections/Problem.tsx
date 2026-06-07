@@ -46,6 +46,9 @@ export default function Problem() {
       <Scanline />
 
       <div className="relative mx-auto max-w-[1240px]">
+        {/* Top block held to the LEFT so the globe disc clears in the right
+            negative space (travelling globe slot: ~74% / 40%). */}
+        <div className="md:max-w-[600px]">
         <FadeUp>
           <SectionLabel index="01" label="The Problem" />
         </FadeUp>
@@ -105,6 +108,7 @@ export default function Problem() {
             ))}
           </div>
         </FadeUp>
+        </div>
 
         {/* Stat trio — animated count-ups inside framed cells */}
         <div className="mt-24 grid grid-cols-1 gap-px bg-[#1E293B]/70 md:grid-cols-3">

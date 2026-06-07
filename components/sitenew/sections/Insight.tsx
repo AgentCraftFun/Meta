@@ -43,55 +43,66 @@ export default function Insight() {
       <GridBackdrop step={72} color="rgba(34, 211, 238, 0.04)" />
 
       <div className="relative mx-auto max-w-[1240px]">
-        <FadeUp>
-          <SectionLabel index="02" label="The Insight" align="center" />
-        </FadeUp>
+        {/* Two columns: the travelling globe occupies the LEFT (~36%); all
+            content + the vertical step-flow live on the RIGHT (~64%). */}
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-[36%_1fr] md:items-center md:gap-16">
+          {/* left — globe slot (Insight: disc, left). Empty on mobile. */}
+          <div aria-hidden className="hidden md:block" />
 
-        <Decode className="text-center">
-          <h2 className="mt-8 text-center font-display text-[48px] font-bold leading-[1.02] tracking-[-0.03em] text-white md:text-[80px]">
-            Attention precedes <Shimmer>capital</Shimmer>.
-          </h2>
-        </Decode>
+          {/* right — content */}
+          <div>
+            <FadeUp>
+              <SectionLabel index="02" label="The Insight" />
+            </FadeUp>
 
-        <FadeUp delay={0.2}>
-          <p className="mx-auto mt-6 max-w-[760px] text-center text-[18px] leading-snug text-slate-400 md:text-[20px]">
-            Every memecoin pump starts as a story going viral somewhere on Earth.
-          </p>
-        </FadeUp>
+            <Decode>
+              <h2 className="mt-8 font-display text-[40px] font-bold leading-[1.04] tracking-[-0.03em] text-white md:text-[56px]">
+                Attention precedes <Shimmer>capital</Shimmer>.
+              </h2>
+            </Decode>
 
-        {/* Flow — 4 framed cards with animated cyan connector lines */}
-        <div className="relative mt-24 grid grid-cols-1 gap-6 md:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr]">
-          {STEPS.map((step, i) => (
-            <Cell key={step.n} step={step} index={i} isLast={i === STEPS.length - 1} />
-          ))}
-        </div>
+            <FadeUp delay={0.2}>
+              <p className="mt-6 max-w-[520px] text-[18px] leading-snug text-slate-400 md:text-[20px]">
+                Every memecoin pump starts as a story going viral somewhere on Earth.
+              </p>
+            </FadeUp>
 
-        {/* Banner callout */}
-        <FadeUp delay={0.3}>
-          <TacticalFrame
-            color="rgba(34, 211, 238, 0.5)"
-            size={18}
-            thickness={1.5}
-            className="mx-auto mt-20 max-w-[1100px]"
-          >
-            <div className="relative overflow-hidden bg-[#111A2E] px-10 py-7 text-center">
-              <span
-                aria-hidden
-                className="pointer-events-none absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-cyan-400/70 to-transparent"
-              />
-              <span
-                aria-hidden
-                className="pointer-events-none absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-cyan-400/70 to-transparent"
-              />
-              <div className="font-mono text-[10px] uppercase tracking-[0.5em] text-cyan-400/65">
-                The Edge
-              </div>
-              <div className="mt-3 font-display text-[20px] font-bold tracking-[0.04em] text-white md:text-[26px]">
-                30 seconds beats 30 minutes of analysis.
-              </div>
+            {/* Vertical flow — 4 framed steps + drawn connectors (the
+                travelling-signal motif, now vertical to fit the right column). */}
+            <div className="mt-12 flex flex-col">
+              {STEPS.map((step, i) => (
+                <Cell key={step.n} step={step} index={i} isLast={i === STEPS.length - 1} />
+              ))}
             </div>
-          </TacticalFrame>
-        </FadeUp>
+
+            {/* Banner callout */}
+            <FadeUp delay={0.3}>
+              <TacticalFrame
+                color="rgba(34, 211, 238, 0.5)"
+                size={18}
+                thickness={1.5}
+                className="mt-12"
+              >
+                <div className="relative overflow-hidden bg-[#111A2E] px-10 py-7 text-center">
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-cyan-400/70 to-transparent"
+                  />
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-cyan-400/70 to-transparent"
+                  />
+                  <div className="font-mono text-[10px] uppercase tracking-[0.5em] text-cyan-400/65">
+                    The Edge
+                  </div>
+                  <div className="mt-3 font-display text-[20px] font-bold tracking-[0.04em] text-white md:text-[26px]">
+                    30 seconds beats 30 minutes of analysis.
+                  </div>
+                </div>
+              </TacticalFrame>
+            </FadeUp>
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -108,46 +119,48 @@ function Cell({
 }) {
   return (
     <>
-      <FadeUp delay={index * 0.12}>
+      <FadeUp delay={index * 0.1}>
         <TacticalFrame color="rgba(34, 211, 238, 0.55)" size={12}>
-         <TiltCard className="h-full">
-          <div className="relative h-full bg-[#0B1220] p-6">
-            <div className="flex items-center justify-between">
+         <TiltCard>
+          <div className="relative bg-[#0B1220] p-5">
+            <div className="flex items-center gap-4">
               <span className="font-mono text-[11px] uppercase tracking-[0.4em] text-cyan-300/85">
                 {step.n}
               </span>
+              <div className="text-cyan-300/80">{step.glyph}</div>
+              <div className="flex-1">
+                <h3 className="font-display text-[17px] font-bold uppercase leading-tight tracking-[0.02em] text-white">
+                  {step.title}
+                </h3>
+                <p className="mt-1 text-[13px] leading-relaxed text-slate-400">
+                  {step.desc}
+                </p>
+              </div>
               <span
                 aria-hidden
-                className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-300/85 shadow-[0_0_8px_rgba(34,211,238,0.85)]"
+                className="h-1.5 w-1.5 flex-shrink-0 animate-pulse rounded-full bg-cyan-300/85 shadow-[0_0_8px_rgba(34,211,238,0.85)]"
               />
             </div>
-            <div className="mt-6 text-cyan-300/80">{step.glyph}</div>
-            <h3 className="mt-6 font-display text-[20px] font-bold uppercase leading-tight tracking-[0.02em] text-white">
-              {step.title}
-            </h3>
-            <p className="mt-2 text-[13px] leading-relaxed text-slate-400">
-              {step.desc}
-            </p>
           </div>
          </TiltCard>
         </TacticalFrame>
       </FadeUp>
       {!isLast && (
-        <div className="relative hidden items-center justify-center md:flex">
-          {/* connector draws on as you arrive */}
-          <div className="h-px w-full">
-            <DrawLine orientation="h" length={100} delay={index * 0.12 + 0.2} />
+        <div className="flex flex-col items-center py-1.5">
+          {/* vertical connector draws on as you arrive (travelling signal) */}
+          <div className="h-7 w-px">
+            <DrawLine orientation="v" length={100} delay={index * 0.1 + 0.2} />
           </div>
-          {/* chevron pops in after the line completes (0.4s snappy) */}
+          {/* chevron pops in after the line completes (snappy) */}
           <motion.span
             aria-hidden
-            className="absolute right-0 top-1/2 -translate-y-1/2 text-cyan-300"
+            className="-mt-1 text-cyan-300"
             initial={{ scale: 0, opacity: 0 }}
             whileInView={{ scale: 1, opacity: 1 }}
             viewport={{ once: true, amount: 0.5 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 30, mass: 0.8, delay: index * 0.12 + 0.7 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30, mass: 0.8, delay: index * 0.1 + 0.5 }}
           >
-            ▶
+            ▼
           </motion.span>
         </div>
       )}
