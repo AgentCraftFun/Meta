@@ -49,4 +49,28 @@ await sharp(join(SRC, '8k_moon.jpg'))
   .toFile(join(OUT, 'moon_2k.webp'));
 console.log('✓ moon_2k.webp');
 
+// Orb-bot (Vision "Bots" card) — the uploaded glTF ships 4k PBR maps (~31MB);
+// the model is tiny on the card, so 1k WebP is ample. Re-run after re-uploading
+// the source maps to public/textures/_orbbot_src/ (kept out of the deploy).
+const ORB_SRC = join(SRC, '_orbbot_src');
+const ORB_OUT = join(OUT, 'orbbot');
+mkdirSync(ORB_OUT, { recursive: true });
+const ORB = [
+  { in: 'Robo_baseColor.jpeg', out: 'Robo_baseColor.webp', size: 1024, q: 82 },
+  { in: 'Robo_metallicRoughness.png', out: 'Robo_metallicRoughness.webp', size: 1024, q: 86 },
+  { in: 'Robo_normal.png', out: 'Robo_normal.webp', size: 1024, q: 90 },
+  { in: 'Robo_emissive.png', out: 'Robo_emissive.webp', size: 512, q: 85 },
+];
+try {
+  for (const t of ORB) {
+    await sharp(join(ORB_SRC, t.in))
+      .resize({ width: t.size, height: t.size, fit: 'fill' })
+      .webp({ quality: t.q, effort: 5 })
+      .toFile(join(ORB_OUT, t.out));
+    console.log(`✓ orbbot/${t.out}`);
+  }
+} catch {
+  console.log('· orbbot source maps not present — skipping (already optimized in repo)');
+}
+
 console.log('done');

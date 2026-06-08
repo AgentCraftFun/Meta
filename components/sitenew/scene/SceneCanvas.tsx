@@ -156,7 +156,7 @@ export default function SceneCanvas() {
           camera={{ position: [2.25, 0.7, 3.23], fov: 30, near: 0.1, far: 1000 }}
           onCreated={({ gl }) => {
             gl.toneMapping = ACESFilmicToneMapping;
-            gl.toneMappingExposure = 1.0;
+            gl.toneMappingExposure = 0.85; // match /siteview (richer clouds; earth is a raw shader, unaffected)
             gl.outputColorSpace = SRGBColorSpace;
             gl.setClearColor(0x000000, 0); // transparent — page #05080F shows through
           }}

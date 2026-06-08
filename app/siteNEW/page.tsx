@@ -9,6 +9,7 @@ import Vision from '@/components/sitenew/sections/Vision';
 import GlobePlacer from '@/components/sitenew/scene/GlobePlacer';
 import GlobeStageController from '@/components/sitenew/scene/GlobeStageController';
 import MoonCanvas from '@/components/sitenew/scene/MoonCanvas';
+import OrbbotCanvas from '@/components/sitenew/scene/OrbbotCanvas';
 import SceneCanvas from '@/components/sitenew/scene/SceneCanvas';
 import BootSequence from '@/components/sitenew/system/BootSequence';
 import Grade from '@/components/sitenew/system/Grade';
@@ -55,6 +56,8 @@ export default function LandingPage() {
       <SceneCanvas />
       {/* §5 Vision moon — second fixed canvas (z-0), parked on the Moon card. */}
       <MoonCanvas />
+      {/* §5 Vision orb-bot — third fixed canvas (z-0), parked on the Bots card. */}
+      <OrbbotCanvas />
       {/* Travelling-globe scroll controller (damps the #globe-transform). */}
       <GlobeStageController />
       {/* DEV-ONLY live placement tool — inert unless the URL has ?place. */}

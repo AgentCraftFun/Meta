@@ -46,10 +46,9 @@ const FRAGMENT = /* glsl */ `
 
     float cosAngle = dot(normalize(vNormal), normalize(sunDirection));
 
-    // Lifted unlit floor: the dark hemisphere stays a clearly SOLID earth (not
-    // a near-black disc that blends into the page bg and reads as see-through),
-    // while the lit side still blooms.
-    float lighting = mix(0.40, 1.3, smoothstep(-0.2, 0.5, cosAngle));
+    // Lambert with deep shadow — EXACTLY /siteview's curve (the deep 0.15 floor
+    // is what keeps the lit side crisp and high-contrast, not washed out).
+    float lighting = mix(0.15, 1.3, smoothstep(-0.2, 0.5, cosAngle));
     vec3 dayLit = dayColor * lighting;
 
     float nightFactor = 1.0 - smoothstep(-0.3, 0.0, cosAngle);
@@ -65,18 +64,30 @@ const FRAGMENT = /* glsl */ `
     float gradeMix = 1.0 - smoothstep(0.3, 0.8, luma);
     color = mix(color, blueGrade, gradeMix * 0.7);
 
-    // Softer terminator (0.5 -> 0.3) so the shadow side isn't crushed to black.
+    // Cool ambient on the shadow side — EXACTLY /siteview (0.5).
     float shadowAmount = 1.0 - smoothstep(-0.3, 0.3, cosAngle);
-    color = mix(color, color * vec3(0.4, 0.6, 0.95), shadowAmount * 0.3);
+    color = mix(color, color * vec3(0.4, 0.6, 0.95), shadowAmount * 0.5);
 
     float oceanMask = step(0.5, specMask);
     float specBoost = pow(max(0.0, cosAngle), 32.0) * oceanMask * 0.4;
     color += vec3(specBoost) * vec3(0.7, 0.85, 1.0);
 
-    // SOLID-DISC FLOOR: clamp the darkest pixel to a dark navy clearly brighter
-    // than the #05080F page bg (≈ 0.02,0.03,0.06), so the full sphere always
-    // reads as a solid, opaque ball with a defined edge — never see-through.
-    color = max(color, vec3(0.075, 0.10, 0.16));
+    // ── Bake /siteview's EffectComposer colour grade. This canvas is transparent
+    // AND CSS-transformed per scroll, so it can't run a post pass — so we apply
+    // the SAME maths the /siteview EffectComposer does to the final image:
+    //   BrightnessContrast(brightness -0.03, contrast +0.15)  ← the crispness
+    //   HueSaturation(saturation -0.05)
+    // This is the entire difference between the washed-out flat read and the
+    // crisp, saturated /siteview read.
+    color = (color - 0.5) * 1.15 + 0.5 - 0.03;
+    float gLuma = dot(color, vec3(0.2126, 0.7152, 0.0722));
+    color = mix(vec3(gLuma), color, 0.95);
+    color = max(color, vec3(0.0));
+
+    // SOLID-DISC FLOOR (transparent-canvas only): lift just the deepest shadow
+    // to a dark navy a touch above the #05080F page bg so the disc never reads
+    // as see-through — low enough not to wash the high-contrast grade above.
+    color = max(color, vec3(0.045, 0.06, 0.11));
 
     color = min(color, vec3(1.05));
 

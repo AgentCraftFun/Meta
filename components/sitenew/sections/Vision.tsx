@@ -76,7 +76,8 @@ const CARDS = [
       'Trade through integrated bots without leaving the terminal. One-click signal → trade.',
     status: 'Q3 2026',
     visual: <BotsVisual />,
-    cutout: false,
+    // Desktop-live: the real 3D orb-bot (OrbbotCanvas) shows through this cutout.
+    cutout: true,
   },
 ];
 
