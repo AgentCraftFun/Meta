@@ -121,16 +121,19 @@ export default function Vision() {
             const isCutout = Boolean(card.cutout) && cutoutMode;
             const article = (
               <article
-                className={`group relative flex h-full flex-col overflow-hidden transition-shadow duration-500 ${
-                  // Cutout cards are transparent windows onto the fixed globe
-                  // canvas (z-0) that sits BEHIND them. The themed outer glow
-                  // (a 60px-blur box-shadow) bleeds ~40px outside the card and,
-                  // rendering in the content layer (z-10) IN FRONT of the globe,
-                  // composites a coloured haze over the sphere where it juts
-                  // above/around the card — the horizontal "see-through" band on
-                  // the Earth/Moon. Only solid (non-cutout) cards get the glow.
+                // A crisp 1px themed border completes the card SHAPE — it closes
+                // the TacticalFrame corner brackets into a full frame. Unlike the
+                // old outer glow (a 60px-blur box-shadow that bled ~40px outside
+                // the card and, sitting in the content layer (z-10) IN FRONT of
+                // the fixed globe canvas (z-0), hazed the sphere into the
+                // "see-through" band), a sharp border draws a clean line with no
+                // blur, so it frames the card without veiling the globe. Cutout
+                // cards keep the glow OFF (its bleed is what banded the globe);
+                // solid (RM/mobile) cards still get it.
+                className={`group relative flex h-full flex-col overflow-hidden border transition-shadow duration-500 ${
                   isCutout ? '' : `${theme.glow} bg-[#0B1220]`
                 }`}
+                style={{ borderColor: `rgba(${theme.ringRgb}, 0.3)` }}
               >
                 {/* Status pill */}
                 <span
