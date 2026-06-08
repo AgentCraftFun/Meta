@@ -23,8 +23,6 @@ const VISION_INDEX = 5;
 // Camera pulled back (z 5) so the larger orb body + antenna fit the view; the
 // bigger slot scale (0.55) then renders the orb ≈ the earth/moon on screen.
 const ORB_SLOT = { cx: 0.77, cy: 0.52, scale: 0.55 };
-// Discrete "fade up" rise distance (px) for the enter transition.
-const RISE_PX = 24;
 
 const smoothstep = (e0: number, e1: number, x: number) => {
   const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0)));
@@ -64,19 +62,18 @@ export default function OrbbotCanvas() {
       if (document.hidden) return;
       const travel = useSceneStore.getState().globeTravel;
       const centred = Math.max(0, 1 - Math.abs(travel - VISION_INDEX));
-      // TIGHT fade, localised to §5 settling (was 0.12–0.85, a wide band that lit
-      // the bot across most of the §4→§6 pan — it ghosted in while the Earth was
-      // still travelling and lingered on exit). 0.82–0.99 keeps it hidden until
-      // §5 settles, then pops in cleanly, and clears fast on the way out.
-      const opacity = smoothstep(0.82, 0.99, centred);
-      // ENTER (scrolling in from §4, travel < 5): rise into place — start RISE_PX
-      // low and settle to the slot as it fades in (a discrete "fade up"). LEAVE
-      // (travel > 5, on to §6): stay put and just fade — only the earth travels
-      // to the next section.
-      const rise = travel < VISION_INDEX ? (1 - opacity) * RISE_PX : 0;
+      // The bot STAYS PERFECTLY IN PLACE — no movement, ever. It only fades, on a
+      // tight band localised to §5 settling, so it never ghosts in over the
+      // travelling Earth or lingers over the next section. Asymmetric: fade in as
+      // §5 locks (ENTER), clear FAST on the way out before the Earth sweeps back
+      // through centre toward §6 (EXIT) — only the Earth travels onward.
+      const opacity =
+        travel <= VISION_INDEX
+          ? smoothstep(0.8, 0.99, centred)
+          : smoothstep(0.88, 1.0, centred);
       el.style.transform = globeTransform(
         ORB_SLOT.cx,
-        ORB_SLOT.cy + rise / vh,
+        ORB_SLOT.cy,
         ORB_SLOT.scale,
         vw,
         vh,

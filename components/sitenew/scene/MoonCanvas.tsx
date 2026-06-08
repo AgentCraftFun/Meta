@@ -28,8 +28,6 @@ import SceneMoon from './SceneMoon';
 
 const VISION_INDEX = 5;
 const MOON_SLOT = { cx: 0.5, cy: 0.52, scale: 0.44 };
-// Discrete "fade up" rise distance (px) for the enter transition.
-const RISE_PX = 24;
 
 const smoothstep = (e0: number, e1: number, x: number) => {
   const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0)));
@@ -70,21 +68,22 @@ export default function MoonCanvas() {
       if (document.hidden) return;
       const travel = useSceneStore.getState().globeTravel;
       const centred = Math.max(0, 1 - Math.abs(travel - VISION_INDEX));
-      // TIGHT fade, localised to §5 settling. The old wide band (0.12–0.85) lit
-      // the moon across almost the whole §4→§6 pan, so it ghosted in at ~50%
-      // while the big Earth was still travelling through centre (the overlap
-      // mess) and lingered over the next section on the way out. 0.82–0.99 keeps
-      // it hidden until the Earth has reached its small slot, then it pops in
-      // cleanly — and it's gone fast on the way out instead of trailing.
-      const opacity = smoothstep(0.82, 0.99, centred);
-      // ENTER (scrolling in from §4, travel < 5): rise into place — start RISE_PX
-      // low and settle to the slot as it fades in (a discrete "fade up"). LEAVE
-      // (travel > 5, on to §6): stay put and just fade — only the earth travels
-      // to the next section.
-      const rise = travel < VISION_INDEX ? (1 - opacity) * RISE_PX : 0;
+      // The moon STAYS PERFECTLY IN PLACE — no movement, ever. It only fades, on
+      // a tight band localised to §5 settling, so it never ghosts in over the
+      // travelling Earth or lingers over the next section (the old 0.12–0.85 band
+      // lit it across almost the whole §4→§6 pan). Asymmetric:
+      //   ENTER (travel ≤ 5): fade in over the last of the pan, completing as §5
+      //     locks — by then the Earth has crossed left to its small slot, so no
+      //     overlap.
+      //   EXIT  (travel > 5): clear FAST as you leave, before the Earth sweeps
+      //     back through centre toward §6 — only the Earth travels onward.
+      const opacity =
+        travel <= VISION_INDEX
+          ? smoothstep(0.8, 0.99, centred)
+          : smoothstep(0.88, 1.0, centred);
       el.style.transform = globeTransform(
         MOON_SLOT.cx,
-        MOON_SLOT.cy + rise / vh,
+        MOON_SLOT.cy,
         MOON_SLOT.scale,
         vw,
         vh,
