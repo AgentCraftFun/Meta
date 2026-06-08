@@ -1,5 +1,6 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import Decode from '../Decode';
 import FadeUp from '../FadeUp';
@@ -144,12 +145,9 @@ export default function Vision() {
                     : { borderColor: `rgba(${theme.ringRgb}, 0.3)` }
                 }
               >
-                {/* Status pill */}
-                <span
-                  className={`absolute right-5 top-5 z-10 border px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.4em] ${theme.pillBg}`}
-                >
-                  {card.status}
-                </span>
+                {/* Status pill — solid HUD chip (readable over the bright
+                    bodies), themed glow + a periodic light sweep. */}
+                <StatusPill status={card.status} theme={theme} />
 
                 {/* Themed visual area — transparent cutout in live mode (the
                     fixed globe/moon shows through), else the 2D fallback. The
@@ -205,6 +203,45 @@ export default function Vision() {
         </div>
       </div>
     </section>
+  );
+}
+
+/* ---------- status pill ---------- */
+
+/**
+ * Solid HUD status chip (SHIPPING / Q2 2026 / …). The old chip used a 10%-opacity
+ * fill, so it washed out and went unreadable over the bright bodies. This is a
+ * near-opaque dark chip with a themed border + outer glow (so it reads as a lit
+ * tactical readout) and a periodic diagonal light sweep across the face.
+ * REDUCED-MOTION: solid chip, no sweep.
+ */
+function StatusPill({ status, theme }: { status: string; theme: Theme }) {
+  const reduced = useSceneStore((s) => s.reducedMotion);
+  const rgb = theme.ringRgb;
+  return (
+    <span
+      className={`absolute right-5 top-5 z-10 inline-flex items-center overflow-hidden border px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.4em] ${theme.text}`}
+      style={{
+        background: 'rgba(6, 9, 16, 0.92)',
+        borderColor: `rgba(${rgb}, 0.55)`,
+        boxShadow: `0 0 16px -4px rgba(${rgb}, 0.6), inset 0 0 12px -7px rgba(${rgb}, 0.9)`,
+        textShadow: `0 0 8px rgba(${rgb}, 0.45)`,
+      }}
+    >
+      <span className="relative z-10">{status}</span>
+      {!reduced && (
+        <motion.span
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 left-0 w-1/2"
+          style={{
+            background: `linear-gradient(100deg, transparent 0%, rgba(${rgb}, 0.5) 50%, transparent 100%)`,
+          }}
+          initial={{ x: '-160%' }}
+          animate={{ x: '320%' }}
+          transition={{ duration: 1.6, ease: 'easeInOut', repeat: Infinity, repeatDelay: 3.4 }}
+        />
+      )}
+    </span>
   );
 }
 

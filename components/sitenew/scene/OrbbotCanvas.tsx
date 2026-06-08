@@ -123,7 +123,9 @@ export default function OrbbotCanvas() {
               <Lightformer intensity={0.8} color="#ffffff" position={[0, -3, 2]} scale={5} />
             </Environment>
             <group rotation={[0.16, 0, 0.05]}>
-              <SceneOrbbot rotationSpeed={0.4} />
+              {/* 0.04 rad/s — matches the Earth's ambient spin (CameraRig) and
+                  the Moon (SceneMoon) so all three bodies turn at one speed. */}
+              <SceneOrbbot rotationSpeed={0.04} />
             </group>
           </Suspense>
         </Canvas>
