@@ -84,7 +84,9 @@ export default function OrbbotCanvas() {
       id="orbbot-stage"
       aria-hidden
       className="pointer-events-none fixed inset-0"
-      style={{ zIndex: z.earth }}
+      // Clip this top stage to the bot's column so it never sits over the earth
+      // or moon (stacking transparent canvases hazes what's beneath them).
+      style={{ zIndex: z.earth, clipPath: 'inset(0 0 0 64%)' }}
     >
       <div
         ref={elRef}

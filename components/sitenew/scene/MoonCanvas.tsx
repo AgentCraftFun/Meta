@@ -95,7 +95,10 @@ export default function MoonCanvas() {
       id="moon-stage"
       aria-hidden
       className="pointer-events-none fixed inset-0"
-      style={{ zIndex: z.earth }}
+      // Clip this full-screen stage to the moon's column (left of it is the earth
+      // card). Stacking transparent canvases hazes what's beneath, so the earth
+      // must NOT sit under this stage — that was the "not solid" look.
+      style={{ zIndex: z.earth, clipPath: 'inset(0 36% 0 36%)' }}
     >
       <div
         ref={elRef}
