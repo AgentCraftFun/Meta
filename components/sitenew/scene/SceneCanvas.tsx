@@ -16,6 +16,7 @@ import LightHeroFallback from './LightHeroFallback';
 import SceneBeacons from './SceneBeacons';
 import SceneEarth from './SceneEarth';
 import SceneClouds from './SceneClouds';
+import VisionCardBackdrops from './VisionCardBackdrops';
 import { pickTextureTier, shouldUseFallback, type TextureTier } from './deviceTier';
 
 const FAST_SCROLL_THRESHOLD = 35;
@@ -109,6 +110,10 @@ export default function SceneCanvas() {
           travelling globe and showed THROUGH every cutout around the bodies —
           the "see-through" glitch. The page bg is now a clean #05080F space, so
           every body reads as a solid disc on space, like /siteview.) */}
+      {/* §5 Vision — solid card fills, painted behind the globe canvas so the
+          Earth/Moon/Bots discs render OVER them (a real card the model emerges
+          from, not a bare outline). Above the #05080F stage bg, below the model. */}
+      <VisionCardBackdrops />
       <div
         id="globe-transform"
         className="absolute inset-0"

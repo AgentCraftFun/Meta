@@ -121,19 +121,28 @@ export default function Vision() {
             const isCutout = Boolean(card.cutout) && cutoutMode;
             const article = (
               <article
-                // A crisp 1px themed border completes the card SHAPE — it closes
-                // the TacticalFrame corner brackets into a full frame. Unlike the
-                // old outer glow (a 60px-blur box-shadow that bled ~40px outside
-                // the card and, sitting in the content layer (z-10) IN FRONT of
-                // the fixed globe canvas (z-0), hazed the sphere into the
-                // "see-through" band), a sharp border draws a clean line with no
-                // blur, so it frames the card without veiling the globe. Cutout
-                // cards keep the glow OFF (its bleed is what banded the globe);
-                // solid (RM/mobile) cards still get it.
-                className={`group relative flex h-full flex-col overflow-hidden border transition-shadow duration-500 ${
-                  isCutout ? '' : `${theme.glow} bg-[#0B1220]`
+                // Cutout cards get a real card SHAPE: a solid fill
+                // (VisionCardBackdrops paints it BEHIND the globe so the model
+                // sits in the card) + a crisp themed frame. The frame is
+                // OPEN-TOP — left/right/bottom only — so the oversized model
+                // emerges from the top with no border across the sphere (the
+                // TacticalFrame corner brackets still mark the top corners). We
+                // use a sharp border, never the old 60px-blur glow, whose bleed
+                // (z-10 content over the z-0 globe) hazed the sphere into the
+                // "see-through" band. Solid (RM/mobile) cards keep the glow.
+                data-vision-card={isCutout ? card.theme : undefined}
+                className={`group relative flex h-full flex-col overflow-hidden transition-shadow duration-500 ${
+                  isCutout ? '' : `border ${theme.glow} bg-[#0B1220]`
                 }`}
-                style={{ borderColor: `rgba(${theme.ringRgb}, 0.3)` }}
+                style={
+                  isCutout
+                    ? {
+                        borderLeft: `1px solid rgba(${theme.ringRgb}, 0.3)`,
+                        borderRight: `1px solid rgba(${theme.ringRgb}, 0.3)`,
+                        borderBottom: `1px solid rgba(${theme.ringRgb}, 0.3)`,
+                      }
+                    : { borderColor: `rgba(${theme.ringRgb}, 0.3)` }
+                }
               >
                 {/* Status pill */}
                 <span
@@ -154,11 +163,12 @@ export default function Vision() {
                   {isCutout ? null : card.visual}
                 </div>
 
-                {/* Body. Cutout cards use the SAME #05080F as the space bg so the
-                    sphere recedes into it seamlessly (no lighter panel cutting
-                    across the bottom of the body). */}
+                {/* Body. Cutout cards use the #0B1220 card fill (matching the
+                    VisionCardBackdrops panel behind the model) so the visual
+                    area and the body read as one solid card; the sphere's lower
+                    half recedes behind this panel. */}
                 <div
-                  className={`relative flex flex-1 flex-col p-7 ${isCutout ? 'bg-[#05080F]' : ''}`}
+                  className={`relative flex flex-1 flex-col p-7 ${isCutout ? 'bg-[#0B1220]' : ''}`}
                 >
                   <span
                     className={`font-mono text-[11px] uppercase tracking-[0.4em] ${theme.text}`}
