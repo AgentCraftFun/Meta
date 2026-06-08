@@ -20,7 +20,9 @@ import SceneOrbbot from './SceneOrbbot';
  */
 
 const VISION_INDEX = 5;
-const ORB_SLOT = { cx: 0.77, cy: 0.52, scale: 0.44 };
+// Camera pulled back (z 5) so the larger orb body + antenna fit the view; the
+// bigger slot scale (0.55) then renders the orb ≈ the earth/moon on screen.
+const ORB_SLOT = { cx: 0.77, cy: 0.52, scale: 0.55 };
 
 const smoothstep = (e0: number, e1: number, x: number) => {
   const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0)));
@@ -92,21 +94,18 @@ export default function OrbbotCanvas() {
           transformOrigin: 'center center',
           opacity: 0,
           willChange: 'transform, opacity',
-          // Clipped to a disc so the OPAQUE canvas reads as a solid bot on space
-          // and never covers the page outside the disc (grid never shows through).
-          clipPath: 'circle(42% at 50% 50%)',
         }}
       >
         <Canvas
           dpr={[1, 1.75]}
           resize={{ offsetSize: true }}
-          gl={{ antialias: true, alpha: false, powerPreference: 'high-performance', depth: true, stencil: false }}
-          camera={{ position: [0, 0, 4], fov: 30, near: 0.1, far: 100 }}
+          gl={{ antialias: true, alpha: true, powerPreference: 'high-performance', depth: true, stencil: false }}
+          camera={{ position: [0, 0, 5], fov: 30, near: 0.1, far: 100 }}
           onCreated={({ gl }) => {
             gl.toneMapping = ACESFilmicToneMapping;
             gl.toneMappingExposure = 1.0;
             gl.outputColorSpace = SRGBColorSpace;
-            gl.setClearColor(0x05080f, 1); // OPAQUE space — clipped to a disc; the bot reads solid
+            gl.setClearColor(0x000000, 0); // transparent — the clean #05080F page bg shows behind = solid bot
           }}
         >
           <Suspense fallback={null}>
