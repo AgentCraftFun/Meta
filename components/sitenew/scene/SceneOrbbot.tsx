@@ -29,14 +29,21 @@ export default function SceneOrbbot({ rotationSpeed = 0.35 }: { rotationSpeed?: 
         if (m) m.envMapIntensity = 1.15; // let the baked env light the metal
       }
     });
-    const box = new THREE.Box3().setFromObject(scene);
-    const size = box.getSize(new THREE.Vector3());
-    // Normalise by the BODY's horizontal extent (not the bounding sphere — the
-    // tall antenna inflated it and shrank the bot). The orb body ≈ width/depth,
-    // so this sizes the body to ≈ the earth/moon disc (diameter ~2). The antenna
-    // just overflows the top, like a real antenna.
-    const span = Math.max(size.x, size.z);
-    return { scale: 1.8 / span, offset: box.getCenter(new THREE.Vector3()) };
+    // Size by the BODY only (exclude the tall antenna — it otherwise inflates the
+    // bounds in every axis and shrinks the orb). The body ≈ spherical, so its
+    // largest dimension is its diameter → normalise to ~2 units so the orb reads
+    // ≈ the earth / moon disc. The antenna just overflows, like a real antenna.
+    scene.updateMatrixWorld(true);
+    const bodyBox = new THREE.Box3();
+    scene.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (mesh.isMesh && !o.name.toLowerCase().includes('antenna')) {
+        bodyBox.expandByObject(mesh);
+      }
+    });
+    const size = bodyBox.getSize(new THREE.Vector3());
+    const span = Math.max(size.x, size.y, size.z) || 1;
+    return { scale: 2.0 / span, offset: bodyBox.getCenter(new THREE.Vector3()) };
   }, [scene]);
 
   useFrame((_, dt) => {

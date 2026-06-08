@@ -72,7 +72,7 @@ function Scene({
       </group>
       {/* Subtle atmospheric rim — kept light so the globe reads crisp (a strong
           rim hazes the silhouette and washes the surface). */}
-      <Atmosphere intensity={1.1} />
+      <Atmosphere />
 
       {/* Camera holds hero framing; the globe travels via the controller's
           canvas-layer transform + scroll-linked spin. */}
@@ -138,7 +138,7 @@ export default function SceneCanvas() {
           // so the sphere reads as a SOLID disc on space — like /siteview — and
           // the tactical grid never shows through/around it. Fades to the page bg.
           background:
-            'radial-gradient(circle 62vh at 50% 50%, #05080F 0%, #05080F 78%, rgba(5,8,15,0) 100%)',
+            'radial-gradient(circle 78vh at 50% 50%, #05080F 0%, #05080F 64%, rgba(5,8,15,0) 100%)',
         }}
       >
         <Canvas
