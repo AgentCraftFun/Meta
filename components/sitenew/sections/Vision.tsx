@@ -121,8 +121,15 @@ export default function Vision() {
             const isCutout = Boolean(card.cutout) && cutoutMode;
             const article = (
               <article
-                className={`group relative flex h-full flex-col overflow-hidden transition-shadow duration-500 ${theme.glow} ${
-                  isCutout ? '' : 'bg-[#0B1220]'
+                className={`group relative flex h-full flex-col overflow-hidden transition-shadow duration-500 ${
+                  // Cutout cards are transparent windows onto the fixed globe
+                  // canvas (z-0) that sits BEHIND them. The themed outer glow
+                  // (a 60px-blur box-shadow) bleeds ~40px outside the card and,
+                  // rendering in the content layer (z-10) IN FRONT of the globe,
+                  // composites a coloured haze over the sphere where it juts
+                  // above/around the card — the horizontal "see-through" band on
+                  // the Earth/Moon. Only solid (non-cutout) cards get the glow.
+                  isCutout ? '' : `${theme.glow} bg-[#0B1220]`
                 }`}
               >
                 {/* Status pill */}
