@@ -25,10 +25,12 @@ export default function SceneMoon({ rotationSpeed = 0.04 }: { rotationSpeed?: nu
         metalness: 0.0,
         useBumpFromDay: true,
         bumpScale: 0.022,
-        // Lifted baseline glow so the shadow side stays a SOLID grey moon
-        // rather than crushing to near-black and blending into the page bg.
+        // Lifted baseline glow so the shadow side + grazing limb stay a SOLID
+        // grey moon rather than crushing to near-black and blending into the
+        // #05080F page bg (which read as a see-through top where the moon juts
+        // above the Vision card).
         emissive: '#5b6478',
-        emissiveIntensity: 0.2,
+        emissiveIntensity: 0.28,
       }}
     />
   );

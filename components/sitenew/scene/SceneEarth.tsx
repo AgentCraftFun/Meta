@@ -72,9 +72,17 @@ const FRAGMENT = /* glsl */ `
     float specBoost = pow(max(0.0, cosAngle), 32.0) * oceanMask * 0.4;
     color += vec3(specBoost) * vec3(0.7, 0.85, 1.0);
 
+    // SOLIDITY FLOOR — the night side + grazing limb were crushing all the way
+    // down to the #05080F space backdrop (dark ocean on the unlit limb baked to
+    // ~rgb(11,21,5), indistinguishable from the page bg), so the top of the
+    // globe — where it juts above the Vision card — read as a see-through hole.
+    // Lift the darkest fragments to a deep navy earth-shine so the FULL disc
+    // always reads as a solid sphere on the backdrop. Only touches pixels
+    // already near black; the lit hemisphere is far above this floor.
+    color = max(color, vec3(0.055, 0.08, 0.155));
+
     // EXACTLY /siteview's Earth fragment (no extra grade — the bake without
-    // /siteview's balancing bloom was over-darkening). Solidity comes from the
-    // dark backdrop behind the globe, not from clamping colour here.
+    // /siteview's balancing bloom was over-darkening).
     color = min(color, vec3(1.05));
 
     gl_FragColor = vec4(color, 1.0);
