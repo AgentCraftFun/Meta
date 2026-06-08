@@ -105,22 +105,22 @@ export default function MoonCanvas() {
           transformOrigin: 'center center',
           opacity: 0,
           willChange: 'transform, opacity',
-          // Dark space backdrop so the moon is a SOLID disc (its transparent
-          // canvas would otherwise show the grid below it). Fades to the page bg.
-          background:
-            'radial-gradient(circle 62vh at 50% 50%, #05080F 0%, #05080F 78%, rgba(5,8,15,0) 100%)',
+          // Clipped to a disc so the OPAQUE canvas (below) reads as a solid moon
+          // on space and never covers the page outside the disc. The hard edge is
+          // #05080F → page #05080F, i.e. seamless; the grid never shows through.
+          clipPath: 'circle(42% at 50% 50%)',
         }}
       >
         <Canvas
           dpr={[1, 1.75]}
           resize={{ offsetSize: true }}
-          gl={{ antialias: true, alpha: true, powerPreference: 'high-performance', depth: true, stencil: false }}
+          gl={{ antialias: true, alpha: false, powerPreference: 'high-performance', depth: true, stencil: false }}
           camera={{ position: [0, 0, 4], fov: 30, near: 0.1, far: 100 }}
           onCreated={({ gl }) => {
             gl.toneMapping = ACESFilmicToneMapping;
             gl.toneMappingExposure = 1.0;
             gl.outputColorSpace = SRGBColorSpace;
-            gl.setClearColor(0x000000, 0); // transparent — earth / page show through
+            gl.setClearColor(0x05080f, 1); // OPAQUE space — clipped to a disc; the moon reads solid
           }}
         >
           <Suspense fallback={null}>

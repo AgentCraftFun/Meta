@@ -72,22 +72,9 @@ const FRAGMENT = /* glsl */ `
     float specBoost = pow(max(0.0, cosAngle), 32.0) * oceanMask * 0.4;
     color += vec3(specBoost) * vec3(0.7, 0.85, 1.0);
 
-    // ── Bake /siteview's EffectComposer colour grade. This canvas is transparent
-    // AND CSS-transformed per scroll, so it can't run a post pass — so we apply
-    // the SAME maths the /siteview EffectComposer does to the final image:
-    //   BrightnessContrast(brightness -0.03, contrast +0.15)  ← the crispness
-    //   HueSaturation(saturation -0.05)
-    // This is the entire difference between the washed-out flat read and the
-    // crisp, saturated /siteview read.
-    color += -0.03;                      // brightness
-    color = (color - 0.5) * 1.15 + 0.5;  // contrast +0.15
-    float gLuma = dot(color, vec3(0.2126, 0.7152, 0.0722));
-    color = mix(vec3(gLuma), color, 0.95); // saturation -0.05
-    color = max(color, vec3(0.0));
-
-    // NO solid-disc floor — the deep shadow stays /siteview-clean (the navy floor
-    // was the washed-out haze). Solidity now comes from the dark radial backdrop
-    // painted behind the globe (#globe-transform), so the disc is never see-through.
+    // EXACTLY /siteview's Earth fragment (no extra grade — the bake without
+    // /siteview's balancing bloom was over-darkening). Solidity comes from the
+    // dark backdrop behind the globe, not from clamping colour here.
     color = min(color, vec3(1.05));
 
     gl_FragColor = vec4(color, 1.0);
