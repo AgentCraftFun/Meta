@@ -125,12 +125,11 @@ export default function MoonCanvas() {
           <Suspense fallback={null}>
             {/* Warm key + cool fill + soft ambient → a lit moon with a defined
                 terminator, matching the /moon scene's read. */}
-            <directionalLight position={[5, 2, 3]} intensity={1.8} color="#fffaf0" />
-            {/* Strong cool fill + ambient so the WHOLE sphere (incl. the shadow
-                side / the part hanging over the card) reads as a solid moon and
-                never fades into the #05080F page bg. */}
-            <directionalLight position={[-4, -1, -3]} intensity={1.4} color="#6f93c8" />
-            <ambientLight intensity={0.58} color="#54627f" />
+            <directionalLight position={[5, 2, 3]} intensity={1.7} color="#fffaf0" />
+            {/* Lifted cool fill + ambient so the shadow side reads as a solid
+                moon, not a see-through dark crescent against the page bg. */}
+            <directionalLight position={[-4, -1, -3]} intensity={0.6} color="#5a86c0" />
+            <ambientLight intensity={0.34} color="#41506e" />
             <group rotation={[0.18, 0, 0.06]}>
               <SceneMoon rotationSpeed={0.04} />
             </group>
