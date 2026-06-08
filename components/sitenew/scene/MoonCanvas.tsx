@@ -68,22 +68,21 @@ export default function MoonCanvas() {
       if (document.hidden) return;
       const travel = useSceneStore.getState().globeTravel;
       const centred = Math.max(0, 1 - Math.abs(travel - VISION_INDEX));
-      // The moon STAYS PERFECTLY IN PLACE — no movement, ever. It only fades, on
-      // a tight band localised to §5 settling, so it never ghosts in over the
-      // travelling Earth or lingers over the next section (the old 0.12–0.85 band
-      // lit it across almost the whole §4→§6 pan). Asymmetric:
-      //   ENTER (travel ≤ 5): fade in over the last of the pan, completing as §5
-      //     locks — by then the Earth has crossed left to its small slot, so no
-      //     overlap.
-      //   EXIT  (travel > 5): clear FAST as you leave, before the Earth sweeps
-      //     back through centre toward §6 — only the Earth travels onward.
       const opacity =
         travel <= VISION_INDEX
           ? smoothstep(0.8, 0.99, centred)
           : smoothstep(0.88, 1.0, centred);
+      // ENTER (travel < 5): rise WITH the section. The snap pans the whole §5
+      // strip by (VISION_INDEX − travel) viewport-heights as it settles, so
+      // offset cy by exactly that — the moon stays glued to its card and rises UP
+      // into place with it. (Pinning it to a fixed point made the rising section
+      // slide past it, which read as the moon drifting DOWN.) EXIT (travel ≥ 5):
+      // hold the settled slot — stay in place while only the Earth travels on.
+      const cy =
+        travel < VISION_INDEX ? MOON_SLOT.cy + (VISION_INDEX - travel) : MOON_SLOT.cy;
       el.style.transform = globeTransform(
         MOON_SLOT.cx,
-        MOON_SLOT.cy,
+        cy,
         MOON_SLOT.scale,
         vw,
         vh,

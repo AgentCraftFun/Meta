@@ -62,18 +62,20 @@ export default function OrbbotCanvas() {
       if (document.hidden) return;
       const travel = useSceneStore.getState().globeTravel;
       const centred = Math.max(0, 1 - Math.abs(travel - VISION_INDEX));
-      // The bot STAYS PERFECTLY IN PLACE — no movement, ever. It only fades, on a
-      // tight band localised to §5 settling, so it never ghosts in over the
-      // travelling Earth or lingers over the next section. Asymmetric: fade in as
-      // §5 locks (ENTER), clear FAST on the way out before the Earth sweeps back
-      // through centre toward §6 (EXIT) — only the Earth travels onward.
       const opacity =
         travel <= VISION_INDEX
           ? smoothstep(0.8, 0.99, centred)
           : smoothstep(0.88, 1.0, centred);
+      // ENTER (travel < 5): rise WITH the section — offset cy by the section's
+      // pan (VISION_INDEX − travel viewport-heights) so the bot stays glued to
+      // its card and rises UP into place, instead of the rising section sliding
+      // past a pinned bot (which read as it drifting DOWN). EXIT (travel ≥ 5):
+      // hold the settled slot — stay in place while only the Earth travels on.
+      const cy =
+        travel < VISION_INDEX ? ORB_SLOT.cy + (VISION_INDEX - travel) : ORB_SLOT.cy;
       el.style.transform = globeTransform(
         ORB_SLOT.cx,
-        ORB_SLOT.cy,
+        cy,
         ORB_SLOT.scale,
         vw,
         vh,
