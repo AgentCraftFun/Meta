@@ -133,18 +133,22 @@ export default function Vision() {
                 </span>
 
                 {/* Themed visual area — transparent cutout in live mode (the
-                    fixed globe/moon shows through), else the 2D fallback. */}
+                    fixed globe/moon shows through), else the 2D fallback. The
+                    big body overflows this box, so cutout cards drop the bottom
+                    border (it drew a line ACROSS the sphere). */}
                 <div
-                  className={`relative aspect-[5/3] w-full overflow-hidden border-b border-white/5 ${
-                    isCutout ? '' : 'bg-[#06090F]'
+                  className={`relative aspect-[5/3] w-full overflow-hidden ${
+                    isCutout ? '' : 'border-b border-white/5 bg-[#06090F]'
                   }`}
                 >
                   {isCutout ? null : card.visual}
                 </div>
 
-                {/* Body (keeps the card surface even in cutout mode) */}
+                {/* Body. Cutout cards use the SAME #05080F as the space bg so the
+                    sphere recedes into it seamlessly (no lighter panel cutting
+                    across the bottom of the body). */}
                 <div
-                  className={`relative flex flex-1 flex-col p-7 ${isCutout ? 'bg-[#0B1220]' : ''}`}
+                  className={`relative flex flex-1 flex-col p-7 ${isCutout ? 'bg-[#05080F]' : ''}`}
                 >
                   <span
                     className={`font-mono text-[11px] uppercase tracking-[0.4em] ${theme.text}`}
