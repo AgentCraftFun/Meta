@@ -43,7 +43,10 @@ export default function SceneOrbbot({ rotationSpeed = 0.35 }: { rotationSpeed?: 
     });
     const size = bodyBox.getSize(new THREE.Vector3());
     const span = Math.max(size.x, size.y, size.z) || 1;
-    return { scale: 2.0 / span, offset: bodyBox.getCenter(new THREE.Vector3()) };
+    // 2.4 (vs the earth/moon's 2.0 diameter) so the orb's VISIBLE sphere — the
+    // body box includes side mounts wider than the sphere — reads ≈ their size.
+    // (OrbbotCanvas pulls its camera back so this larger body still fits.)
+    return { scale: 2.4 / span, offset: bodyBox.getCenter(new THREE.Vector3()) };
   }, [scene]);
 
   useFrame((_, dt) => {

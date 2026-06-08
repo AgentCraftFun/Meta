@@ -105,40 +105,16 @@ export default function SceneCanvas() {
       className="pointer-events-none fixed inset-0"
       style={{ zIndex: z.earth, background: '#05080F' }}
     >
-      {/* Tactical grid — a single fixed layer BEHIND the globe canvas. The
-          opaque globe sphere occludes it (so the grid never veils the globe),
-          while it still shows through the transparent canvas in the content /
-          text areas. Replaces the old per-section grids that sat in the z-10
-          content layer ON TOP of the globe and made it look "see-through". */}
-      <div
-        aria-hidden
-        // Far-plane backdrop for the section-snap depth effect — drifts slower
-        // than the content (distant). Inert when snap is off.
-        data-snap-grid
-        className="absolute inset-0"
-        style={{
-          backgroundImage: `
-            linear-gradient(rgba(34, 211, 238, 0.05) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(34, 211, 238, 0.05) 1px, transparent 1px)
-          `,
-          backgroundSize: '72px 72px',
-          maskImage:
-            'radial-gradient(ellipse at center, black 55%, transparent 100%)',
-          WebkitMaskImage:
-            'radial-gradient(ellipse at center, black 55%, transparent 100%)',
-        }}
-      />
+      {/* (Removed the z0 tactical grid: it lived in the same plane as the
+          travelling globe and showed THROUGH every cutout around the bodies —
+          the "see-through" glitch. The page bg is now a clean #05080F space, so
+          every body reads as a solid disc on space, like /siteview.) */}
       <div
         id="globe-transform"
         className="absolute inset-0"
         style={{
           transformOrigin: 'center center',
           willChange: 'transform, filter, opacity',
-          // Dark space backdrop behind the globe (scales with the CSS transform),
-          // so the sphere reads as a SOLID disc on space — like /siteview — and
-          // the tactical grid never shows through/around it. Fades to the page bg.
-          background:
-            'radial-gradient(circle 78vh at 50% 50%, #05080F 0%, #05080F 64%, rgba(5,8,15,0) 100%)',
         }}
       >
         <Canvas
