@@ -163,12 +163,18 @@ export default function Vision() {
                   {isCutout ? null : card.visual}
                 </div>
 
-                {/* Body. Cutout cards use the #0B1220 card fill (matching the
-                    VisionCardBackdrops panel behind the model) so the visual
-                    area and the body read as one solid card; the sphere's lower
-                    half recedes behind this panel. */}
+                {/* Body. Cutout cards crop the model's lower half. The fill is
+                    DARK (#05080F space) right at the crop edge so the sphere cuts
+                    cleanly into a dark lip, then eases back to the #0B1220 card
+                    fill for the text (matching the VisionCardBackdrops panel
+                    behind the model, so visual area + body read as one card). */}
                 <div
-                  className={`relative flex flex-1 flex-col p-7 ${isCutout ? 'bg-[#0B1220]' : ''}`}
+                  className="relative flex flex-1 flex-col p-7"
+                  style={
+                    isCutout
+                      ? { background: 'linear-gradient(to bottom, #05080F 0%, #0B1220 52px)' }
+                      : undefined
+                  }
                 >
                   <span
                     className={`font-mono text-[11px] uppercase tracking-[0.4em] ${theme.text}`}
