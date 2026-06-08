@@ -28,6 +28,8 @@ import SceneMoon from './SceneMoon';
 
 const VISION_INDEX = 5;
 const MOON_SLOT = { cx: 0.5, cy: 0.52, scale: 0.44 };
+// Discrete "fade up" rise distance (px) for the enter transition.
+const RISE_PX = 24;
 
 const smoothstep = (e0: number, e1: number, x: number) => {
   const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0)));
@@ -49,25 +51,18 @@ export default function MoonCanvas() {
 
     let vw = window.innerWidth;
     let vh = window.innerHeight;
-    const place = () => {
+    let baseW = vw;
+    let baseH = vh;
+    const measure = () => {
       vw = window.innerWidth;
       vh = window.innerHeight;
-      const baseW = el.offsetWidth || vw;
-      const baseH = el.offsetHeight || vh;
-      el.style.transform = globeTransform(
-        MOON_SLOT.cx,
-        MOON_SLOT.cy,
-        MOON_SLOT.scale,
-        vw,
-        vh,
-        baseW,
-        baseH
-      );
+      baseW = el.offsetWidth || vw;
+      baseH = el.offsetHeight || vh;
     };
-    place();
-    const settle = window.setTimeout(place, 300);
-    window.addEventListener('resize', place);
-    window.addEventListener('load', place);
+    measure();
+    const settle = window.setTimeout(measure, 300);
+    window.addEventListener('resize', measure);
+    window.addEventListener('load', measure);
 
     let raf = 0;
     const loop = () => {
@@ -75,16 +70,30 @@ export default function MoonCanvas() {
       if (document.hidden) return;
       const travel = useSceneStore.getState().globeTravel;
       const centred = Math.max(0, 1 - Math.abs(travel - VISION_INDEX));
-      // Gentle, classy fade — fully in only as §5 settles, out as it leaves.
-      el.style.opacity = smoothstep(0.12, 0.85, centred).toFixed(3);
+      const opacity = smoothstep(0.12, 0.85, centred);
+      // ENTER (scrolling in from §4, travel < 5): rise into place — start RISE_PX
+      // low and settle to the slot as it fades in (a discrete "fade up"). LEAVE
+      // (travel > 5, on to §6): stay put and just fade — only the earth travels
+      // to the next section.
+      const rise = travel < VISION_INDEX ? (1 - opacity) * RISE_PX : 0;
+      el.style.transform = globeTransform(
+        MOON_SLOT.cx,
+        MOON_SLOT.cy + rise / vh,
+        MOON_SLOT.scale,
+        vw,
+        vh,
+        baseW,
+        baseH
+      );
+      el.style.opacity = opacity.toFixed(3);
     };
     raf = requestAnimationFrame(loop);
 
     return () => {
       cancelAnimationFrame(raf);
       window.clearTimeout(settle);
-      window.removeEventListener('resize', place);
-      window.removeEventListener('load', place);
+      window.removeEventListener('resize', measure);
+      window.removeEventListener('load', measure);
     };
   }, [mounted, reduced]);
 

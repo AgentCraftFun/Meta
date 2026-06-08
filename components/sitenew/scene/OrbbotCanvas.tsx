@@ -23,6 +23,8 @@ const VISION_INDEX = 5;
 // Camera pulled back (z 5) so the larger orb body + antenna fit the view; the
 // bigger slot scale (0.55) then renders the orb ≈ the earth/moon on screen.
 const ORB_SLOT = { cx: 0.77, cy: 0.52, scale: 0.55 };
+// Discrete "fade up" rise distance (px) for the enter transition.
+const RISE_PX = 24;
 
 const smoothstep = (e0: number, e1: number, x: number) => {
   const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0)));
@@ -41,23 +43,20 @@ export default function OrbbotCanvas() {
     const el = elRef.current;
     if (!el) return;
 
-    const place = () => {
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      el.style.transform = globeTransform(
-        ORB_SLOT.cx,
-        ORB_SLOT.cy,
-        ORB_SLOT.scale,
-        vw,
-        vh,
-        el.offsetWidth || vw,
-        el.offsetHeight || vh
-      );
+    let vw = window.innerWidth;
+    let vh = window.innerHeight;
+    let baseW = vw;
+    let baseH = vh;
+    const measure = () => {
+      vw = window.innerWidth;
+      vh = window.innerHeight;
+      baseW = el.offsetWidth || vw;
+      baseH = el.offsetHeight || vh;
     };
-    place();
-    const settle = window.setTimeout(place, 300);
-    window.addEventListener('resize', place);
-    window.addEventListener('load', place);
+    measure();
+    const settle = window.setTimeout(measure, 300);
+    window.addEventListener('resize', measure);
+    window.addEventListener('load', measure);
 
     let raf = 0;
     const loop = () => {
@@ -65,15 +64,30 @@ export default function OrbbotCanvas() {
       if (document.hidden) return;
       const travel = useSceneStore.getState().globeTravel;
       const centred = Math.max(0, 1 - Math.abs(travel - VISION_INDEX));
-      el.style.opacity = smoothstep(0.12, 0.85, centred).toFixed(3);
+      const opacity = smoothstep(0.12, 0.85, centred);
+      // ENTER (scrolling in from §4, travel < 5): rise into place — start RISE_PX
+      // low and settle to the slot as it fades in (a discrete "fade up"). LEAVE
+      // (travel > 5, on to §6): stay put and just fade — only the earth travels
+      // to the next section.
+      const rise = travel < VISION_INDEX ? (1 - opacity) * RISE_PX : 0;
+      el.style.transform = globeTransform(
+        ORB_SLOT.cx,
+        ORB_SLOT.cy + rise / vh,
+        ORB_SLOT.scale,
+        vw,
+        vh,
+        baseW,
+        baseH
+      );
+      el.style.opacity = opacity.toFixed(3);
     };
     raf = requestAnimationFrame(loop);
 
     return () => {
       cancelAnimationFrame(raf);
       window.clearTimeout(settle);
-      window.removeEventListener('resize', place);
-      window.removeEventListener('load', place);
+      window.removeEventListener('resize', measure);
+      window.removeEventListener('load', measure);
     };
   }, [mounted, reduced]);
 
