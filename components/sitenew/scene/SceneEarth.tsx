@@ -72,9 +72,11 @@ const FRAGMENT = /* glsl */ `
     float specBoost = pow(max(0.0, cosAngle), 32.0) * oceanMask * 0.4;
     color += vec3(specBoost) * vec3(0.7, 0.85, 1.0);
 
-    // EXACTLY /siteview's Earth fragment (no extra grade — the bake without
-    // /siteview's balancing bloom was over-darkening). Solidity comes from the
-    // dark backdrop behind the globe, not from clamping colour here.
+    // Keep the darkest pixel (night side) a touch ABOVE the #05080F page bg
+    // (≈0.02,0.03,0.06) so the full disc — including the part hanging over the
+    // card — always reads SOLID instead of fading into the bg. Subtle enough not
+    // to wash the lit colour (only lifts the near-black shadow).
+    color = max(color, vec3(0.034, 0.045, 0.075));
     color = min(color, vec3(1.05));
 
     gl_FragColor = vec4(color, 1.0);
