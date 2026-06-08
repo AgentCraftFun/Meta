@@ -134,6 +134,11 @@ export default function SceneCanvas() {
         style={{
           transformOrigin: 'center center',
           willChange: 'transform, filter, opacity',
+          // Dark space backdrop behind the globe (scales with the CSS transform),
+          // so the sphere reads as a SOLID disc on space — like /siteview — and
+          // the tactical grid never shows through/around it. Fades to the page bg.
+          background:
+            'radial-gradient(circle 62vh at 50% 50%, #05080F 0%, #05080F 78%, rgba(5,8,15,0) 100%)',
         }}
       >
         <Canvas

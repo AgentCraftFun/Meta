@@ -101,7 +101,15 @@ export default function MoonCanvas() {
         ref={elRef}
         id="moon-transform"
         className="absolute inset-0"
-        style={{ transformOrigin: 'center center', opacity: 0, willChange: 'transform, opacity' }}
+        style={{
+          transformOrigin: 'center center',
+          opacity: 0,
+          willChange: 'transform, opacity',
+          // Dark space backdrop so the moon is a SOLID disc (its transparent
+          // canvas would otherwise show the grid below it). Fades to the page bg.
+          background:
+            'radial-gradient(circle 62vh at 50% 50%, #05080F 0%, #05080F 78%, rgba(5,8,15,0) 100%)',
+        }}
       >
         <Canvas
           dpr={[1, 1.75]}

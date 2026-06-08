@@ -30,8 +30,13 @@ export default function SceneOrbbot({ rotationSpeed = 0.35 }: { rotationSpeed?: 
       }
     });
     const box = new THREE.Box3().setFromObject(scene);
-    const sph = box.getBoundingSphere(new THREE.Sphere());
-    return { scale: 1 / sph.radius, offset: sph.center.clone() };
+    const size = box.getSize(new THREE.Vector3());
+    // Normalise by the BODY's horizontal extent (not the bounding sphere — the
+    // tall antenna inflated it and shrank the bot). The orb body ≈ width/depth,
+    // so this sizes the body to ≈ the earth/moon disc (diameter ~2). The antenna
+    // just overflows the top, like a real antenna.
+    const span = Math.max(size.x, size.z);
+    return { scale: 1.8 / span, offset: box.getCenter(new THREE.Vector3()) };
   }, [scene]);
 
   useFrame((_, dt) => {
