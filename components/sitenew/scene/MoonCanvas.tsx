@@ -70,7 +70,13 @@ export default function MoonCanvas() {
       if (document.hidden) return;
       const travel = useSceneStore.getState().globeTravel;
       const centred = Math.max(0, 1 - Math.abs(travel - VISION_INDEX));
-      const opacity = smoothstep(0.12, 0.85, centred);
+      // TIGHT fade, localised to §5 settling. The old wide band (0.12–0.85) lit
+      // the moon across almost the whole §4→§6 pan, so it ghosted in at ~50%
+      // while the big Earth was still travelling through centre (the overlap
+      // mess) and lingered over the next section on the way out. 0.82–0.99 keeps
+      // it hidden until the Earth has reached its small slot, then it pops in
+      // cleanly — and it's gone fast on the way out instead of trailing.
+      const opacity = smoothstep(0.82, 0.99, centred);
       // ENTER (scrolling in from §4, travel < 5): rise into place — start RISE_PX
       // low and settle to the slot as it fades in (a discrete "fade up"). LEAVE
       // (travel > 5, on to §6): stay put and just fade — only the earth travels

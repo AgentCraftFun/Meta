@@ -64,7 +64,11 @@ export default function OrbbotCanvas() {
       if (document.hidden) return;
       const travel = useSceneStore.getState().globeTravel;
       const centred = Math.max(0, 1 - Math.abs(travel - VISION_INDEX));
-      const opacity = smoothstep(0.12, 0.85, centred);
+      // TIGHT fade, localised to §5 settling (was 0.12–0.85, a wide band that lit
+      // the bot across most of the §4→§6 pan — it ghosted in while the Earth was
+      // still travelling and lingered on exit). 0.82–0.99 keeps it hidden until
+      // §5 settles, then pops in cleanly, and clears fast on the way out.
+      const opacity = smoothstep(0.82, 0.99, centred);
       // ENTER (scrolling in from §4, travel < 5): rise into place — start RISE_PX
       // low and settle to the slot as it fades in (a discrete "fade up"). LEAVE
       // (travel > 5, on to §6): stay put and just fade — only the earth travels
