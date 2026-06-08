@@ -72,11 +72,13 @@ const FRAGMENT = /* glsl */ `
     float specBoost = pow(max(0.0, cosAngle), 32.0) * oceanMask * 0.4;
     color += vec3(specBoost) * vec3(0.7, 0.85, 1.0);
 
-    // Keep the darkest pixel (night side) a touch ABOVE the #05080F page bg
-    // (≈0.02,0.03,0.06) so the full disc — including the part hanging over the
-    // card — always reads SOLID instead of fading into the bg. Subtle enough not
-    // to wash the lit colour (only lifts the near-black shadow).
-    color = max(color, vec3(0.034, 0.045, 0.075));
+    // Keep the night side + grazing limb clearly ABOVE the #05080F page bg so
+    // the FULL disc — including the part hanging above the Vision card — reads
+    // SOLID instead of fading into the backdrop. A deep-navy earth-shine floor;
+    // only lifts fragments already near black, the lit hemisphere is untouched.
+    // (Verified headlessly: the top cap separates from the bg at ~rgb(26,39,43)
+    // vs the page's rgb(6,9,16); the weaker prior floor still read see-through.)
+    color = max(color, vec3(0.055, 0.08, 0.155));
     color = min(color, vec3(1.05));
 
     gl_FragColor = vec4(color, 1.0);
