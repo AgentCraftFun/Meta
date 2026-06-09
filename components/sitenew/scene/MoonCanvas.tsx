@@ -68,9 +68,14 @@ export default function MoonCanvas() {
       if (document.hidden) return;
       const travel = useSceneStore.getState().globeTravel;
       const centred = Math.max(0, 1 - Math.abs(travel - VISION_INDEX));
+      // ENTER (travel ≤ 5): fade in ACROSS the scroll-in (not a late pop) so the
+      // moon materialises seamlessly as it rides up into its card. The 0.3 start
+      // ≈ the moment it enters view from below, and full by 0.88 ≈ when the
+      // travelling Earth has cleared the centre column — so it appears smoothly
+      // with the section yet barely grazes the Earth. EXIT (travel > 5): fast.
       const opacity =
         travel <= VISION_INDEX
-          ? smoothstep(0.8, 0.99, centred)
+          ? smoothstep(0.3, 0.88, centred)
           : smoothstep(0.88, 1.0, centred);
       // ENTER (travel < 5): rise WITH the section. The snap pans the whole §5
       // strip by (VISION_INDEX − travel) viewport-heights as it settles, so

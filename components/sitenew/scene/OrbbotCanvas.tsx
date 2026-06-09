@@ -62,9 +62,13 @@ export default function OrbbotCanvas() {
       if (document.hidden) return;
       const travel = useSceneStore.getState().globeTravel;
       const centred = Math.max(0, 1 - Math.abs(travel - VISION_INDEX));
+      // ENTER (travel ≤ 5): fade in ACROSS the scroll-in (not a late pop) so the
+      // bot materialises seamlessly as it rides up into its card — 0.3 start ≈
+      // when it enters view from below, full by 0.88. (The bot column is right of
+      // the Earth's path, so it never overlaps.) EXIT (travel > 5): fast.
       const opacity =
         travel <= VISION_INDEX
-          ? smoothstep(0.8, 0.99, centred)
+          ? smoothstep(0.3, 0.88, centred)
           : smoothstep(0.88, 1.0, centred);
       // ENTER (travel < 5): rise WITH the section — offset cy by the section's
       // pan (VISION_INDEX − travel viewport-heights) so the bot stays glued to
