@@ -66,7 +66,7 @@ export default function TiltCard({
   return (
     <div style={{ perspective: 900 }} className={className}>
       <motion.div
-        className="group/tilt relative h-full will-change-transform"
+        className="group/tilt relative h-full rounded-[inherit] will-change-transform"
         style={{ rotateX: rx, rotateY: ry, transformStyle: 'preserve-3d' }}
         whileHover={{ scale: 1.02, y: -2, boxShadow: '0 18px 50px -22px rgba(34,211,238,0.45)' }}
         transition={spring.snappy}
@@ -76,10 +76,10 @@ export default function TiltCard({
       >
         {children}
 
-        {/* moving spec-highlight */}
+        {/* moving spec-highlight (clips to the host card's radius) */}
         <motion.span
           aria-hidden
-          className="pointer-events-none absolute inset-0 z-[5] opacity-0 transition-opacity duration-200 group-hover/tilt:opacity-100"
+          className="pointer-events-none absolute inset-0 z-[5] overflow-hidden rounded-[inherit] opacity-0 transition-opacity duration-200 group-hover/tilt:opacity-100"
           style={{ background: highlight }}
         />
 
