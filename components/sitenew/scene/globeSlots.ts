@@ -78,18 +78,26 @@ export function clipCircle(r: number): string {
 
 /**
  * CENTRE-LOCK — the design "stage". cx/cy positions only line up with the
- * centred, max-width content at the viewport width they were tuned at; on other
- * monitors they drift. globeTransform clamps the globe's coordinate frame to a
- * fixed stage of this size, CENTRED in the viewport, so wider screens keep the
- * SAME relationship to the content (and the globe size can't balloon).
+ * centred, max-width content at the viewport they were tuned at; on other
+ * monitors they drift. globeTransform can clamp the globe's coordinate frame to
+ * a fixed stage CENTRED in the viewport, so wider/taller screens keep the SAME
+ * relationship to the content (and the globe can't balloon).
  *
- * ⚠ TEMPORARILY DISABLED (set to effectively infinite) — the previous 1728×1117
- * guess didn't match the live viewport and shifted §3/§5. With these values the
- * math below reduces EXACTLY to the original cx*vw / cy*vh placement (no clamp,
- * no scale change). Set to the real measured viewport once known.
+ * The lock is OPT-IN per page via setStageLock(), defaulting to OFF (infinite),
+ * so /siteNEW and the rest of the app keep the original cx*vw / cy*vh placement
+ * EXACTLY. /siteMARS turns it on at its measured viewport (1512×752) on mount
+ * and resets it on unmount, so only Mars is locked — see components/sitemars.
  */
-export const STAGE_LOCK_W = 100000;
-export const STAGE_LOCK_H = 100000;
+let _stageLockW = Infinity;
+let _stageLockH = Infinity;
+
+/** Set (or, with no args, clear) the centre-lock stage. Module-level so EVERY
+ *  globeTransform consumer — the travelling globe, the Vision moon + orb-bot,
+ *  the placer — locks in lock-step. */
+export function setStageLock(w: number = Infinity, h: number = Infinity): void {
+  _stageLockW = w;
+  _stageLockH = h;
+}
 
 /**
  * THE shared globe-positioning math — the SINGLE source of truth for turning a
@@ -99,11 +107,9 @@ export const STAGE_LOCK_H = 100000;
  *
  * CONTRACT
  *   cx, cy      : where the globe's visual CENTER must land, as a fraction of
- *                 the CENTRE-LOCKED stage (see STAGE_LOCK_*), not the raw
- *                 viewport. At/below the lock size the stage IS the viewport, so
- *                 cx*vw / cy*vh as before; above it the stage is centred.
- *   scale       : size multiplier vs the un-scaled globe (locked to stage height
- *                 so the globe stays a constant on-screen size above the lock).
+ *                 the centre-locked stage (= the viewport when the lock is off).
+ *   scale       : size multiplier vs the un-scaled globe (locked to the stage
+ *                 height so the globe stays a constant on-screen size above it).
  *   vw, vh      : current viewport size (px).
  *   baseW, baseH: the #globe-transform element's UN-scaled layout size. The
  *                 globe is rendered dead-centre inside it, so the element's
@@ -121,8 +127,8 @@ export function globeTransform(
   baseH: number
 ): string {
   // Centre-locked stage: clamp the coordinate frame, then centre it.
-  const stageW = Math.min(vw, STAGE_LOCK_W);
-  const stageH = Math.min(vh, STAGE_LOCK_H);
+  const stageW = Math.min(vw, _stageLockW);
+  const stageH = Math.min(vh, _stageLockH);
   const offX = (vw - stageW) / 2;
   const offY = (vh - stageH) / 2;
   // Lock the globe's on-screen size to the stage height (no-op when vh ≤ lock).
@@ -143,7 +149,7 @@ export function globeCenterPx(
   _baseW: number,
   _scale: number
 ): number {
-  const stageW = Math.min(vw, STAGE_LOCK_W);
+  const stageW = Math.min(vw, _stageLockW);
   const offX = (vw - stageW) / 2;
   return offX + cx * stageW;
 }

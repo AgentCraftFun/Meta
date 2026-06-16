@@ -11,9 +11,9 @@ import GlobeStageController from '@/components/sitenew/scene/GlobeStageControlle
 import MoonCanvas from '@/components/sitenew/scene/MoonCanvas';
 import OrbbotCanvas from '@/components/sitenew/scene/OrbbotCanvas';
 import SceneCanvasMars from '@/components/sitemars/scene/SceneCanvasMars';
+import StageLock from '@/components/sitemars/scene/StageLock';
 import { SLOTS_MARS } from '@/components/sitemars/scene/globeSlotsMars';
 import BootSequence from '@/components/sitemars/system/BootSequence';
-import ViewportReadout from '@/components/sitemars/system/ViewportReadout';
 import Grade from '@/components/sitenew/system/Grade';
 import LiveSignal from '@/components/sitemars/system/LiveSignal';
 import Reticle from '@/components/sitenew/system/Reticle';
@@ -52,8 +52,8 @@ export default function LandingPage() {
           context and the fixed z-0 canvases / z-10 content layer exactly as on
           /siteNEW. /siteNEW has no such wrapper, so it stays cyan. */}
       <div className="theme-mars">
-        {/* TEMP diagnostic — remove once the centre-lock is pinned. */}
-        <ViewportReadout />
+        {/* Centre-lock the globe stage to the tuned 1512×752 viewport (Mars only). */}
+        <StageLock />
         {/* Skip link — first focusable, above everything (z-60). */}
         <a
           href="#sn-main"
