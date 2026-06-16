@@ -16,7 +16,7 @@ const VIEWS: { id: ViewId; label: string; href: string }[] = [
 
 /** Surfaces that don't show the bar — landing + the design smoke
  *  test render their own header / no header. */
-const HIDDEN_ROUTES = ['/siteview', '/siteNEW', '/design'];
+const HIDDEN_ROUTES = ['/siteview', '/siteNEW', '/siteMARS', '/design'];
 
 function viewFromPath(path: string): ViewId | null {
   if (path.startsWith('/terminal')) return 'terminal';
