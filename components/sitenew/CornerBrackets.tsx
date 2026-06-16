@@ -36,7 +36,7 @@ export default function CornerBrackets() {
       // Nearest-plane parallax accent — the command-center frame rushes past the
       // camera fastest during a section-snap transition. Inert when snap is off.
       data-snap-depth="1.28"
-      className="pointer-events-none absolute inset-5 z-30 text-cyan-400/70"
+      className="pointer-events-none absolute inset-5 z-30 text-accent-400/70"
     >
       <Bracket
         className="absolute left-0 top-0"

@@ -70,7 +70,7 @@ const PRODUCT_INDEX = 3;
 const BACK_OUT: [number, number, number, number] = [0.34, 1.4, 0.64, 1];
 const BRACKET_LOOSE = 6; // px the brackets start loose, then snap+overshoot tight
 const PANEL_DIP = 0.992; // panel micro-recoil floor (0.8% inward dip, then back)
-const FRAME = { col: 'rgba(34, 211, 238, 0.45)', size: 16, th: 1.5 } as const;
+const FRAME = { col: 'rgb(var(--accent-400) / 0.45)', size: 16, th: 1.5 } as const;
 // Four corner brackets + the diagonal each is "loose" along (away from its corner).
 const CORNERS = [
   { k: 'tl', dx: -1, dy: -1, css: { left: -1, top: -1, borderTopWidth: FRAME.th, borderLeftWidth: FRAME.th } },
@@ -146,17 +146,17 @@ function FeatureRow({
 }) {
   return (
     <li className="group relative h-full">
-      <TacticalFrame color="rgba(34, 211, 238, 0.18)" size={10} className="h-full">
+      <TacticalFrame color="rgb(var(--accent-400) / 0.18)" size={10} className="h-full">
        <TiltCard className="h-full">
-        <div className="flex h-full flex-col bg-[#0B1220]/55 p-4 transition-colors duration-200 group-hover:bg-[#111A2E]/85">
+        <div className="flex h-full flex-col bg-[#0B1220]/55 p-4 transition-colors duration-200 group-hover:bg-[#111A2E]/85 mars-glass">
           <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center border border-cyan-400/35 bg-cyan-400/10 text-cyan-300">
+            <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center border border-accent-400/35 bg-accent-400/10 text-accent-300">
               <Icon />
             </span>
-            <span className="font-mono text-[10px] uppercase tracking-[0.42em] text-cyan-400/65">
+            <span className="font-mono text-[10px] uppercase tracking-[0.42em] text-accent-400/65">
               {code}
             </span>
-            <span aria-hidden className="h-px flex-1 bg-cyan-400/15" />
+            <span aria-hidden className="h-px flex-1 bg-accent-400/15" />
           </div>
           <h3 className="mt-3 font-display text-[15px] font-bold uppercase tracking-[0.04em] text-white">
             {title}
@@ -285,19 +285,19 @@ function ProductMock() {
       <motion.span
         aria-hidden
         className="pointer-events-none absolute -inset-px z-10 rounded-sm"
-        style={{ border: '1.5px solid rgba(34, 211, 238, 0.9)' }}
+        style={{ border: '1.5px solid rgb(var(--accent-400) / 0.9)' }}
         initial={{ opacity: 0 }}
         animate={rim}
       />
 
-      <div className="overflow-hidden rounded-sm shadow-[0_30px_80px_-30px_rgba(34,211,238,0.22)]">
+      <div className="overflow-hidden rounded-sm shadow-[0_30px_80px_-30px_rgb(var(--accent-400)_/_0.22)]">
         {/* Top bar */}
         <div className="flex items-center justify-between border-b border-[#1E293B] bg-[#0B1220] px-4 py-3">
           <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.32em] text-white">
             <motion.span
               aria-hidden
               animate={dot}
-              className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.85)]"
+              className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent-300 shadow-[0_0_8px_rgb(var(--accent-400)_/_0.85)]"
             />
             MetaMap · Live
           </div>
@@ -312,7 +312,7 @@ function ProductMock() {
                 {win === i && (
                   <motion.span
                     layoutId="mock-window"
-                    className="absolute inset-0 bg-cyan-300/95"
+                    className="absolute inset-0 bg-accent-300/95"
                     transition={spring.soft}
                   />
                 )}
@@ -344,8 +344,8 @@ function ProductMock() {
                   style={{
                     width: '52%',
                     aspectRatio: '1 / 1',
-                    border: '1px solid rgba(34, 211, 238, 0.8)',
-                    boxShadow: '0 0 12px rgba(34, 211, 238, 0.5)',
+                    border: '1px solid rgb(var(--accent-400) / 0.8)',
+                    boxShadow: '0 0 12px rgb(var(--accent-400) / 0.5)',
                   }}
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={ring}
@@ -403,8 +403,8 @@ function ProductMock() {
 function MockGlobeBackdrop() {
   return (
     <div className="absolute inset-0 flex items-center justify-center">
-      <div className="absolute h-[78%] w-[78%] animate-pulse rounded-full bg-cyan-400/25 blur-2xl" />
-      <div className="relative h-[68%] w-[68%] rounded-full bg-gradient-to-br from-[#0a3b78] via-[#072546] to-[#02101f] shadow-[inset_-30px_-40px_80px_rgba(0,0,0,0.7),0_0_40px_rgba(34,211,238,0.18)]">
+      <div className="absolute h-[78%] w-[78%] animate-pulse rounded-full bg-accent-400/25 blur-2xl" />
+      <div className="relative h-[68%] w-[68%] rounded-full bg-gradient-to-br from-[var(--globe-1)] via-[var(--globe-2)] to-[var(--globe-3)] shadow-[inset_-30px_-40px_80px_rgba(0,0,0,0.7),0_0_40px_rgb(var(--accent-400)_/_0.18)]">
         <div className="absolute left-[18%] top-[28%] h-[18%] w-[20%] rounded-full bg-[#244d2c]/85 blur-[2px]" />
         <div className="absolute left-[42%] top-[42%] h-[22%] w-[26%] rounded-full bg-[#28552f]/75 blur-[2px]" />
         <div className="absolute left-[64%] top-[34%] h-[16%] w-[22%] rounded-full bg-[#2c5a31]/80 blur-[2px]" />

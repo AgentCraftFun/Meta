@@ -68,17 +68,17 @@ export default function Insight() {
             <div className="relative mt-9 grid grid-cols-1 gap-3 sm:grid-cols-2">
               {STEPS.map((step, i) => (
                 <FadeUp key={step.n} delay={0.15 + i * 0.08}>
-                  <TacticalFrame color="rgba(34, 211, 238, 0.55)" size={12}>
+                  <TacticalFrame color="rgb(var(--accent-400) / 0.55)" size={12}>
                     <TiltCard>
-                      <div className="relative h-full bg-[#0B1220] p-4">
+                      <div className="relative h-full bg-[#0B1220] p-4 mars-glass">
                         <div className="flex items-start gap-3">
-                          <span className="font-mono text-[11px] uppercase tracking-[0.36em] text-cyan-300/85">
+                          <span className="font-mono text-[11px] uppercase tracking-[0.36em] text-accent-300/85">
                             {step.n}
                           </span>
-                          <div className="flex-shrink-0 text-cyan-300/80">{step.glyph}</div>
+                          <div className="flex-shrink-0 text-accent-300/80">{step.glyph}</div>
                           <span
                             aria-hidden
-                            className="ml-auto h-1.5 w-1.5 flex-shrink-0 animate-pulse rounded-full bg-cyan-300/85 shadow-[0_0_8px_rgba(34,211,238,0.85)]"
+                            className="ml-auto h-1.5 w-1.5 flex-shrink-0 animate-pulse rounded-full bg-accent-300/85 shadow-[0_0_8px_rgb(var(--accent-400)_/_0.85)]"
                           />
                         </div>
                         <h3 className="mt-3 font-display text-[16px] font-bold uppercase leading-tight tracking-[0.02em] text-white">
@@ -97,21 +97,21 @@ export default function Insight() {
             {/* Banner callout — the payoff line, kept on-screen with the chain. */}
             <FadeUp delay={0.5}>
               <TacticalFrame
-                color="rgba(34, 211, 238, 0.5)"
+                color="rgb(var(--accent-400) / 0.5)"
                 size={16}
                 thickness={1.5}
                 className="mt-6"
               >
-                <div className="relative overflow-hidden bg-[#111A2E] px-8 py-5 text-center">
+                <div className="relative overflow-hidden bg-[#111A2E] px-8 py-5 text-center mars-glass">
                   <span
                     aria-hidden
-                    className="pointer-events-none absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-cyan-400/70 to-transparent"
+                    className="pointer-events-none absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-accent-400/70 to-transparent"
                   />
                   <span
                     aria-hidden
-                    className="pointer-events-none absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-cyan-400/70 to-transparent"
+                    className="pointer-events-none absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-accent-400/70 to-transparent"
                   />
-                  <div className="font-mono text-[10px] uppercase tracking-[0.5em] text-cyan-400/65">
+                  <div className="font-mono text-[10px] uppercase tracking-[0.5em] text-accent-400/65">
                     The Edge
                   </div>
                   <div className="mt-2.5 font-display text-[20px] font-bold tracking-[0.04em] text-white md:text-[24px]">

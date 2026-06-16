@@ -44,16 +44,22 @@ const SECTIONS: { Component: () => JSX.Element; label: string }[] = [
 export default function LandingPage() {
   return (
     <SmoothScroll>
-      {/* Skip link — first focusable, above everything (z-60). */}
-      <a
-        href="#sn-main"
-        className="sr-only z-[60] rounded-sm bg-cyan-300 px-4 py-2 font-mono text-[12px] uppercase tracking-[0.3em] text-[#05080F] focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
-      >
-        Skip to content
-      </a>
+      {/* MARS THEME SCOPE — this plain wrapper carries `.theme-mars`, which
+          redefines the accent CSS vars (cyan → Mars palette) and activates the
+          Mars glass. It sets only CSS variables, so it creates no stacking
+          context and the fixed z-0 canvases / z-10 content layer exactly as on
+          /siteNEW. /siteNEW has no such wrapper, so it stays cyan. */}
+      <div className="theme-mars">
+        {/* Skip link — first focusable, above everything (z-60). */}
+        <a
+          href="#sn-main"
+          className="sr-only z-[60] rounded-sm bg-accent-300 px-4 py-2 font-mono text-[12px] uppercase tracking-[0.3em] text-[#05080F] focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+        >
+          Skip to content
+        </a>
 
-      {/* Persistent globe — one fixed canvas (z-0) behind the whole page. */}
-      <SceneCanvasMars />
+        {/* Persistent globe — one fixed canvas (z-0) behind the whole page. */}
+        <SceneCanvasMars />
       {/* §5 Vision moon — second fixed canvas (z-0), parked on the Moon card. */}
       <MoonCanvas />
       {/* §5 Vision orb-bot — third fixed canvas (z-0), parked on the Bots card. */}
@@ -93,6 +99,7 @@ export default function LandingPage() {
           ))}
         </SnapStage>
       </main>
+      </div>
     </SmoothScroll>
   );
 }

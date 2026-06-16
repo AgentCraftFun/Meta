@@ -95,7 +95,7 @@ export default function BootSequence() {
             />
           )}
 
-          <div className="flex flex-col items-center gap-3 font-mono text-[12px] uppercase tracking-[0.42em] text-cyan-300">
+          <div className="flex flex-col items-center gap-3 font-mono text-[12px] uppercase tracking-[0.42em] text-accent-300">
             {LINES.map((line, i) => (
               <motion.div
                 key={line}
@@ -116,7 +116,7 @@ export default function BootSequence() {
           <button
             type="button"
             onClick={skip}
-            className="absolute bottom-8 right-8 font-mono text-[10px] uppercase tracking-[0.4em] text-slate-500 transition-colors hover:text-cyan-300"
+            className="absolute bottom-8 right-8 font-mono text-[10px] uppercase tracking-[0.4em] text-slate-500 transition-colors hover:text-accent-300"
             style={{ transitionTimingFunction: easeCss.powerOut }}
           >
             Skip →

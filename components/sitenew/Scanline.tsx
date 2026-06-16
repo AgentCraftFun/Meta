@@ -11,7 +11,7 @@ export default function Scanline() {
       className="pointer-events-none absolute inset-x-0 top-0 h-px"
       style={{
         background:
-          'linear-gradient(to right, transparent, rgba(34, 211, 238, 0.55) 50%, transparent)',
+          'linear-gradient(to right, transparent, rgb(var(--accent-400) / 0.55) 50%, transparent)',
         animation: 'scanline-sweep 9s linear infinite',
       }}
     >

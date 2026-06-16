@@ -35,6 +35,15 @@ const config: Config = {
           red: '#ff5d6c',
         },
         ds: dsColors,
+        // Themeable brand accent. Backed by CSS vars (see app/globals.css):
+        // defaults to the original cyan ramp everywhere, and /siteMARS overrides
+        // the vars under `.theme-mars` to the Mars palette. `<alpha-value>` keeps
+        // Tailwind opacity modifiers (e.g. text-accent-400/70) working.
+        accent: {
+          200: 'rgb(var(--accent-200) / <alpha-value>)',
+          300: 'rgb(var(--accent-300) / <alpha-value>)',
+          400: 'rgb(var(--accent-400) / <alpha-value>)',
+        },
       },
       spacing,
       borderRadius,

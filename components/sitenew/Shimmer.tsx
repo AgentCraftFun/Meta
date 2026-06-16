@@ -23,7 +23,7 @@ export default function Shimmer({
   const inView = useInView(ref, { once: true, margin: '-10%' });
 
   const gradient =
-    'linear-gradient(100deg, #0E7490 0%, #22D3EE 35%, #A5F3FC 50%, #22D3EE 65%, #0E7490 100%)';
+    'linear-gradient(100deg, var(--accent-shimmer-1) 0%, var(--accent-shimmer-2) 35%, var(--accent-shimmer-3) 50%, var(--accent-shimmer-2) 65%, var(--accent-shimmer-1) 100%)';
 
   if (reduced) {
     return (
@@ -31,7 +31,7 @@ export default function Shimmer({
         ref={ref}
         className={className}
         style={{
-          backgroundImage: 'linear-gradient(90deg, #22D3EE, #0E7490)',
+          backgroundImage: 'linear-gradient(90deg, var(--accent-shimmer-2), var(--accent-shimmer-1))',
           backgroundClip: 'text',
           WebkitBackgroundClip: 'text',
           color: 'transparent',

@@ -49,7 +49,7 @@ export default function CTAButton({ href, children, size = 'md' }: Props) {
             padding,
           ].join(' ')}
           style={{
-            borderColor: hover ? color.cyan : 'rgba(34,211,238,0.7)',
+            borderColor: hover ? color.cyan : 'rgb(var(--accent-400) / 0.7)',
             color: hover ? color.bg : color.cyan,
             transition: 'color 0.2s, border-color 0.2s',
           }}

@@ -4,6 +4,105 @@
 
 :root {
   color-scheme: dark;
+
+  /* ─── Brand accent ramp (themeable) ──────────────────────────────────────
+     /siteNEW + /siteMARS reference the accent through Tailwind's
+     `accent-{200,300,400}` colour (see tailwind.config) and through these vars
+     in inline styles. The defaults below are the ORIGINAL cyan brand, so every
+     surface WITHOUT a theme wrapper (/siteNEW and the rest of the app) renders
+     byte-identically. /siteMARS wraps itself in `.theme-mars`, which overrides
+     them — nothing else changes. RGB triples (space-separated) so they slot into
+     rgb(... / <alpha>). */
+  --accent-200: 165 243 252;   /* cyan-200  #A5F3FC */
+  --accent-300: 103 232 249;   /* cyan-300  #67E8F9 */
+  --accent-400: 34 211 238;    /* cyan-400  #22D3EE */
+
+  /* Accent-word shimmer gradient stops (Shimmer.tsx). */
+  --accent-shimmer-1: #0E7490;
+  --accent-shimmer-2: #22D3EE;
+  --accent-shimmer-3: #A5F3FC;
+
+  /* Decorative 2D fallback "planet" (Product/Vision mock globes). */
+  --globe-1: #0a3b78;
+  --globe-2: #072546;
+  --globe-3: #02101f;
+}
+
+/* ─── MARS THEME ─────────────────────────────────────────────────────────────
+   Scoped to /siteMARS via a <div class="theme-mars"> wrapper. Overrides ONLY
+   the accent ramp + decorative globe/shimmer stops; the black background and the
+   neutral text stay. Palette drawn from "The Martian": amber, burnt orange,
+   oxblood maroon, cream. */
+.theme-mars {
+  --accent-200: 244 197 146;   /* light apricot   #F4C592 */
+  --accent-300: 238 154 62;    /* amber (primary) #EE9A3E */
+  --accent-400: 217 97 45;     /* burnt orange    #D9612D — legible on black */
+
+  --accent-shimmer-1: #7C2B23; /* maroon */
+  --accent-shimmer-2: #EE9A3E; /* amber  */
+  --accent-shimmer-3: #FBE9CE; /* cream  */
+
+  --globe-1: #b4451f;          /* rusty mars sphere */
+  --globe-2: #6e2412;
+  --globe-3: #1c0a06;
+}
+
+/* Mars-tinted text selection + focus ring (scoped; other routes keep cyan). */
+.theme-mars ::selection {
+  background: rgb(var(--accent-400) / 0.3);
+  color: #fff;
+}
+.theme-mars :focus-visible {
+  outline-color: rgb(var(--accent-300));
+}
+
+/* ─── APPLE GLASS (Mars) ─────────────────────────────────────────────────────
+   visionOS-style frosted panel — the same lighting model as HowItWorks' neutral
+   .sn-glass, plus a faint warm inner ring tying it to the Mars accent. It is
+   inert unless inside `.theme-mars`, so adding `mars-glass` to a SHARED component
+   never touches /siteNEW. Applied to the content cards so the live red globe
+   refracts through them. Higher specificity than the cards' Tailwind bg, so it
+   replaces the solid fill with frost. */
+.theme-mars .mars-glass {
+  position: relative;
+  background: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.11) 0%,
+    rgba(255, 255, 255, 0.05) 40%,
+    rgba(255, 255, 255, 0.022) 100%
+  );
+  -webkit-backdrop-filter: blur(22px) saturate(155%);
+  backdrop-filter: blur(22px) saturate(155%);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  box-shadow:
+    0 22px 44px -18px rgba(0, 0, 0, 0.6),
+    0 3px 12px rgba(0, 0, 0, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    inset 0 0 0 1px rgb(var(--accent-400) / 0.05),
+    inset 0 0 26px rgba(255, 255, 255, 0.02);
+}
+.theme-mars .mars-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    130% 70% at 50% -14%,
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(255, 255, 255, 0.04) 44%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  pointer-events: none;
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .theme-mars .mars-glass {
+    background: linear-gradient(150deg, rgba(40, 22, 14, 0.92), rgba(16, 10, 7, 0.94));
+  }
+}
+/* Warm the neutral HowItWorks (.sn-glass) hairline on Mars — a faint amber edge
+   so those cards tie into the Mars accent without changing /siteNEW. */
+.theme-mars .sn-glass::after {
+  border-color: rgb(var(--accent-400) / 0.1);
 }
 
 html,

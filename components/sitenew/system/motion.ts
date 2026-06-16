@@ -93,8 +93,9 @@ export const color = {
   panel: '#0B1220',
   panelHi: '#111A2E',
   border: '#1E293B',
-  /** SYSTEM / baseline — the default accent */
-  cyan: '#22D3EE',
+  /** SYSTEM / baseline — the default accent. Resolves to the themeable accent
+   *  var (defaults to cyan #22D3EE; /siteMARS overrides it to Mars rust). */
+  cyan: 'rgb(var(--accent-400))',
   /** NARRATIVE INTENSITY scale — use sparingly, meaningfully */
   amber: '#FBBF24',
   red: '#EF4444',

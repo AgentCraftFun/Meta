@@ -26,20 +26,20 @@ export default function Footer() {
               href={link.href}
               target={link.href.startsWith('http') ? '_blank' : undefined}
               rel={link.href.startsWith('http') ? 'noreferrer' : undefined}
-              className="group relative inline-block font-mono text-[11px] uppercase tracking-[0.32em] text-slate-400 transition-colors hover:text-cyan-300"
+              className="group relative inline-block font-mono text-[11px] uppercase tracking-[0.32em] text-slate-400 transition-colors hover:text-accent-300"
             >
               {link.label}
               {/* underline grows left→right on hover (0.2s powerOut) */}
               <span
                 aria-hidden
-                className="absolute -bottom-1 left-0 h-px w-full origin-left scale-x-0 bg-cyan-300 transition-transform duration-200 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100"
+                className="absolute -bottom-1 left-0 h-px w-full origin-left scale-x-0 bg-accent-300 transition-transform duration-200 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100"
               />
             </a>
           ))}
         </nav>
 
         <div className="flex items-center gap-2 border border-[#1E293B] bg-[#0B1220] px-3 py-2 font-mono text-[10px] uppercase tracking-[0.32em] text-slate-400">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.85)]" />
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent-300 shadow-[0_0_8px_rgb(var(--accent-400)_/_0.85)]" />
           All Systems Operational
         </div>
       </div>

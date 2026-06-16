@@ -36,7 +36,7 @@ export default function LightHeroFallback() {
         <div
           className="absolute inset-[-12%] rounded-full"
           style={{
-            background: `radial-gradient(circle at 50% 50%, ${color.cyan}22 60%, transparent 72%)`,
+            background: `radial-gradient(circle at 50% 50%, rgb(var(--accent-400) / 0.13) 60%, transparent 72%)`,
             filter: 'blur(14px)',
           }}
         />
@@ -63,7 +63,7 @@ export default function LightHeroFallback() {
         <div
           className="absolute inset-0 rounded-full"
           style={{
-            boxShadow: `inset 14px 10px 40px rgba(34,211,238,0.22), 0 0 60px rgba(34,211,238,0.18)`,
+            boxShadow: `inset 14px 10px 40px rgb(var(--accent-400) / 0.22), 0 0 60px rgb(var(--accent-400) / 0.18)`,
           }}
         />
       </div>

@@ -58,7 +58,7 @@ export default function Problem() {
                   className="absolute -bottom-1 left-0 h-px w-full"
                   style={{
                     background:
-                      'linear-gradient(90deg, transparent, rgba(34,211,238,0.6), transparent)',
+                      'linear-gradient(90deg, transparent, rgb(var(--accent-400) / 0.6), transparent)',
                   }}
                 />
               </span>
@@ -78,7 +78,7 @@ export default function Problem() {
               {SOURCES.map((s) => (
                 <span
                   key={s.name}
-                  className="flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap text-slate-400 transition-colors duration-200 hover:text-cyan-300"
+                  className="flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap text-slate-400 transition-colors duration-200 hover:text-accent-300"
                 >
                   <s.Icon />
                   <span className="font-mono text-[10.5px] uppercase tracking-[0.1em]">
@@ -105,12 +105,12 @@ export default function Problem() {
                   />
                   <div className="max-w-[420px]">
                     <div className="flex items-center justify-between gap-3">
-                      <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-cyan-300">
+                      <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent-300">
                         {stat.label}
                       </span>
                       <span
                         aria-hidden
-                        className="font-mono text-[9px] tracking-[0.35em] text-cyan-400/40"
+                        className="font-mono text-[9px] tracking-[0.35em] text-accent-400/40"
                       >
                         0{i + 1}
                       </span>

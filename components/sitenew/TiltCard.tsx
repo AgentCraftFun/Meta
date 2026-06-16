@@ -34,7 +34,7 @@ export default function TiltCard({
   const ry = useSpring(0, spring.magnetic);
   const mx = useMotionValue(50);
   const my = useMotionValue(50);
-  const highlight = useMotionTemplate`radial-gradient(220px circle at ${mx}% ${my}%, rgba(34,211,238,0.08), transparent 60%)`;
+  const highlight = useMotionTemplate`radial-gradient(220px circle at ${mx}% ${my}%, rgb(var(--accent-400) / 0.08), transparent 60%)`;
 
   const isCoarse =
     typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches;
@@ -68,7 +68,7 @@ export default function TiltCard({
       <motion.div
         className="group/tilt relative h-full rounded-[inherit] will-change-transform"
         style={{ rotateX: rx, rotateY: ry, transformStyle: 'preserve-3d' }}
-        whileHover={{ scale: 1.02, y: -2, boxShadow: '0 18px 50px -22px rgba(34,211,238,0.45)' }}
+        whileHover={{ scale: 1.02, y: -2, boxShadow: '0 18px 50px -22px rgb(var(--accent-400) / 0.45)' }}
         transition={spring.snappy}
         onMouseMove={onMove}
         onMouseLeave={onLeave}
@@ -90,7 +90,7 @@ export default function TiltCard({
             className="pointer-events-none absolute inset-x-0 top-0 z-[6] h-px"
             style={{
               background:
-                'linear-gradient(90deg, transparent, rgba(34,211,238,0.7) 50%, transparent)',
+                'linear-gradient(90deg, transparent, rgb(var(--accent-400) / 0.7) 50%, transparent)',
             }}
             initial={{ top: '0%', opacity: 0 }}
             animate={{ top: ['0%', '100%'], opacity: [0, 1, 0] }}

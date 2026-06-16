@@ -51,13 +51,12 @@ export default function DrawLine({
     >
       <motion.path
         d={d}
-        stroke={stroke}
         strokeWidth={2}
         pathLength={1}
         initial={reduced ? { pathLength: 1 } : { pathLength: 0 }}
         animate={reduced ? { pathLength: 1 } : inView ? { pathLength: 1 } : { pathLength: 0 }}
         transition={{ duration: dur.reveal, ease: ease.expoOut, delay }}
-        style={{ filter: `drop-shadow(0 0 4px ${stroke})` }}
+        style={{ stroke, filter: `drop-shadow(0 0 4px ${stroke})` }}
       />
     </svg>
   );

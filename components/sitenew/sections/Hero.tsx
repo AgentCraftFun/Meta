@@ -46,9 +46,9 @@ export default function Hero() {
         {/* Top-left tactical readout */}
         <motion.div
           {...line(0.1)}
-          className="flex items-center gap-2 px-10 pt-10 font-mono text-[10px] uppercase tracking-[0.45em] text-cyan-300/80"
+          className="flex items-center gap-2 px-10 pt-10 font-mono text-[10px] uppercase tracking-[0.45em] text-accent-300/80"
         >
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-300 shadow-[0_0_10px_rgba(34,211,238,0.85)]" />
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent-300 shadow-[0_0_10px_rgb(var(--accent-400)_/_0.85)]" />
           Live · Global Signal
         </motion.div>
 
@@ -65,7 +65,7 @@ export default function Hero() {
 
             <motion.div
               {...line(0.85)}
-              className="mt-6 font-mono text-[13px] uppercase leading-relaxed tracking-[0.32em] text-cyan-300/95"
+              className="mt-6 font-mono text-[13px] uppercase leading-relaxed tracking-[0.32em] text-accent-300/95"
             >
               The world&apos;s attention,
               <br />

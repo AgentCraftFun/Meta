@@ -19,7 +19,7 @@ type Props = {
 export default function TacticalFrame({
   children,
   className = '',
-  color = '#22D3EE',
+  color = 'rgb(var(--accent-400))',
   size = 14,
   thickness = 1.25,
 }: Props) {

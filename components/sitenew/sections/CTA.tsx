@@ -16,7 +16,7 @@ function RadarSweep() {
         width: 1184,
         height: 1184,
         background:
-          'conic-gradient(from 0deg, transparent 0deg, rgba(34,211,238,0.14) 30deg, transparent 70deg)',
+          'conic-gradient(from 0deg, transparent 0deg, rgb(var(--accent-400) / 0.14) 30deg, transparent 70deg)',
         maskImage:
           'radial-gradient(circle, transparent 18%, black 22%, black 49%, transparent 50%)',
         WebkitMaskImage:
@@ -40,7 +40,7 @@ export default function CTA() {
         {[1, 1.5, 2.1, 2.8, 3.7].map((scale, i) => (
           <span
             key={i}
-            className="absolute rounded-full border border-cyan-400/10"
+            className="absolute rounded-full border border-accent-400/10"
             style={{
               width: `${scale * 320}px`,
               height: `${scale * 320}px`,
@@ -66,8 +66,8 @@ export default function CTA() {
                   height: 14,
                   background:
                     i % 6 === 0
-                      ? 'rgba(34, 211, 238, 0.55)'
-                      : 'rgba(34, 211, 238, 0.15)',
+                      ? 'rgb(var(--accent-400) / 0.55)'
+                      : 'rgb(var(--accent-400) / 0.15)',
                 }}
               />
             );
@@ -81,7 +81,7 @@ export default function CTA() {
         className="pointer-events-none absolute inset-0"
         style={{
           backgroundImage:
-            'radial-gradient(circle at center, rgba(34, 211, 238, 0.10) 0%, transparent 55%)',
+            'radial-gradient(circle at center, rgb(var(--accent-400) / 0.10) 0%, transparent 55%)',
         }}
       />
 
@@ -94,7 +94,7 @@ export default function CTA() {
         <FadeUp delay={0.1}>
           <h2 className="mt-10 max-w-[940px] font-display text-[52px] font-bold leading-[1.0] tracking-[-0.035em] text-white md:text-[88px]">
             Be early to the terminal that{' '}
-            <span className="bg-gradient-to-r from-cyan-300 via-cyan-200 to-cyan-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-accent-300 via-accent-200 to-accent-400 bg-clip-text text-transparent">
               watches the world
             </span>
             .
@@ -117,7 +117,7 @@ export default function CTA() {
 
         <FadeUp delay={0.45}>
           <div className="mt-10 flex items-center gap-4 font-mono text-[10px] uppercase tracking-[0.45em] text-slate-500">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-300" />
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent-300" />
             38 countries · live signal
           </div>
         </FadeUp>

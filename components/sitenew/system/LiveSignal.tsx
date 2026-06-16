@@ -6,7 +6,7 @@ import { FEED } from './seededFeed';
 import { useSceneStore } from './useSceneStore';
 
 const TONE: Record<string, string> = {
-  cyan: 'text-cyan-300',
+  cyan: 'text-accent-300',
   amber: 'text-amber-300',
   red: 'text-red-300',
 };

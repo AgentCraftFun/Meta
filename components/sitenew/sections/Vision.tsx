@@ -20,22 +20,22 @@ type Theme = {
 
 const THEMES: Record<'cyan' | 'amber' | 'red', Theme> = {
   cyan: {
-    ring: 'rgba(34, 211, 238, 0.55)',
-    ringRgb: '34, 211, 238',
-    text: 'text-cyan-300',
-    glow: 'shadow-[0_0_60px_-20px_rgba(34,211,238,0.55)]',
-    pillBg: 'bg-cyan-400/10 border-cyan-400/40 text-cyan-300',
+    ring: 'rgb(var(--accent-400) / 0.55)',
+    ringRgb: 'var(--accent-400)',
+    text: 'text-accent-300',
+    glow: 'shadow-[0_0_60px_-20px_rgb(var(--accent-400)_/_0.55)]',
+    pillBg: 'bg-accent-400/10 border-accent-400/40 text-accent-300',
   },
   amber: {
     ring: 'rgba(251, 191, 36, 0.55)',
-    ringRgb: '251, 191, 36',
+    ringRgb: '251 191 36',
     text: 'text-amber-300',
     glow: 'shadow-[0_0_60px_-20px_rgba(251,191,36,0.45)]',
     pillBg: 'bg-amber-400/10 border-amber-400/40 text-amber-300',
   },
   red: {
     ring: 'rgba(239, 68, 68, 0.55)',
-    ringRgb: '239, 68, 68',
+    ringRgb: '239 68 68',
     text: 'text-red-400',
     glow: 'shadow-[0_0_60px_-20px_rgba(239,68,68,0.45)]',
     pillBg: 'bg-red-500/10 border-red-500/40 text-red-300',
@@ -138,11 +138,11 @@ export default function Vision() {
                 style={
                   isCutout
                     ? {
-                        borderLeft: `1px solid rgba(${theme.ringRgb}, 0.3)`,
-                        borderRight: `1px solid rgba(${theme.ringRgb}, 0.3)`,
-                        borderBottom: `1px solid rgba(${theme.ringRgb}, 0.3)`,
+                        borderLeft: `1px solid rgb(${theme.ringRgb} / 0.3)`,
+                        borderRight: `1px solid rgb(${theme.ringRgb} / 0.3)`,
+                        borderBottom: `1px solid rgb(${theme.ringRgb} / 0.3)`,
                       }
-                    : { borderColor: `rgba(${theme.ringRgb}, 0.3)` }
+                    : { borderColor: `rgb(${theme.ringRgb} / 0.3)` }
                 }
               >
                 {/* Status pill — solid HUD chip (readable over the bright
@@ -223,9 +223,9 @@ function StatusPill({ status, theme }: { status: string; theme: Theme }) {
       className={`absolute right-5 top-5 z-10 inline-flex items-center overflow-hidden border px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.4em] ${theme.text}`}
       style={{
         background: 'rgba(6, 9, 16, 0.92)',
-        borderColor: `rgba(${rgb}, 0.55)`,
-        boxShadow: `0 0 16px -4px rgba(${rgb}, 0.6), inset 0 0 12px -7px rgba(${rgb}, 0.9)`,
-        textShadow: `0 0 8px rgba(${rgb}, 0.45)`,
+        borderColor: `rgb(${rgb} / 0.55)`,
+        boxShadow: `0 0 16px -4px rgb(${rgb} / 0.6), inset 0 0 12px -7px rgb(${rgb} / 0.9)`,
+        textShadow: `0 0 8px rgb(${rgb} / 0.45)`,
       }}
     >
       <span className="relative z-10">{status}</span>
@@ -234,7 +234,7 @@ function StatusPill({ status, theme }: { status: string; theme: Theme }) {
           aria-hidden
           className="pointer-events-none absolute inset-y-0 left-0 w-1/2"
           style={{
-            background: `linear-gradient(100deg, transparent 0%, rgba(${rgb}, 0.5) 50%, transparent 100%)`,
+            background: `linear-gradient(100deg, transparent 0%, rgb(${rgb} / 0.5) 50%, transparent 100%)`,
           }}
           initial={{ x: '-160%' }}
           animate={{ x: '320%' }}
@@ -255,7 +255,7 @@ function EarthVisual() {
         <span
           key={i}
           aria-hidden
-          className="absolute rounded-full border border-cyan-400/15"
+          className="absolute rounded-full border border-accent-400/15"
           style={{
             width: `${30 + i * 20}%`,
             height: `${30 + i * 20}%`,
@@ -264,12 +264,12 @@ function EarthVisual() {
         />
       ))}
       {/* Planet */}
-      <div className="relative h-[55%] w-[55%] rounded-full bg-gradient-to-br from-[#0a3b78] via-[#072546] to-[#02101f] shadow-[inset_-20px_-25px_50px_rgba(0,0,0,0.7),0_0_30px_rgba(34,211,238,0.25)]">
+      <div className="relative h-[55%] w-[55%] rounded-full bg-gradient-to-br from-[var(--globe-1)] via-[var(--globe-2)] to-[var(--globe-3)] shadow-[inset_-20px_-25px_50px_rgba(0,0,0,0.7),0_0_30px_rgb(var(--accent-400)_/_0.25)]">
         <div className="absolute left-[24%] top-[28%] h-[20%] w-[24%] rounded-full bg-[#244d2c]/85 blur-[2px]" />
         <div className="absolute left-[55%] top-[44%] h-[24%] w-[28%] rounded-full bg-[#28552f]/75 blur-[2px]" />
         <span
-          className="absolute left-[45%] top-[36%] block h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-300"
-          style={{ boxShadow: '0 0 14px rgba(34, 211, 238, 0.85)' }}
+          className="absolute left-[45%] top-[36%] block h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent-300"
+          style={{ boxShadow: '0 0 14px rgb(var(--accent-400) / 0.85)' }}
         />
       </div>
       <style jsx>{`
@@ -421,7 +421,7 @@ function TerminalLine({
   tone: 'cyan' | 'red' | 'green' | 'muted';
 }) {
   const color = {
-    cyan: 'text-cyan-300',
+    cyan: 'text-accent-300',
     red: 'text-red-300',
     green: 'text-emerald-300',
     muted: 'text-slate-400',

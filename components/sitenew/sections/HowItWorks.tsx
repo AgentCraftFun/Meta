@@ -58,7 +58,7 @@ export default function HowItWorks() {
             aria-hidden
             className="pointer-events-none absolute left-0 right-0 top-[80px] hidden h-px md:block"
           >
-            <DrawLine orientation="h" length={100} stroke="rgba(34,211,238,0.7)" />
+            <DrawLine orientation="h" length={100} stroke="rgb(var(--accent-400) / 0.7)" />
           </div>
 
           <div className="grid grid-cols-1 gap-5 md:grid-cols-4">
@@ -201,12 +201,12 @@ function StepCard({
         viewport={{ once: true, amount: 0.4 }}
         transition={{ ...spring.snappy, delay: 0.5 + index * 0.12 }}
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-[80px] hidden h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-300 shadow-[0_0_16px_rgba(34,211,238,0.85)] md:block"
+        className="pointer-events-none absolute left-1/2 top-[80px] hidden h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent-300 shadow-[0_0_16px_rgb(var(--accent-400)_/_0.85)] md:block"
       />
       {/* Connector dropping into card top — desktop only */}
       <span
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-[80px] hidden h-12 w-px -translate-x-1/2 bg-gradient-to-b from-cyan-300/70 to-transparent md:block"
+        className="pointer-events-none absolute left-1/2 top-[80px] hidden h-12 w-px -translate-x-1/2 bg-gradient-to-b from-accent-300/70 to-transparent md:block"
       />
 
       {/* APPLE-GLASS CARD (visionOS read): frosted backdrop blur — the live
@@ -219,7 +219,7 @@ function StepCard({
           {/* content sits above the ::before sheen layer */}
           <div className="relative z-[1] flex h-full flex-col p-6">
             <div className="flex items-center justify-between">
-              <span className="sn-glass-pill px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.35em] text-cyan-200">
+              <span className="sn-glass-pill px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.35em] text-accent-200">
                 {step.n}
               </span>
               <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-slate-400">
@@ -228,10 +228,10 @@ function StepCard({
             </div>
 
             {/* Glass icon well */}
-            <div className="sn-glass-chip mt-6 flex h-16 w-16 items-center justify-center text-cyan-300">
+            <div className="sn-glass-chip mt-6 flex h-16 w-16 items-center justify-center text-accent-300">
               <span
                 className="flex items-center justify-center"
-                style={{ filter: 'drop-shadow(0 0 8px rgba(34,211,238,0.45))' }}
+                style={{ filter: 'drop-shadow(0 0 8px rgb(var(--accent-400) / 0.45))' }}
               >
                 <StepIcon i={index} />
               </span>

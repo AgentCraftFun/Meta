@@ -73,7 +73,7 @@ export default function Reticle() {
     >
       <div
         className="rounded-full"
-        style={{ width: 26, height: 26, border: `1.5px solid ${color.cyan}`, boxShadow: `0 0 12px ${color.cyan}66` }}
+        style={{ width: 26, height: 26, border: `1.5px solid ${color.cyan}`, boxShadow: `0 0 12px rgb(var(--accent-400) / 0.4)` }}
       />
       <div
         className="absolute left-1/2 top-1/2 rounded-full"

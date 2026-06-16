@@ -14,12 +14,12 @@ export default function SectionLabel({ index, label, align = 'left' }: Props) {
       // is off (no inline transform is ever written).
       data-snap-depth="1.2"
       className={[
-        'flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.42em] text-cyan-400/85',
+        'flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.42em] text-accent-400/85',
         align === 'center' ? 'justify-center' : '',
       ].join(' ')}
     >
-      <span className="text-cyan-400/55">{index}</span>
-      <span aria-hidden className="h-px w-10 bg-cyan-400/35" />
+      <span className="text-accent-400/55">{index}</span>
+      <span aria-hidden className="h-px w-10 bg-accent-400/35" />
       <span>{label}</span>
     </div>
   );
