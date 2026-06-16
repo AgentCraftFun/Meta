@@ -7,6 +7,7 @@ import { useSceneStore } from '../system/useSceneStore';
 import {
   GLOBE_BUILD_TAG,
   SLOTS,
+  type Slot,
   buildAnchors,
   getScroll,
   getSections,
@@ -50,7 +51,9 @@ function damp(curV: number, tgtV: number, k: number, eps: number): number {
   return curV + (tgtV - curV) * k;
 }
 
-export default function GlobeStageController() {
+export default function GlobeStageController({
+  slots = SLOTS,
+}: { slots?: Slot[] } = {}) {
   // Re-initialise the controller (and thus pick the right branch) if the snap
   // mode flips at runtime — RM toggle, pointer change, or crossing 768px.
   const [epoch, setEpoch] = useState(0);
@@ -119,7 +122,7 @@ export default function GlobeStageController() {
           return;
         }
         const t = useSceneStore.getState().snapProgress;
-        const s = slotAtSmooth(t, SLOTS);
+        const s = slotAtSmooth(t, slots);
         g.style.transform = globeTransform(s.cx, s.cy, s.scale, vw, vh, baseW, baseH);
         g.style.filter =
           s.blur > 0.05
@@ -153,7 +156,7 @@ export default function GlobeStageController() {
         const g = findEl();
         if (!g) return;
         measure();
-        const s = SLOTS[0];
+        const s = slots[0];
         g.style.transform = globeTransform(s.cx, s.cy, s.scale, vw, vh, baseW, baseH);
         g.style.filter = `brightness(${s.bright})`;
         g.style.opacity = String(s.opacity);
@@ -177,7 +180,7 @@ export default function GlobeStageController() {
     const settle = window.setTimeout(measure, 300);
     window.addEventListener('load', measure);
 
-    const s0 = SLOTS[0];
+    const s0 = slots[0];
     const cur = {
       cx: s0.cx, cy: s0.cy, scale: s0.scale,
       bright: s0.bright, opacity: s0.opacity, blur: s0.blur, feather: s0.feather,
@@ -213,7 +216,7 @@ export default function GlobeStageController() {
 
       const P = getScroll();
       const tt = scrollToT(P, anchors);
-      const tgt = slotAt(tt, SLOTS);
+      const tgt = slotAt(tt, slots);
 
       const { scrollVelocity } = useSceneStore.getState();
       const blurTarget = Math.abs(scrollVelocity) > FAST_BLUR_SKIP ? 0 : tgt.blur;

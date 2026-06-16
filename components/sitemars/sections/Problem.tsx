@@ -89,7 +89,7 @@ export default function Problem() {
           <div className="mt-8 border-t border-[#1E293B]/70">
             {STATS.map((stat, i) => (
               <FadeUp key={stat.label} delay={0.4 + i * 0.08}>
-                <div className="grid grid-cols-[64px_1fr] items-baseline gap-4 border-b border-[#1E293B]/70 py-4 md:grid-cols-[100px_1fr] md:gap-5">
+                <div className="grid grid-cols-[116px_1fr] items-baseline gap-4 border-b border-[#1E293B]/70 py-4 md:grid-cols-[172px_1fr] md:gap-6">
                   <CountUp
                     value={stat.target}
                     duration={1.0}

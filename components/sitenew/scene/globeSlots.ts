@@ -77,6 +77,20 @@ export function clipCircle(r: number): string {
 }
 
 /**
+ * CENTRE-LOCK — the design "stage". cx/cy were tuned against a ~16" laptop
+ * viewport, so on WIDER/TALLER monitors the viewport-fraction placement drifts
+ * away from the (centred, max-width) content. We therefore clamp the globe's
+ * coordinate frame to a fixed stage of this size, CENTRED in the viewport:
+ *   • viewport ≤ stage  → behaves exactly as before (no-op).
+ *   • viewport > stage  → globe sits in a centred stage-sized band, so it keeps
+ *     the same relationship to the (also-centred) content at ANY screen size.
+ * Globe SIZE is also locked to the stage height so it can't balloon on big
+ * displays. Bump these if you want the locked design to be wider/taller.
+ */
+export const STAGE_LOCK_W = 1728; // 16" MacBook logical width
+export const STAGE_LOCK_H = 1117; // 16" MacBook logical height
+
+/**
  * THE shared globe-positioning math — the SINGLE source of truth for turning a
  * slot's (cx, cy, scale) into a CSS transform. Called by BOTH the runtime
  * controller (GlobeStageController) AND the live tuning overlay (GlobePlacer),
@@ -84,25 +98,17 @@ export function clipCircle(r: number): string {
  *
  * CONTRACT
  *   cx, cy      : where the globe's visual CENTER must land, as a fraction of
- *                 the viewport → pixel centre = (cx*vw, cy*vh).
- *   scale       : size multiplier vs the un-scaled globe.
+ *                 the CENTRE-LOCKED stage (see STAGE_LOCK_*), not the raw
+ *                 viewport. At/below the lock size the stage IS the viewport, so
+ *                 cx*vw / cy*vh as before; above it the stage is centred.
+ *   scale       : size multiplier vs the un-scaled globe (locked to stage height
+ *                 so the globe stays a constant on-screen size above the lock).
  *   vw, vh      : current viewport size (px).
- *   baseW, baseH: the #globe-transform element's UN-scaled layout size
- *                 (offsetWidth/offsetHeight — measured WITHOUT reading the
- *                 transformed rect). The globe is rendered dead-centre inside
- *                 this element, so the element's centre IS the globe's centre.
+ *   baseW, baseH: the #globe-transform element's UN-scaled layout size. The
+ *                 globe is rendered dead-centre inside it, so the element's
+ *                 centre IS the globe's centre.
  *
  * TRANSFORM-ORIGIN: **center center** (set in CSS on #globe-transform).
- *   With a centre origin, `scale()` pivots about the element's centre
- *   (baseW/2, baseH/2), leaving that point fixed; the following `translate`
- *   then shifts it to the target. Therefore:
- *       tx = cx*vw - baseW/2      ty = cy*vh - baseH/2
- *   lands the element centre — i.e. the globe centre — at (cx*vw, cy*vh).
- *
- * INVARIANT (scale-independent centre): for ANY scale s, the post-transform
- *   centre = (pivot stays at baseW/2 under centre-origin scale) + tx
- *          = baseW/2 + (cx*vw - baseW/2) = cx*vw.  Independent of s.
- *   `globeCenterPx` proves this (returns cx*vw whatever the scale).
  */
 export function globeTransform(
   cx: number,
@@ -113,24 +119,32 @@ export function globeTransform(
   baseW: number,
   baseH: number
 ): string {
-  const tx = cx * vw - baseW / 2;
-  const ty = cy * vh - baseH / 2;
-  return `translate3d(${tx.toFixed(2)}px, ${ty.toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
+  // Centre-locked stage: clamp the coordinate frame, then centre it.
+  const stageW = Math.min(vw, STAGE_LOCK_W);
+  const stageH = Math.min(vh, STAGE_LOCK_H);
+  const offX = (vw - stageW) / 2;
+  const offY = (vh - stageH) / 2;
+  // Lock the globe's on-screen size to the stage height (no-op when vh ≤ lock).
+  const lockedScale = scale * (stageH / vh);
+  const tx = offX + cx * stageW - baseW / 2;
+  const ty = offY + cy * stageH - baseH / 2;
+  return `translate3d(${tx.toFixed(2)}px, ${ty.toFixed(2)}px, 0) scale(${lockedScale.toFixed(4)})`;
 }
 
 /**
- * The on-screen pixel CENTER the above transform yields. Models centre-origin
- * scaling explicitly: the centre pivot (baseW/2) is unmoved by scale, then the
- * translate adds (cx*vw - baseW/2). The `scale` argument is intentionally
- * unused — that is the proof the centre is scale-independent.
+ * The on-screen pixel CENTER the above transform yields, in the centre-locked
+ * stage frame. (The `scale` argument is intentionally unused — the centre is
+ * scale-independent under centre-origin scaling.)
  */
 export function globeCenterPx(
   cx: number,
   vw: number,
-  baseW: number,
+  _baseW: number,
   _scale: number
 ): number {
-  return baseW / 2 + (cx * vw - baseW / 2); // === cx*vw, for ALL scales
+  const stageW = Math.min(vw, STAGE_LOCK_W);
+  const offX = (vw - stageW) / 2;
+  return offX + cx * stageW;
 }
 
 export function lerpSlot(a: Slot, b: Slot, t: number): Slot {

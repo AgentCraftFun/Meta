@@ -38,7 +38,9 @@
   --accent-300: 238 154 62;    /* amber (primary) #EE9A3E */
   --accent-400: 217 97 45;     /* burnt orange    #D9612D — legible on black */
 
-  --accent-shimmer-1: #7C2B23; /* maroon */
+  /* shimmer ends kept BRIGHT (burnt orange, not dark maroon) so the accent
+     headline never reads grey while it scrolls in / before the sweep fires. */
+  --accent-shimmer-1: #C8542A; /* burnt orange */
   --accent-shimmer-2: #EE9A3E; /* amber  */
   --accent-shimmer-3: #FBE9CE; /* cream  */
 
@@ -65,12 +67,25 @@
    replaces the solid fill with frost. */
 .theme-mars .mars-glass {
   position: relative;
-  background: linear-gradient(
-    150deg,
-    rgba(255, 255, 255, 0.11) 0%,
-    rgba(255, 255, 255, 0.05) 40%,
-    rgba(255, 255, 255, 0.022) 100%
-  );
+  /* A faint warm glow is BAKED into the card (first layer) on top of the frost.
+     During a snap transition the strip is GPU-promoted (will-change), which
+     stops backdrop-filter from sampling the globe behind — so the card would
+     otherwise flash flat/dark ("skeleton") until it settles. The baked glow
+     keeps it reading as a warm glass card throughout; the live globe adds the
+     vivid red on top once settled. */
+  background:
+    radial-gradient(
+      130% 90% at 50% 102%,
+      rgb(var(--accent-400) / 0.12) 0%,
+      rgb(var(--accent-400) / 0.04) 38%,
+      transparent 66%
+    ),
+    linear-gradient(
+      150deg,
+      rgba(255, 255, 255, 0.11) 0%,
+      rgba(255, 255, 255, 0.05) 40%,
+      rgba(255, 255, 255, 0.022) 100%
+    );
   -webkit-backdrop-filter: blur(22px) saturate(155%);
   backdrop-filter: blur(22px) saturate(155%);
   border: 1px solid rgba(255, 255, 255, 0.13);
@@ -99,8 +114,25 @@
     background: linear-gradient(150deg, rgba(40, 22, 14, 0.92), rgba(16, 10, 7, 0.94));
   }
 }
-/* Warm the neutral HowItWorks (.sn-glass) hairline on Mars — a faint amber edge
-   so those cards tie into the Mars accent without changing /siteNEW. */
+/* Warm the neutral HowItWorks (.sn-glass) on Mars — a faint amber hairline +
+   a baked warm glow so the cards tie into the Mars accent AND don't flash flat
+   during the snap transition (backdrop-filter can't sample the globe while the
+   strip is GPU-promoted). /siteNEW's .sn-glass is untouched. */
+.theme-mars .sn-glass {
+  background:
+    radial-gradient(
+      130% 90% at 50% 102%,
+      rgb(var(--accent-400) / 0.13) 0%,
+      rgb(var(--accent-400) / 0.045) 38%,
+      transparent 66%
+    ),
+    linear-gradient(
+      150deg,
+      rgba(255, 255, 255, 0.13) 0%,
+      rgba(255, 255, 255, 0.06) 38%,
+      rgba(255, 255, 255, 0.025) 100%
+    );
+}
 .theme-mars .sn-glass::after {
   border-color: rgb(var(--accent-400) / 0.1);
 }

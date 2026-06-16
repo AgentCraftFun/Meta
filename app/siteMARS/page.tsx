@@ -11,6 +11,7 @@ import GlobeStageController from '@/components/sitenew/scene/GlobeStageControlle
 import MoonCanvas from '@/components/sitenew/scene/MoonCanvas';
 import OrbbotCanvas from '@/components/sitenew/scene/OrbbotCanvas';
 import SceneCanvasMars from '@/components/sitemars/scene/SceneCanvasMars';
+import { SLOTS_MARS } from '@/components/sitemars/scene/globeSlotsMars';
 import BootSequence from '@/components/sitemars/system/BootSequence';
 import Grade from '@/components/sitenew/system/Grade';
 import LiveSignal from '@/components/sitemars/system/LiveSignal';
@@ -64,8 +65,9 @@ export default function LandingPage() {
         <MoonCanvas />
         {/* §5 orb-bot — third fixed canvas (z-0), parked on the Develop card. */}
         <OrbbotCanvas />
-        {/* Travelling-globe scroll controller (damps the #globe-transform). */}
-        <GlobeStageController />
+        {/* Travelling-globe scroll controller (damps the #globe-transform).
+            Mars slots centre the Vision globe on the centre-locked stage. */}
+        <GlobeStageController slots={SLOTS_MARS} />
         {/* DEV-ONLY live placement tool — inert unless the URL has ?place. */}
         <GlobePlacer />
         <BootSequence />
