@@ -75,16 +75,17 @@
      vivid red on top once settled. */
   background:
     radial-gradient(
-      130% 90% at 50% 102%,
-      rgb(var(--accent-400) / 0.12) 0%,
-      rgb(var(--accent-400) / 0.04) 38%,
-      transparent 66%
+      135% 110% at 50% 100%,
+      rgb(var(--accent-400) / 0.34) 0%,
+      rgb(var(--accent-400) / 0.16) 42%,
+      rgb(var(--accent-400) / 0.06) 70%,
+      transparent 90%
     ),
     linear-gradient(
       150deg,
-      rgba(255, 255, 255, 0.11) 0%,
-      rgba(255, 255, 255, 0.05) 40%,
-      rgba(255, 255, 255, 0.022) 100%
+      rgba(255, 255, 255, 0.12) 0%,
+      rgba(255, 255, 255, 0.055) 40%,
+      rgba(255, 255, 255, 0.025) 100%
     );
   -webkit-backdrop-filter: blur(22px) saturate(155%);
   backdrop-filter: blur(22px) saturate(155%);
@@ -121,10 +122,11 @@
 .theme-mars .sn-glass {
   background:
     radial-gradient(
-      130% 90% at 50% 102%,
-      rgb(var(--accent-400) / 0.13) 0%,
-      rgb(var(--accent-400) / 0.045) 38%,
-      transparent 66%
+      135% 110% at 50% 100%,
+      rgb(var(--accent-400) / 0.34) 0%,
+      rgb(var(--accent-400) / 0.16) 42%,
+      rgb(var(--accent-400) / 0.06) 70%,
+      transparent 90%
     ),
     linear-gradient(
       150deg,

@@ -77,18 +77,19 @@ export function clipCircle(r: number): string {
 }
 
 /**
- * CENTRE-LOCK — the design "stage". cx/cy were tuned against a ~16" laptop
- * viewport, so on WIDER/TALLER monitors the viewport-fraction placement drifts
- * away from the (centred, max-width) content. We therefore clamp the globe's
- * coordinate frame to a fixed stage of this size, CENTRED in the viewport:
- *   • viewport ≤ stage  → behaves exactly as before (no-op).
- *   • viewport > stage  → globe sits in a centred stage-sized band, so it keeps
- *     the same relationship to the (also-centred) content at ANY screen size.
- * Globe SIZE is also locked to the stage height so it can't balloon on big
- * displays. Bump these if you want the locked design to be wider/taller.
+ * CENTRE-LOCK — the design "stage". cx/cy positions only line up with the
+ * centred, max-width content at the viewport width they were tuned at; on other
+ * monitors they drift. globeTransform clamps the globe's coordinate frame to a
+ * fixed stage of this size, CENTRED in the viewport, so wider screens keep the
+ * SAME relationship to the content (and the globe size can't balloon).
+ *
+ * ⚠ TEMPORARILY DISABLED (set to effectively infinite) — the previous 1728×1117
+ * guess didn't match the live viewport and shifted §3/§5. With these values the
+ * math below reduces EXACTLY to the original cx*vw / cy*vh placement (no clamp,
+ * no scale change). Set to the real measured viewport once known.
  */
-export const STAGE_LOCK_W = 1728; // 16" MacBook logical width
-export const STAGE_LOCK_H = 1117; // 16" MacBook logical height
+export const STAGE_LOCK_W = 100000;
+export const STAGE_LOCK_H = 100000;
 
 /**
  * THE shared globe-positioning math — the SINGLE source of truth for turning a
