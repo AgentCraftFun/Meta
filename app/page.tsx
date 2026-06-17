@@ -1,10 +1,10 @@
 import { redirect } from 'next/navigation';
 
 /**
- * Root path is now the Terminal landing. The classic Earth+Moon
- * "Map" surface lives at /map; the in-canvas Earth ◯ Moon toggle
- * still navigates Earth↔Moon with the cinematic transition.
+ * Starship Protocol is the public site now. The root path sends every visitor
+ * to the /siteMARS landing. The legacy MetaMap terminal that used to live here
+ * is hidden — see redirects() in next.config.mjs.
  */
 export default function RootPage() {
-  redirect('/terminal');
+  redirect('/siteMARS');
 }

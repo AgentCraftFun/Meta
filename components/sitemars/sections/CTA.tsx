@@ -140,8 +140,8 @@ export default function CTA() {
                 filter: 'blur(10px)',
               }}
             />
-            <CTAButton href="https://app.uniswap.org" size="lg">
-              Acquire $STAR
+            <CTAButton href="/MarsTracker" size="lg">
+              Open Tracker
             </CTAButton>
           </div>
         </FadeUp>

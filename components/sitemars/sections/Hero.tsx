@@ -88,7 +88,7 @@ export default function Hero() {
             </motion.p>
 
             <motion.div {...line(1.3)} className="mt-10">
-              <CTAButton href="https://app.uniswap.org">Acquire $STAR</CTAButton>
+              <CTAButton href="/MarsTracker">Open Tracker</CTAButton>
             </motion.div>
           </div>
         </div>

@@ -8,9 +8,9 @@ import './globals.css';
 import Providers from './providers';
 
 export const metadata: Metadata = {
-  title: 'MetaMap — The world\'s attention, mapped in real time',
+  title: 'Starship Protocol',
   description:
-    'A live geopolitical attention dashboard for on-chain traders. A 3D earth that shows you what the world is talking about, country by country.',
+    'On-chain $SPCX exposure with $STAR. A 3% tax on every buy and sell routes SPCX exposure to every holder and buys back $STAR, automatically and on-chain.',
 };
 
 export const viewport: Viewport = {
