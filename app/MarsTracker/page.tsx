@@ -41,8 +41,9 @@ export default function MarsTrackerPage() {
           </Link>
         </header>
 
-        {/* Console */}
-        <main className="flex flex-1 items-center justify-center px-6 py-16 md:py-20">
+        {/* Console — top-aligned so the copy uses the upper space and clears
+            the planet rising from below; the card floats over the planet. */}
+        <main className="flex flex-1 items-start justify-center px-6 pt-[3vh] pb-20 md:pt-[5vh]">
           <TrackerConsole />
         </main>
       </div>

@@ -20,6 +20,11 @@ type Status = 'idle' | 'loading' | 'success' | 'error';
 const UNISWAP = 'https://app.uniswap.org';
 const ETHERSCAN_TOKEN = `https://etherscan.io/token/${SPCX_ADDRESS}`;
 
+// Dark frosted-glass fill for cards floating over the bright planet — keeps the
+// mars-glass blur (live planet behind) but dims it enough for readable text.
+const DARK_GLASS =
+  'linear-gradient(155deg, rgba(18,24,40,0.84) 0%, rgba(8,12,22,0.9) 100%)';
+
 /* ---------- formatting helpers ---------- */
 
 function fmtAmount(n: number): string {
@@ -123,7 +128,7 @@ export default function TrackerConsole() {
   }
 
   return (
-    <div className="relative mx-auto w-full max-w-[760px]">
+    <div className="relative mx-auto w-full max-w-[860px]">
       {/* Heading */}
       <div className="text-center">
         <FadeUp>
@@ -131,7 +136,7 @@ export default function TrackerConsole() {
         </FadeUp>
         <Decode className="mt-7">
           <h1
-            className="font-display text-[44px] font-bold leading-[1.02] tracking-[-0.035em] text-white md:text-[64px]"
+            className="font-display text-[52px] font-bold leading-[1.02] tracking-[-0.035em] text-white md:text-[76px]"
             style={{ textShadow: '0 2px 30px rgba(2,4,9,0.55)' }}
           >
             Track your <Shimmer>$SPCX</Shimmer> rewards.
@@ -139,7 +144,7 @@ export default function TrackerConsole() {
         </Decode>
         <FadeUp delay={0.12}>
           <p
-            className="mx-auto mt-6 max-w-[520px] text-[16px] leading-relaxed text-slate-200"
+            className="mx-auto mt-7 max-w-[600px] text-[17px] leading-relaxed text-slate-200 md:text-[19px]"
             style={{ textShadow: '0 1px 16px rgba(2,4,9,0.85)' }}
           >
             Paste any wallet to see the $SPCX it has accrued from Starship
@@ -150,20 +155,24 @@ export default function TrackerConsole() {
       </div>
 
       {/* Console card */}
-      <FadeUp delay={0.2} className="mt-12">
+      <FadeUp delay={0.2} className="mt-14">
         <TacticalFrame color="rgb(var(--accent-400) / 0.6)" size={18} thickness={1.5}>
-          <form onSubmit={check} className="relative bg-[#0B1220]/70 p-6 mars-glass md:p-8">
+          <form
+            onSubmit={check}
+            className="relative p-7 mars-glass md:p-9"
+            style={{ background: DARK_GLASS }}
+          >
             <div className="flex items-center justify-between">
               <label
                 htmlFor="wallet"
-                className="font-mono text-[11px] uppercase tracking-[0.42em] text-accent-300/85"
+                className="font-mono text-[12px] uppercase tracking-[0.42em] text-accent-300"
               >
                 Wallet address
               </label>
               <button
                 type="button"
                 onClick={pasteFromClipboard}
-                className="font-mono text-[10px] uppercase tracking-[0.32em] text-slate-400 transition-colors hover:text-accent-300"
+                className="font-mono text-[11px] uppercase tracking-[0.32em] text-slate-300 transition-colors hover:text-accent-300"
               >
                 Paste
               </button>
@@ -186,7 +195,7 @@ export default function TrackerConsole() {
                 inputMode="text"
                 placeholder="0x0000000000000000000000000000000000000000"
                 aria-invalid={status === 'error'}
-                className={`w-full flex-1 rounded-sm border bg-[#06090F]/80 px-4 py-4 font-mono text-[14px] tracking-wide text-white outline-none transition-colors placeholder:text-slate-600 focus:border-accent-300 focus:shadow-[0_0_0_1px_rgb(var(--accent-300)_/_0.45)] ${
+                className={`w-full flex-1 rounded-sm border bg-[#06090F]/85 px-5 py-5 font-mono text-[15px] tracking-wide text-white outline-none transition-colors placeholder:text-slate-600 focus:border-accent-300 focus:shadow-[0_0_0_1px_rgb(var(--accent-300)_/_0.45)] ${
                   valid ? 'border-accent-300/60' : 'border-accent-400/25'
                 }`}
               />
@@ -231,7 +240,7 @@ export default function TrackerConsole() {
       </AnimatePresence>
 
       {/* Trust footer */}
-      <p className="mt-10 text-center font-mono text-[10px] uppercase leading-relaxed tracking-[0.3em] text-slate-500">
+      <p className="mt-12 text-center font-mono text-[11px] uppercase leading-relaxed tracking-[0.3em] text-slate-400">
         Reads live from Ethereum mainnet · contract{' '}
         <a
           href={ETHERSCAN_TOKEN}
@@ -253,7 +262,7 @@ function SubmitButton({ loading }: { loading: boolean }) {
     <button
       type="submit"
       disabled={loading}
-      className="group relative inline-flex shrink-0 items-center justify-center gap-2 overflow-hidden rounded-sm border border-accent-400/70 px-7 py-4 font-mono text-[13px] uppercase tracking-[0.3em] text-accent-300 transition-colors duration-200 hover:border-accent-300 hover:text-[#05080F] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:text-accent-300 sm:py-0"
+      className="group relative inline-flex shrink-0 items-center justify-center gap-2 overflow-hidden rounded-sm border border-accent-400/70 px-9 py-5 font-mono text-[14px] uppercase tracking-[0.3em] text-accent-300 transition-colors duration-200 hover:border-accent-300 hover:text-[#05080F] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:text-accent-300 sm:py-0"
     >
       {/* Fill wipe left → right on hover */}
       <span className="absolute inset-0 origin-left scale-x-0 bg-accent-300 transition-transform duration-300 ease-out group-hover:scale-x-100" />
@@ -281,21 +290,24 @@ function SubmitButton({ loading }: { loading: boolean }) {
 function RewardsResult({ data }: { data: SpcxRewards }) {
   return (
     <TacticalFrame color="rgb(var(--accent-400) / 0.55)" size={18} thickness={1.5}>
-      <div className="relative overflow-hidden bg-[#0B1220]/70 p-8 mars-glass md:p-10">
+      <div
+        className="relative overflow-hidden p-8 mars-glass md:p-10"
+        style={{ background: DARK_GLASS }}
+      >
         {/* Hero number */}
         <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.4em] text-accent-300/85">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent-300 shadow-[0_0_10px_rgb(var(--accent-400)_/_0.85)]" />
           $SPCX accrued
         </div>
         <div className="mt-4 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-          <span className="font-display text-[64px] font-bold leading-none tracking-[-0.03em] text-white md:text-[88px]">
+          <span className="font-display text-[68px] font-bold leading-none tracking-[-0.03em] text-white md:text-[96px]">
             <CountUp value={data.amount} format={fmtAmount} />
           </span>
           <span className="font-display text-[26px] font-bold tracking-[-0.01em] text-accent-300 md:text-[34px]">
             SPCX
           </span>
         </div>
-        <p className="mt-4 max-w-[440px] text-[14px] leading-relaxed text-slate-400">
+        <p className="mt-4 max-w-[460px] text-[15px] leading-relaxed text-slate-300">
           Distributed to{' '}
           <span className="font-mono text-slate-300">{shortAddr(data.wallet)}</span> and held
           on-chain. Rewards keep accruing automatically as $STAR trades.
@@ -316,7 +328,7 @@ function RewardsResult({ data }: { data: SpcxRewards }) {
           >
             View on Etherscan →
           </a>
-          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-slate-500">
+          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-slate-400">
             Verified · Ethereum mainnet
           </span>
         </div>
@@ -327,11 +339,11 @@ function RewardsResult({ data }: { data: SpcxRewards }) {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-[#0B1220]/80 p-5">
-      <div className="font-mono text-[10px] uppercase tracking-[0.36em] text-slate-500">
+    <div className="bg-[#0B1220]/90 p-5">
+      <div className="font-mono text-[11px] uppercase tracking-[0.36em] text-slate-400">
         {label}
       </div>
-      <div className="mt-2 font-display text-[24px] font-bold tracking-[-0.01em] text-white">
+      <div className="mt-2 font-display text-[26px] font-bold tracking-[-0.01em] text-white">
         {value}
       </div>
     </div>
@@ -343,7 +355,10 @@ function Stat({ label, value }: { label: string; value: string }) {
 function EmptyResult({ data }: { data: SpcxRewards }) {
   return (
     <TacticalFrame color="rgb(var(--accent-400) / 0.4)" size={18} thickness={1.5}>
-      <div className="relative overflow-hidden bg-[#0B1220]/70 p-8 mars-glass md:p-10">
+      <div
+        className="relative overflow-hidden p-8 mars-glass md:p-10"
+        style={{ background: DARK_GLASS }}
+      >
         <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.4em] text-slate-400">
           <span className="h-1.5 w-1.5 rounded-full bg-slate-500" />
           No distributions yet
@@ -351,7 +366,7 @@ function EmptyResult({ data }: { data: SpcxRewards }) {
         <h3 className="mt-4 font-display text-[30px] font-bold leading-tight tracking-[-0.02em] text-white md:text-[38px]">
           This wallet hasn&apos;t accrued any $SPCX.
         </h3>
-        <p className="mt-4 max-w-[480px] text-[15px] leading-relaxed text-slate-400">
+        <p className="mt-4 max-w-[480px] text-[15px] leading-relaxed text-slate-300">
           We checked{' '}
           <span className="font-mono text-slate-300">{shortAddr(data.wallet)}</span> on Ethereum
           and found a 0 $SPCX balance. Rewards accrue automatically to $STAR holders every time
