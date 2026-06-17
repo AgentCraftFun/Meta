@@ -147,9 +147,7 @@ export default function TrackerConsole() {
             className="mx-auto mt-7 max-w-[600px] text-[17px] leading-relaxed text-slate-200 md:text-[19px]"
             style={{ textShadow: '0 1px 16px rgba(2,4,9,0.85)' }}
           >
-            Paste any wallet to see the $SPCX it has accrued from Starship
-            Protocol. Read live from Ethereum. No connection, no signing, fully
-            non-custodial.
+            Paste any wallet to see the $SPCX it has accrued.
           </p>
         </FadeUp>
       </div>
