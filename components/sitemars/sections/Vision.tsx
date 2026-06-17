@@ -57,6 +57,18 @@ const CARDS = [
     cutout: true,
   },
   {
+    key: 'moon',
+    theme: 'amber' as const,
+    title: 'Passive',
+    subtitle: 'Holders',
+    description:
+      'Hold $STAR and do nothing. $SPCX accrues to your wallet on its own, no staking, no lockups. Claim it whenever you want.',
+    status: '100% · Live',
+    visual: <MoonVisual />,
+    // Desktop-live: the real 3D moon (MoonCanvas) shows through this cutout.
+    cutout: true,
+  },
+  {
     key: 'bots',
     theme: 'red' as const,
     title: 'Buy Backs',
@@ -71,9 +83,9 @@ const CARDS = [
 ];
 
 export default function Vision() {
-  // Desktop-live → the two cards become transparent cutouts and the real 3D
-  // Mars + Jupiter (fixed z-0 canvases) show through. RM / mobile / SSR keep
-  // the 2D fallback visuals in solid cards. (Matches ProductMock's cutout gate.)
+  // Desktop-live → the three cards become transparent cutouts and the real 3D
+  // Mars + Moon + Jupiter (fixed z-0 canvases) show through. RM / mobile / SSR
+  // keep the 2D fallback visuals in solid cards. (Matches ProductMock's gate.)
   const [cutoutMode, setCutoutMode] = useState(false);
   useEffect(() => {
     const r = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -101,7 +113,7 @@ export default function Vision() {
           </p>
         </FadeUp>
 
-        <div className="mx-auto mt-16 grid max-w-[840px] grid-cols-1 gap-5 md:grid-cols-2">
+        <div className="mt-16 grid grid-cols-1 gap-5 md:grid-cols-3">
           {CARDS.map((card, i) => {
             const theme = THEMES[card.theme];
             // When the real 3D body docks here, the card is a transparent
@@ -268,6 +280,81 @@ function EarthVisual() {
           }
         }
       `}</style>
+    </div>
+  );
+}
+
+function MoonVisual() {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center">
+      {/* Constellation dots — fake token clusters */}
+      <svg
+        viewBox="0 0 240 144"
+        className="absolute inset-0 h-full w-full"
+        preserveAspectRatio="xMidYMid slice"
+      >
+        <defs>
+          <radialGradient id="moonGrad">
+            <stop offset="0%" stopColor="rgba(251, 191, 36, 0.25)" />
+            <stop offset="100%" stopColor="rgba(251, 191, 36, 0)" />
+          </radialGradient>
+        </defs>
+        <circle cx="120" cy="72" r="60" fill="url(#moonGrad)" />
+        {/* Cluster 1 */}
+        <g stroke="rgba(251, 191, 36, 0.45)" strokeWidth={0.5}>
+          <line x1="80" y1="50" x2="100" y2="60" />
+          <line x1="100" y1="60" x2="115" y2="48" />
+          <line x1="100" y1="60" x2="92" y2="78" />
+          <line x1="115" y1="48" x2="135" y2="55" />
+        </g>
+        {/* Cluster 2 */}
+        <g stroke="rgba(251, 191, 36, 0.35)" strokeWidth={0.5}>
+          <line x1="155" y1="78" x2="170" y2="92" />
+          <line x1="170" y1="92" x2="180" y2="78" />
+          <line x1="155" y1="78" x2="140" y2="92" />
+        </g>
+        {/* Stars / nodes */}
+        {[
+          [80, 50, 2.5],
+          [100, 60, 3.5],
+          [115, 48, 2],
+          [92, 78, 1.8],
+          [135, 55, 2.2],
+          [155, 78, 3],
+          [170, 92, 2.5],
+          [180, 78, 2],
+          [140, 92, 1.8],
+          [60, 90, 1.5],
+          [200, 60, 1.8],
+        ].map(([x, y, r], i) => (
+          <circle
+            key={i}
+            cx={x}
+            cy={y}
+            r={r}
+            fill="#fbbf24"
+            opacity={0.85}
+            style={{
+              filter: `drop-shadow(0 0 4px rgba(251, 191, 36, 0.85))`,
+              animation: `sn-twinkle ${2.4 + (i % 4) * 0.6}s ease-in-out ${i * 0.3}s infinite`,
+            }}
+          />
+        ))}
+      </svg>
+      <style jsx>{`
+        @keyframes sn-twinkle {
+          0%,
+          100% {
+            opacity: 0.85;
+          }
+          50% {
+            opacity: 0.3;
+          }
+        }
+      `}</style>
+      <span className="absolute right-6 top-5 font-mono text-[8px] uppercase tracking-[0.4em] text-amber-400/60">
+        $SPCX / Passive
+      </span>
     </div>
   );
 }

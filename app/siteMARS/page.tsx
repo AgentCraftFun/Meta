@@ -7,6 +7,7 @@ import Product from '@/components/sitemars/sections/Product';
 import Vision from '@/components/sitemars/sections/Vision';
 import GlobePlacer from '@/components/sitenew/scene/GlobePlacer';
 import GlobeStageController from '@/components/sitenew/scene/GlobeStageController';
+import MoonCanvas from '@/components/sitenew/scene/MoonCanvas';
 import JupiterCanvas from '@/components/sitemars/scene/JupiterCanvas';
 import SceneCanvasMars from '@/components/sitemars/scene/SceneCanvasMars';
 import StageLock from '@/components/sitemars/scene/StageLock';
@@ -61,7 +62,9 @@ export default function LandingPage() {
         {/* Persistent Mars body — one fixed canvas (z-0) behind the whole page.
             It also docks on the §5 Tokenomics "SPCX" card (vision-globe-earth). */}
         <SceneCanvasMars />
-        {/* §5 Jupiter — second fixed canvas (z-0), parked on the Buy Backs card. */}
+        {/* §5 moon — fixed canvas (z-0), parked on the middle "Passive" card. */}
+        <MoonCanvas />
+        {/* §5 Jupiter — fixed canvas (z-0), parked on the Buy Backs card. */}
         <JupiterCanvas />
         {/* Travelling-globe scroll controller (damps the #globe-transform).
             §3 (The Token) and §5 (Tokenomics — SPCX card) centre the globe on the
