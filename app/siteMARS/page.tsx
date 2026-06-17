@@ -69,8 +69,12 @@ export default function LandingPage() {
         {/* §5 orb-bot — third fixed canvas (z-0), parked on the Develop card. */}
         <OrbbotCanvas />
         {/* Travelling-globe scroll controller (damps the #globe-transform).
-            Mars slots centre the Vision globe on the centre-locked stage. */}
-        <GlobeStageController slots={SLOTS_MARS} />
+            Mars slots centre the Vision globe; §3 (The Token) is centred on the
+            MEASURED product-mock cutout so it's exact at any viewport. */}
+        <GlobeStageController
+          slots={SLOTS_MARS}
+          cutoutTrack={{ index: 3, id: 'product-globe-cutout' }}
+        />
         {/* DEV-ONLY live placement tool — inert unless the URL has ?place. */}
         <GlobePlacer />
         <BootSequence />
@@ -86,7 +90,7 @@ export default function LandingPage() {
             SnapStage locks this to one section at a time; otherwise it is an inert
             pass-through and the sections stack and scroll natively. */}
         <main id="sn-main" className="relative z-10 w-full text-slate-100">
-          <SnapStage>
+          <SnapStage liveGlass>
             {SECTIONS.map(({ Component, label }, i) => (
               <div
                 key={i}

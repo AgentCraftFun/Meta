@@ -53,7 +53,22 @@ const REVEAL_HI = 0.8; // centredness where opacity completes
 const SCALE_IN = 0.04; // incoming section starts at scale 1 - this (0.96)
 const SCALE_OUT = 0.08; // outgoing section recedes to scale 1 - this (0.92)
 
-export default function SnapStage({ children }: { children: ReactNode }) {
+export default function SnapStage({
+  children,
+  liveGlass = false,
+}: {
+  children: ReactNode;
+  /**
+   * /siteMARS: keep sections at full opacity and DON'T promote them with
+   * will-change during a transition. Both `opacity < 1` and `will-change`
+   * isolate a descendant's backdrop-filter, which is what made the frosted
+   * glass cards flash flat mid-scroll (they couldn't sample the globe behind).
+   * Plain transforms don't isolate it, so the depth pan/scale still applies and
+   * the live globe refracts through the glass the whole time. Default off, so
+   * /siteNEW keeps its opacity-fade reveal exactly.
+   */
+  liveGlass?: boolean;
+}) {
   const rootRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
@@ -116,7 +131,9 @@ export default function SnapStage({ children }: { children: ReactNode }) {
         // Small advance/recede along the travel direction (composes with the pan).
         const ty = (1 - e) * REVEAL_Y * (d >= 0 ? 1 : -1);
         const el = inners[i];
-        el.style.opacity = e.toFixed(3);
+        // liveGlass: full opacity (opacity<1 isolates backdrop-filter); the
+        // pan/scale transform still carries the depth and doesn't isolate it.
+        el.style.opacity = liveGlass ? '1' : e.toFixed(3);
         el.style.transform = `translate3d(0, ${ty.toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
       }
 
@@ -142,6 +159,9 @@ export default function SnapStage({ children }: { children: ReactNode }) {
     // will-change is ON only while a transition is running (perf: avoid many
     // permanent compositor layers).
     const setWillChange = (on: boolean) => {
+      // liveGlass: never promote — will-change isolates backdrop-filter, flattening
+      // the glass mid-scroll. translate3d already composites the pan on the GPU.
+      if (liveGlass) return;
       const v = on ? 'transform' : '';
       strip.style.willChange = on ? 'transform' : '';
       for (const el of inners) el.style.willChange = on ? 'transform, opacity' : '';

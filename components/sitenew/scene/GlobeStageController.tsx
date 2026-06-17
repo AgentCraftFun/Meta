@@ -15,6 +15,7 @@ import {
   scrollToT,
   slotAt,
   slotAtSmooth,
+  viewportToSlotCenter,
 } from './globeSlots';
 
 /**
@@ -53,7 +54,13 @@ function damp(curV: number, tgtV: number, k: number, eps: number): number {
 
 export default function GlobeStageController({
   slots = SLOTS,
-}: { slots?: Slot[] } = {}) {
+  cutoutTrack,
+}: {
+  slots?: Slot[];
+  /** Centre the globe on a MEASURED page element for one section (e.g. the
+   *  product-mock cutout), instead of its hand-tuned slot — exact at any size. */
+  cutoutTrack?: { index: number; id: string };
+} = {}) {
   // Re-initialise the controller (and thus pick the right branch) if the snap
   // mode flips at runtime — RM toggle, pointer change, or crossing 768px.
   const [epoch, setEpoch] = useState(0);
@@ -82,10 +89,44 @@ export default function GlobeStageController({
     let baseH = vh;
     let anchors: number[] = [];
     let gEl: HTMLElement | null = null;
+    // Slots actually used by the loops — equals `slots`, except the cutout-track
+    // section, whose cx/cy is overwritten with the MEASURED cutout centre.
+    let activeSlots = slots;
 
     const findEl = (): HTMLElement | null => {
       if (!gEl) gEl = document.getElementById('globe-transform');
       return gEl;
+    };
+
+    // Centre the tracked section's globe on the live cutout element. The cutout
+    // and its section-wrapper pan together, so the cutout's offset from the
+    // wrapper centre is constant; when that section is snap-centred the wrapper
+    // centre sits at the viewport centre, giving the cutout's settled centre.
+    const measureCutout = () => {
+      if (!cutoutTrack) {
+        activeSlots = slots;
+        return;
+      }
+      const cut = document.getElementById(cutoutTrack.id);
+      const wrap = document.querySelector<HTMLElement>(
+        `[data-sn-section="${cutoutTrack.index}"]`
+      );
+      if (!cut || !wrap) {
+        activeSlots = slots;
+        return;
+      }
+      const cr = cut.getBoundingClientRect();
+      const wr = wrap.getBoundingClientRect();
+      if (cr.width === 0 || wr.height === 0) {
+        activeSlots = slots;
+        return;
+      }
+      const dx = cr.left + cr.width / 2 - (wr.left + wr.width / 2);
+      const dy = cr.top + cr.height / 2 - (wr.top + wr.height / 2);
+      const { cx, cy } = viewportToSlotCenter(vw / 2 + dx, vh / 2 + dy, vw, vh);
+      activeSlots = slots.map((s, i) =>
+        i === cutoutTrack.index ? { ...s, cx, cy } : s
+      );
     };
 
     const measure = () => {
@@ -97,6 +138,7 @@ export default function GlobeStageController({
         baseH = g.offsetHeight || vh;
       }
       anchors = buildAnchors(getSections(), vh, getScroll());
+      measureCutout();
     };
 
     // ---- SECTION-SNAP: globe follows the snap progress `p` --------------
@@ -108,6 +150,9 @@ export default function GlobeStageController({
     if (isSnapEnabled()) {
       measure();
       const settleS = window.setTimeout(measure, 300);
+      // Re-measure late too — the cutout only mounts after ProductMock's effect
+      // and its settled position depends on font/layout reflow.
+      const settleS2 = window.setTimeout(measure, 1200);
       window.addEventListener('load', measure);
 
       let rafS = 0;
@@ -122,7 +167,7 @@ export default function GlobeStageController({
           return;
         }
         const t = useSceneStore.getState().snapProgress;
-        const s = slotAtSmooth(t, slots);
+        const s = slotAtSmooth(t, activeSlots);
         g.style.transform = globeTransform(s.cx, s.cy, s.scale, vw, vh, baseW, baseH);
         g.style.filter =
           s.blur > 0.05
@@ -145,6 +190,7 @@ export default function GlobeStageController({
         cancelAnimationFrame(rafS);
         if (rtS) clearTimeout(rtS);
         window.clearTimeout(settleS);
+        window.clearTimeout(settleS2);
         window.removeEventListener('resize', onResizeS);
         window.removeEventListener('load', measure);
       };
@@ -216,7 +262,7 @@ export default function GlobeStageController({
 
       const P = getScroll();
       const tt = scrollToT(P, anchors);
-      const tgt = slotAt(tt, slots);
+      const tgt = slotAt(tt, activeSlots);
 
       const { scrollVelocity } = useSceneStore.getState();
       const blurTarget = Math.abs(scrollVelocity) > FAST_BLUR_SKIP ? 0 : tgt.blur;

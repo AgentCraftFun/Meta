@@ -154,6 +154,26 @@ export function globeCenterPx(
   return offX + cx * stageW;
 }
 
+/**
+ * INVERSE of globeTransform's centre mapping: given a desired on-screen pixel
+ * centre (px, py), return the slot cx/cy that lands the globe there (honouring
+ * the active centre-lock). Used to centre the globe on a MEASURED element (the
+ * product-mock cutout) instead of a hand-tuned fraction, so it is exact at any
+ * viewport.
+ */
+export function viewportToSlotCenter(
+  px: number,
+  py: number,
+  vw: number,
+  vh: number
+): { cx: number; cy: number } {
+  const stageW = Math.min(vw, _stageLockW);
+  const stageH = Math.min(vh, _stageLockH);
+  const offX = (vw - stageW) / 2;
+  const offY = (vh - stageH) / 2;
+  return { cx: (px - offX) / stageW, cy: (py - offY) / stageH };
+}
+
 export function lerpSlot(a: Slot, b: Slot, t: number): Slot {
   const k = t < 0 ? 0 : t > 1 ? 1 : t;
   return {
