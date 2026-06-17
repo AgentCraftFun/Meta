@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 const TITLE = 'Starship Protocol: On-chain SPCX exposure with $STAR';
 const DESCRIPTION =
-  'Starship Protocol is a deflationary ERC-20 on Ethereum. A 3% sell tax routes synthetic SPCX exposure to every holder, burns supply, and funds development, automatically and on-chain. Hold $STAR and accrue. Claim whenever you want.';
+  'Starship Protocol is a deflationary ERC-20 on Ethereum. A 3% sell tax routes synthetic SPCX exposure to every holder, burns supply, and buys back $STAR, automatically and on-chain. Hold $STAR and accrue. Claim whenever you want.';
 
 /**
  * Per-page metadata for /siteMARS (Starship Protocol, $STAR). metadataBase
@@ -14,6 +14,7 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: '/siteMARS' },
+  icons: { icon: '/Starship_Protocol_Logo.png' },
   openGraph: {
     type: 'website',
     siteName: 'Starship Protocol',

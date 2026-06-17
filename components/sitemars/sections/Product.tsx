@@ -21,7 +21,7 @@ const FEATURES = [
   {
     code: 'TAX-02',
     title: '3% Sell Tax',
-    desc: 'Split equally: 1% burn, 1% SPCX rewards, 1% dev.',
+    desc: 'Split equally: 1% burn, 1% SPCX rewards, 1% buyback.',
     Icon: BeaconIcon,
   },
   {

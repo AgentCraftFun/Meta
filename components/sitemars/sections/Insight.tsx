@@ -17,7 +17,7 @@ const STEPS = [
   {
     n: '02',
     title: 'Tax Splits',
-    desc: 'It splits three equal ways: 1% burn, 1% SPCX, 1% dev.',
+    desc: 'It splits three equal ways: 1% burn, 1% SPCX, 1% buyback.',
     glyph: <TrendsGlyph />,
   },
   {
@@ -66,12 +66,12 @@ export default function Insight() {
             {/* The 4-step chain as a compact 2×2 grid (was a tall vertical flow).
                 Numbers carry the sequence; the connecting arrow in the centre
                 hints the flow without adding height. */}
-            <div className="relative mt-9 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="relative mt-9 grid auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-2">
               {STEPS.map((step, i) => (
-                <FadeUp key={step.n} delay={0.15 + i * 0.08}>
-                  <TacticalFrame color="rgb(var(--accent-400) / 0.55)" size={12}>
-                    <TiltCard>
-                      <div className="relative h-full bg-[#0B1220] p-4 mars-glass">
+                <FadeUp key={step.n} delay={0.15 + i * 0.08} className="h-full">
+                  <TacticalFrame color="rgb(var(--accent-400) / 0.55)" size={12} className="h-full">
+                    <TiltCard className="h-full">
+                      <div className="relative flex h-full flex-col bg-[#0B1220] p-4 mars-glass">
                         <div className="flex items-start gap-3">
                           <span className="font-mono text-[11px] uppercase tracking-[0.36em] text-accent-300/85">
                             {step.n}

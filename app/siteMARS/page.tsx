@@ -8,7 +8,7 @@ import Vision from '@/components/sitemars/sections/Vision';
 import GlobePlacer from '@/components/sitenew/scene/GlobePlacer';
 import GlobeStageController from '@/components/sitenew/scene/GlobeStageController';
 import MoonCanvas from '@/components/sitenew/scene/MoonCanvas';
-import OrbbotCanvas from '@/components/sitenew/scene/OrbbotCanvas';
+import JupiterCanvas from '@/components/sitemars/scene/JupiterCanvas';
 import SceneCanvasMars from '@/components/sitemars/scene/SceneCanvasMars';
 import StageLock from '@/components/sitemars/scene/StageLock';
 import { SLOTS_MARS } from '@/components/sitemars/scene/globeSlotsMars';
@@ -61,10 +61,10 @@ export default function LandingPage() {
 
         {/* Persistent Mars body — one fixed canvas (z-0) behind the whole page. */}
         <SceneCanvasMars />
-        {/* §5 moon — second fixed canvas (z-0), parked on the SpaceX card. */}
+        {/* §5 moon — second fixed canvas (z-0), parked on the SPCX card. */}
         <MoonCanvas />
-        {/* §5 orb-bot — third fixed canvas (z-0), parked on the Develop card. */}
-        <OrbbotCanvas />
+        {/* §5 Jupiter — third fixed canvas (z-0), parked on the Buy Backs card. */}
+        <JupiterCanvas />
         {/* Travelling-globe scroll controller (damps the #globe-transform).
             §3 (The Token) and §5 (Tokenomics — Burn card) centre the globe on the
             MEASURED content boxes, so they're exact at ANY screen size; §3 also

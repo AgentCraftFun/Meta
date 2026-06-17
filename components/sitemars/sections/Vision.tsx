@@ -71,13 +71,13 @@ const CARDS = [
   {
     key: 'bots',
     theme: 'red' as const,
-    title: 'Develop',
-    subtitle: 'Growth',
+    title: 'Buy Backs',
+    subtitle: 'Support',
     description:
-      '1% goes in ETH to the Starship wallet for dev, marketing, and ecosystem growth.',
+      '1% goes in ETH to the buy-backs wallet to buy $STAR off the open market.',
     status: '1% · Live',
     visual: <BotsVisual />,
-    // Desktop-live: the real 3D orb-bot (OrbbotCanvas) shows through this cutout.
+    // Desktop-live: the real 3D Jupiter (JupiterCanvas) shows through this cutout.
     cutout: true,
   },
 ];
@@ -109,7 +109,7 @@ export default function Vision() {
 
         <FadeUp delay={0.2}>
           <p className="mx-auto mt-6 max-w-[720px] text-center text-[16px] leading-snug text-slate-400 md:text-[18px]">
-            One 3% tax. Three jobs: burn supply, pay holders, fund growth.
+            One 3% tax. Three jobs: burn supply, pay holders, buy back $STAR.
           </p>
         </FadeUp>
 
@@ -367,7 +367,7 @@ const BASE_LINES: Line[] = [
   { tone: 'cyan', text: '✶  Sell taxed 3% · 1/1/1 split' },
   { tone: 'red', text: '🔥 Burned 182 STAR → dead address' },
   { tone: 'green', text: '✓  SPCX distributed · +$61 to holders' },
-  { tone: 'muted', text: '$  router fund --dev 0.04 ETH' },
+  { tone: 'muted', text: '$  router fund --buyback 0.04 ETH' },
 ];
 
 // Pool the feed cycles through — a new line types in every 4s.

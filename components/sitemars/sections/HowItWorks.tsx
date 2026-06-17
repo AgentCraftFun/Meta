@@ -14,7 +14,7 @@ const STEPS = [
     n: '01',
     title: 'Tax',
     code: 'SELL.3%',
-    desc: 'Every sell on Uniswap is taxed 3%. Split: burn, SPCX, dev.',
+    desc: 'Every sell on Uniswap is taxed 3%. Split: burn, SPCX, buyback.',
   },
   {
     n: '02',
