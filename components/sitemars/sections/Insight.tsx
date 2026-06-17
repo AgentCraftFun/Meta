@@ -10,20 +10,20 @@ import TiltCard from '@/components/sitenew/TiltCard';
 const STEPS = [
   {
     n: '01',
-    title: 'Someone Sells',
-    desc: 'Every sell on the Uniswap pool triggers a 3% tax.',
+    title: 'Someone Trades',
+    desc: 'Every buy and sell on Uniswap triggers a 3% tax.',
     glyph: <BreakingGlyph />,
   },
   {
     n: '02',
     title: 'Tax Splits',
-    desc: 'It splits three equal ways: 1% burn, 1% SPCX, 1% buyback.',
+    desc: 'It splits two ways: 2% SPCX rewards, 1% buyback.',
     glyph: <TrendsGlyph />,
   },
   {
     n: '03',
     title: 'SPCX Bought',
-    desc: '1% buys SPCX exposure on-chain.',
+    desc: '2% buys SPCX exposure on-chain.',
     glyph: <TokenGlyph />,
   },
   {
@@ -52,14 +52,14 @@ export default function Insight() {
 
             <Decode>
               <h2 className="mt-6 font-display text-[40px] font-bold leading-[1.04] tracking-[-0.03em] text-white md:text-[54px]">
-                Every sell buys <Shimmer>SPCX</Shimmer> for holders.
+                Every trade buys <Shimmer>SPCX</Shimmer> for holders.
               </h2>
             </Decode>
 
             <FadeUp delay={0.2}>
               <p className="mt-5 max-w-[560px] text-[18px] leading-snug text-slate-400 md:text-[20px]">
-                A 3% tax on every sell routes SPCX exposure to everyone
-                holding $STAR. On-chain. Automatic.
+                A 3% tax on every buy and sell routes SPCX exposure to
+                everyone holding $STAR. On-chain. Automatic.
               </p>
             </FadeUp>
 

@@ -20,8 +20,8 @@ const FEATURES = [
   },
   {
     code: 'TAX-02',
-    title: '3% Sell Tax',
-    desc: 'Split equally: 1% burn, 1% SPCX rewards, 1% buyback.',
+    title: '3% Trade Tax',
+    desc: 'Buys & sells. Split: 2% SPCX rewards, 1% buyback.',
     Icon: BeaconIcon,
   },
   {
@@ -31,17 +31,17 @@ const FEATURES = [
     Icon: PulseIcon,
   },
   {
-    code: 'BRN-04',
-    title: 'Deflationary',
-    desc: 'Every sell burns supply for good. $STAR only gets scarcer.',
+    code: 'TRD-04',
+    title: 'Buys & Sells',
+    desc: 'The tax hits both sides: every trade pays holders and buys back $STAR.',
     Icon: ClockIcon,
   },
 ];
 
 const MOCK_NARRATIVES = [
-  { rank: '01', title: 'Sell · 31,900 STAR taxed 3%', vol: 94, mom: '+$104', heat: 'red' },
+  { rank: '01', title: 'Buy · 31,900 STAR taxed 3%', vol: 94, mom: '+$104', heat: 'red' },
   { rank: '02', title: 'Sell · 18,240 STAR taxed 3%', vol: 82, mom: '+$61', heat: 'red' },
-  { rank: '03', title: 'Sell · 12,600 STAR taxed 3%', vol: 70, mom: '+$41', heat: 'amber' },
+  { rank: '03', title: 'Buy · 12,600 STAR taxed 3%', vol: 70, mom: '+$41', heat: 'amber' },
   { rank: '04', title: 'Sell · 7,410 STAR taxed 3%', vol: 61, mom: '+$24', heat: 'amber' },
 ];
 
@@ -357,7 +357,7 @@ function ProductMock() {
           {/* Side panel */}
           <div className="flex flex-col gap-2 bg-[#0B1220] p-3">
             <div className="font-mono text-[9px] uppercase tracking-[0.32em] text-slate-500">
-              ⬢ Sell Tax · SPCX Flow
+              ⬢ Trade Tax · SPCX Flow
             </div>
             <ol className="flex flex-col gap-2">
               <AnimatePresence initial={false}>

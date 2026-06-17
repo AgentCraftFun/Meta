@@ -13,8 +13,8 @@ const STEPS = [
   {
     n: '01',
     title: 'Tax',
-    code: 'SELL.3%',
-    desc: 'Every sell on Uniswap is taxed 3%. Split: burn, SPCX, buyback.',
+    code: 'TRADE.3%',
+    desc: 'Every buy and sell on Uniswap is taxed 3%. Split: SPCX, buyback.',
   },
   {
     n: '02',
@@ -47,7 +47,7 @@ export default function HowItWorks() {
 
         <Decode className="text-center">
           <h2 className="mt-8 text-center font-display text-[40px] font-bold leading-[1.04] tracking-[-0.025em] text-white md:text-[60px]">
-            From sell tax to <Shimmer>SPCX in your wallet</Shimmer>.
+            From trade tax to <Shimmer>SPCX in your wallet</Shimmer>.
           </h2>
         </Decode>
 

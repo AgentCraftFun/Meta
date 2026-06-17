@@ -6,7 +6,7 @@ import { SLOTS, type Slot } from '@/components/sitenew/scene/globeSlots';
  * stage (see StageLock):
  *   §3 The Token — globe centres in the product-mock cutout cell.
  *     mock cell centre ≈ 976px at vw 1512  →  cx 976/1512 ≈ 0.645
- *   §5 Tokenomics — globe centres in the left "Burn" card.
+ *   §5 Tokenomics — globe centres in the left "SPCX" card.
  *     card-1 centre  ≈ 336px at vw 1512  →  cx 336/1512 ≈ 0.222
  * Passed via <GlobeStageController slots={SLOTS_MARS} /> so /siteNEW keeps SLOTS.
  */

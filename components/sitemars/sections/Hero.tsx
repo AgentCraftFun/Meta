@@ -74,17 +74,17 @@ export default function Hero() {
             >
               On-chain SPCX exposure.
               <br />
-              It grows every time someone sells.
+              It grows on every buy and every sell.
             </motion.div>
 
             <motion.p
               {...line(1.05)}
               className="mt-6 max-w-[500px] text-[16px] leading-relaxed text-slate-300/90"
             >
-              $STAR is a deflationary ERC-20 on Ethereum. Every sell routes
-              SPCX exposure to holders, bought on-chain and split
-              automatically. Hold $STAR and your exposure accrues. Claim it
-              whenever you want. No brokerage. No KYC.
+              $STAR is an ERC-20 on Ethereum. Every buy and sell routes SPCX
+              exposure to holders, bought on-chain automatically. Hold $STAR
+              and your exposure accrues. Claim it whenever you want. No
+              brokerage. No KYC.
             </motion.p>
 
             <motion.div {...line(1.3)} className="mt-10">
