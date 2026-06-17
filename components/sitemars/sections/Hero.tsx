@@ -81,10 +81,10 @@ export default function Hero() {
               {...line(1.05)}
               className="mt-6 max-w-[500px] text-[16px] leading-relaxed text-slate-300/90"
             >
-              $STAR is an ERC-20 on Ethereum. Every buy and sell routes SPCX
-              exposure to holders, bought on-chain automatically. Hold $STAR
-              and your exposure accrues. Claim it whenever you want. No
-              brokerage. No KYC.
+              $STAR is a deflationary ERC-20 on Ethereum. Every buy and sell
+              pushes SPCX straight to holder wallets, by how much you hold.
+              Just hold $STAR and it stacks on its own. No staking, no claims,
+              no dashboards.
             </motion.p>
 
             <motion.div {...line(1.3)} className="mt-10">

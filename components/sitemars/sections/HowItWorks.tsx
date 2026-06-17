@@ -14,7 +14,7 @@ const STEPS = [
     n: '01',
     title: 'Tax',
     code: 'TRADE.3%',
-    desc: 'Every buy and sell on Uniswap is taxed 3%. Split: SPCX, buyback.',
+    desc: 'Every buy and sell on Uniswap is taxed 3%. 2% to SPCX, 1% to buyback.',
   },
   {
     n: '02',
@@ -24,15 +24,15 @@ const STEPS = [
   },
   {
     n: '03',
-    title: 'Accrue',
-    code: 'ACC.18D',
-    desc: 'accSpcxPerToken rises for every holder, by how much they hold.',
+    title: 'Reflect',
+    code: 'AUTO',
+    desc: 'SPCX is pushed straight to every holder wallet, by how much $STAR they hold.',
   },
   {
     n: '04',
-    title: 'Claim',
-    code: 'CLAIM()',
-    desc: 'Call claimRewards() and your SPCX lands in your wallet.',
+    title: 'Stack',
+    code: 'HOLD',
+    desc: 'It lands on its own. No staking, no claims, no Etherscan. Just hold.',
   },
 ];
 

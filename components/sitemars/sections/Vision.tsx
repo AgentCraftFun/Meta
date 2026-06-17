@@ -62,7 +62,7 @@ const CARDS = [
     title: 'Passive',
     subtitle: 'Holders',
     description:
-      'Hold $STAR and do nothing. $SPCX accrues to your wallet on its own, no staking, no lockups. Claim it whenever you want.',
+      'Hold $STAR and do nothing. $SPCX lands in your wallet on its own. No staking, no lockups, no claims.',
     status: '100% · Live',
     visual: <MoonVisual />,
     // Desktop-live: the real 3D moon (MoonCanvas) shows through this cutout.
@@ -74,7 +74,7 @@ const CARDS = [
     title: 'Buy Backs',
     subtitle: 'Support',
     description:
-      '1% of every buy and sell goes in ETH to the buy-backs wallet to buy $STAR off the open market.',
+      '1% buys $STAR back off the open market and burns it. Fixed 25M supply, so it only ever shrinks.',
     status: '1% · Live',
     visual: <BotsVisual />,
     // Desktop-live: the real 3D Jupiter (JupiterCanvas) shows through this cutout.
@@ -109,7 +109,7 @@ export default function Vision() {
 
         <FadeUp delay={0.2}>
           <p className="mx-auto mt-6 max-w-[720px] text-center text-[16px] leading-snug text-slate-400 md:text-[18px]">
-            One 3% tax on every buy and sell. Two jobs: pay holders in $SPCX, buy back $STAR.
+            One 3% tax on every buy and sell. Two jobs: pay holders in $SPCX, buy back and burn $STAR.
           </p>
         </FadeUp>
 
@@ -190,8 +190,8 @@ export default function Vision() {
               </article>
             );
             return (
-              <FadeUp key={card.key} delay={i * 0.12}>
-                <TacticalFrame color={theme.ring} size={16} thickness={1.5}>
+              <FadeUp key={card.key} delay={i * 0.12} className="h-full">
+                <TacticalFrame color={theme.ring} size={16} thickness={1.5} className="h-full">
                   {isCutout ? (
                     article
                   ) : (
@@ -366,17 +366,17 @@ const BASE_LINES: Line[] = [
   { tone: 'muted', text: '>  Liquidity locked · pair STAR/WETH' },
   { tone: 'cyan', text: '✶  Trade taxed 3% · 2/1 split' },
   { tone: 'green', text: '✓  SPCX distributed · +$61 to holders' },
-  { tone: 'red', text: '↺  Bought back $STAR · 0.05 ETH' },
+  { tone: 'red', text: '↺  Bought back + burned · 0.05 ETH' },
   { tone: 'muted', text: '$  router fund --buyback 0.04 ETH' },
 ];
 
 // Pool the feed cycles through — a new line types in every 4s.
 const FEED_LINES: Line[] = [
   { tone: 'cyan', text: '✶  Trade taxed 3% · routed on-chain' },
-  { tone: 'green', text: '✓  Holder claimed · $418 SPCX → wallet' },
+  { tone: 'green', text: '✓  SPCX reflected · $418 to wallet' },
   { tone: 'red', text: '↺  Buyback filled · 0.06 ETH of $STAR' },
-  { tone: 'green', text: '✓  accSpcxPerToken advanced · +$27' },
-  { tone: 'muted', text: '>  Accruing SPCX for 1,204 holders…' },
+  { tone: 'green', text: '✓  Reflection pushed · +$27 avg' },
+  { tone: 'muted', text: '>  Reflecting SPCX to 1,204 wallets…' },
 ];
 
 function BotsVisual() {

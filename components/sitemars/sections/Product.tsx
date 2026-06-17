@@ -15,25 +15,25 @@ const FEATURES = [
   {
     code: 'SUP-01',
     title: 'Fixed 25M Supply',
-    desc: 'Minted once at deploy. No mint function. No inflation, ever.',
+    desc: 'Minted once, no mint function. Buyback and burn only takes supply down.',
     Icon: GlobeIcon,
   },
   {
     code: 'TAX-02',
     title: '3% Trade Tax',
-    desc: 'Buys & sells. Split: 2% SPCX rewards, 1% buyback.',
+    desc: 'Buys and sells. 2% to SPCX rewards, 1% to buyback and burn.',
     Icon: BeaconIcon,
   },
   {
-    code: 'SPCX-03',
-    title: 'On-Chain SPCX',
-    desc: 'SPCX exposure accrues to holders automatically. No snapshots.',
+    code: 'RFX-03',
+    title: 'Auto-Reflected',
+    desc: 'SPCX lands in your wallet on its own. No staking, no claims, no dashboards.',
     Icon: PulseIcon,
   },
   {
-    code: 'TRD-04',
-    title: 'Buys & Sells',
-    desc: 'The tax hits both sides: every trade pays holders and buys back $STAR.',
+    code: 'MIN-04',
+    title: 'Hold 1,000 $STAR',
+    desc: 'The minimum to earn. Real holders only, no dust farming.',
     Icon: ClockIcon,
   },
 ];

@@ -121,7 +121,7 @@ export default function CTA() {
             className="mt-7 max-w-[520px] text-[16px] leading-relaxed text-slate-200"
             style={{ textShadow: '0 1px 16px rgba(2,4,9,0.7)' }}
           >
-            No brokerage. No KYC. No managing it. Hold $STAR and accrue.
+            No staking. No claims. No dashboards. Just hold $STAR and stack $SPCX.
           </p>
         </FadeUp>
 

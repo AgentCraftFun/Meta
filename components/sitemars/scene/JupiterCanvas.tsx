@@ -30,6 +30,7 @@ const smoothstep = (e0: number, e1: number, x: number) => {
 export default function JupiterCanvas() {
   const reduced = useReducedMotion();
   const [mounted, setMounted] = useState(false);
+  const stageRef = useRef<HTMLDivElement>(null);
   const elRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => setMounted(true), []);
@@ -52,6 +53,18 @@ export default function JupiterCanvas() {
       baseH = el.offsetHeight || vh;
       const a = measureAnchor('vision-globe-bots', VISION_INDEX, vw, vh);
       anchor = a ? { cx: a.cx, cy: a.cy } : null;
+      // Bracket the clip window around the MEASURED card so the globe is never
+      // cut and the stage never sits over the moon/earth cards. A FIXED clip
+      // fraction can't track the right card (it shifts with viewport width) —
+      // that mismatch was the clipping bug.
+      const stage = stageRef.current;
+      if (stage) {
+        const cx = anchor ? anchor.cx : JUPITER_SLOT.cx;
+        const half = 0.16; // half-window (fraction of vw): card half + margin
+        const leftPct = Math.max(0, (cx - half) * 100);
+        const rightPct = Math.max(0, (1 - cx - half) * 100);
+        stage.style.clipPath = `inset(0 ${rightPct.toFixed(2)}% 0 ${leftPct.toFixed(2)}%)`;
+      }
     };
     measure();
     const settle = window.setTimeout(measure, 300);
@@ -101,11 +114,14 @@ export default function JupiterCanvas() {
 
   return (
     <div
+      ref={stageRef}
       id="jupiter-stage"
       aria-hidden
       className="pointer-events-none fixed inset-0"
-      // Clip to the right (Buy Backs) column so it never sits over the earth/moon.
-      style={{ zIndex: z.earth, clipPath: 'inset(0 0 0 64%)' }}
+      // Clip window brackets the measured Buy Backs card (recomputed in
+      // measure()), so it never sits over the earth/moon and never cuts the
+      // globe. This static value is just the first-paint default.
+      style={{ zIndex: z.earth, clipPath: 'inset(0 8% 0 62%)' }}
     >
       <div
         ref={elRef}

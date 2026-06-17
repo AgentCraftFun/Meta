@@ -29,7 +29,7 @@ const STEPS = [
   {
     n: '04',
     title: 'Holders Paid',
-    desc: 'It goes to every holder, by how much $STAR you hold.',
+    desc: 'It lands in every holder wallet automatically, by how much $STAR you hold.',
     glyph: <PumpGlyph />,
   },
 ];

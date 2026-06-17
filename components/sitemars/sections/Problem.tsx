@@ -6,8 +6,8 @@ import FadeUp from '@/components/sitenew/FadeUp';
 import SectionLabel from '@/components/sitenew/SectionLabel';
 import Shimmer from '@/components/sitenew/Shimmer';
 
-// SPCX is public now, but it sits in a brokerage doing nothing on-chain.
-const GATEKEEPERS = ['Brokerage Only', 'KYC Required', 'Off-Chain', 'Static Position'];
+// The $SPCX IPO was massive and retail couldn't get in. $STAR fixes that.
+const GATEKEEPERS = ['Insiders First', 'Allocations Gone', 'Retail Priced Out', 'No On-Chain Access'];
 
 type Stat = {
   target: number;
@@ -55,14 +55,15 @@ export default function Problem() {
             <h2 className="mt-7 font-display text-[42px] font-bold leading-[1.02] tracking-[-0.025em] text-white md:text-[58px]">
               SpaceX went public.
               <br />
-              <Shimmer>Your bags still sit in a brokerage.</Shimmer>
+              <Shimmer>You couldn&apos;t get in.</Shimmer>
             </h2>
           </Decode>
 
           <FadeUp delay={0.2}>
             <p className="mt-5 text-[19px] leading-snug text-slate-400 md:text-[22px]">
-              Anyone can buy SPCX now. But it lives in a brokerage, off-chain,
-              KYC&apos;d to your name, doing nothing while volume rips.
+              The $SPCX listing was one of the biggest in history, and retail
+              watched it rip from the outside. $STAR reflects $SPCX straight
+              into your wallet, automatically, just for holding.
             </p>
           </FadeUp>
 

@@ -306,9 +306,9 @@ function RewardsResult({ data }: { data: SpcxRewards }) {
           </span>
         </div>
         <p className="mt-4 max-w-[460px] text-[15px] leading-relaxed text-slate-300">
-          Distributed to{' '}
-          <span className="font-mono text-slate-300">{shortAddr(data.wallet)}</span> and held
-          on-chain. Rewards keep accruing automatically as $STAR trades.
+          Reflected to{' '}
+          <span className="font-mono text-slate-300">{shortAddr(data.wallet)}</span> on-chain.
+          More $SPCX lands automatically on every $STAR trade.
         </p>
 
         {/* Stat strip */}
@@ -367,8 +367,9 @@ function EmptyResult({ data }: { data: SpcxRewards }) {
         <p className="mt-4 max-w-[480px] text-[15px] leading-relaxed text-slate-300">
           We checked{' '}
           <span className="font-mono text-slate-300">{shortAddr(data.wallet)}</span> on Ethereum
-          and found a 0 $SPCX balance. Rewards accrue automatically to $STAR holders every time
-          someone sells. Hold $STAR to start stacking $SPCX.
+          and found a 0 $SPCX balance. Rewards land in $STAR holder wallets
+          automatically on every buy and sell. Hold at least 1,000 $STAR to
+          start stacking $SPCX.
         </p>
         <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3">
           <a
