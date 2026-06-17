@@ -33,10 +33,6 @@ function fmtAmount(n: number): string {
   return new Intl.NumberFormat('en-US', { maximumFractionDigits: max }).format(n);
 }
 
-function fmtSupply(n: number): string {
-  return new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(n);
-}
-
 function fmtPct(p: number): string {
   if (p === 0) return '0%';
   if (p < 0.0001) return '<0.0001%';
@@ -314,7 +310,10 @@ function RewardsResult({ data }: { data: SpcxRewards }) {
         {/* Stat strip */}
         <div className="mt-8 grid grid-cols-1 gap-px overflow-hidden rounded-sm border border-white/5 bg-white/5 sm:grid-cols-2">
           <Stat label="Share of all $SPCX" value={fmtPct(data.sharePct)} />
-          <Stat label="Total $SPCX distributed" value={fmtSupply(data.totalSupply)} />
+          <Stat
+            label="Total $SPCX distributed"
+            value={data.totalDistributed != null ? fmtAmount(data.totalDistributed) : '—'}
+          />
         </div>
 
         <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3">

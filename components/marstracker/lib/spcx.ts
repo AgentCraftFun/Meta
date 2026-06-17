@@ -10,13 +10,29 @@
 
 export const SPCX_ADDRESS = '0x68fa48B1C2FE52b3D776E1953e0E782b5044Ce28';
 
+/** $STAR — the Starship Protocol token that taxes trades, swaps the cut to
+ *  $SPCX, and distributes it to holders. "Total distributed" is the sum of all
+ *  $SPCX sent OUT of this address. */
+export const STAR_ADDRESS = '0x7e4e1aF275BFfbe00C7D823F4868C27FAcF26459';
+
+// $STAR deploy block — distributions can't predate it, so the scan starts here.
+const DISTRIB_START_BLOCK = 25337419;
+// keccak256("Transfer(address,address,uint256)") + $STAR as an indexed `from`.
+const TRANSFER_TOPIC =
+  '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+const STAR_FROM_TOPIC = `0x${STAR_ADDRESS.toLowerCase().slice(2).padStart(64, '0')}`;
+
 // Public mainnet RPCs (CORS-enabled). Tried in order; first good answer wins.
 const RPCS = [
   'https://ethereum-rpc.publicnode.com',
+  'https://eth.drpc.org',
   'https://eth.llamarpc.com',
-  'https://rpc.ankr.com/eth',
   'https://cloudflare-eth.com',
 ];
+
+// RPCs that support eth_getLogs over a 50k-block range with CORS (verified).
+const LOG_RPCS = ['https://ethereum-rpc.publicnode.com', 'https://eth.drpc.org'];
+const MAX_LOG_RANGE = 50000;
 
 // ERC-20 view selectors (first 4 bytes of keccak256(signature)).
 const SEL = {
@@ -113,6 +129,64 @@ async function batchWithFailover(wallet: string): Promise<Map<number, string>> {
   );
 }
 
+type LogEntry = { data?: string };
+
+/** One JSON-RPC call to a single endpoint. Throws on HTTP / RPC error. */
+async function rpcCall(rpc: string, method: string, params: unknown[]): Promise<unknown> {
+  const res = await fetch(rpc, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const json = (await res.json()) as { result?: unknown; error?: { message?: string } };
+  if (json.error) throw new Error(json.error.message ?? 'RPC error');
+  return json.result;
+}
+
+/** Sum every $SPCX Transfer whose `from` is the $STAR contract = total ever
+ *  distributed to holders (raw base units), scanned in <=50k-block windows. */
+async function sumDistributedRaw(rpc: string): Promise<bigint> {
+  // Stop a few blocks behind head: load-balanced RPCs can serve eth_getLogs from
+  // a node a block or two behind eth_blockNumber, which errors as "unknown
+  // block". The ~1min lag is moot (the result is cached for 60s anyway).
+  const head = Number(hexToBigInt((await rpcCall(rpc, 'eth_blockNumber', [])) as string)) - 6;
+  let sum = 0n;
+  for (let from = DISTRIB_START_BLOCK; from <= head; from += MAX_LOG_RANGE) {
+    const to = Math.min(from + MAX_LOG_RANGE - 1, head);
+    const logs = (await rpcCall(rpc, 'eth_getLogs', [
+      {
+        address: SPCX_ADDRESS,
+        topics: [TRANSFER_TOPIC, STAR_FROM_TOPIC],
+        fromBlock: `0x${from.toString(16)}`,
+        toBlock: `0x${to.toString(16)}`,
+      },
+    ])) as LogEntry[];
+    for (const log of logs) sum += hexToBigInt(log.data);
+  }
+  return sum;
+}
+
+// Total-distributed is wallet-independent and a little heavy, so cache it briefly.
+let distribCache: { raw: bigint; at: number } | null = null;
+const DISTRIB_TTL = 60_000;
+
+/** Total $SPCX distributed by $STAR (raw base units), cached, with failover. */
+async function getTotalDistributedRaw(): Promise<bigint> {
+  if (distribCache && Date.now() - distribCache.at < DISTRIB_TTL) return distribCache.raw;
+  let lastErr: unknown;
+  for (const rpc of LOG_RPCS) {
+    try {
+      const raw = await sumDistributedRaw(rpc);
+      distribCache = { raw, at: Date.now() };
+      return raw;
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  throw lastErr instanceof Error ? lastErr : new Error('getLogs unavailable');
+}
+
 export type SpcxRewards = {
   wallet: string;
   decimals: number;
@@ -123,6 +197,9 @@ export type SpcxRewards = {
   totalSupply: number;
   /** amount / totalSupply * 100. */
   sharePct: number;
+  /** Total $SPCX the $STAR contract has distributed to holders (sum of outgoing
+   *  transfers), human units. null if the log scan was unavailable. */
+  totalDistributed: number | null;
 };
 
 /** Look up a wallet's on-chain $SPCX position. Throws TrackerError on failure. */
@@ -132,7 +209,12 @@ export async function getSpcxRewards(walletInput: string): Promise<SpcxRewards> 
     throw new TrackerError('INVALID_ADDRESS', 'Enter a valid Ethereum address (0x…).');
   }
 
-  const map = await batchWithFailover(wallet);
+  const [map, distRaw] = await Promise.all([
+    batchWithFailover(wallet),
+    // Total distributed is best-effort: a getLogs failure must not break the
+    // wallet lookup (the balance is the primary read).
+    getTotalDistributedRaw().catch(() => null),
+  ]);
   const decHex = map.get(ID.decimals);
   const balHex = map.get(ID.balanceOf);
   const supHex = map.get(ID.totalSupply);
@@ -147,6 +229,7 @@ export async function getSpcxRewards(walletInput: string): Promise<SpcxRewards> 
   const totalSupply = formatUnits(hexToBigInt(supHex), decimals);
   const amount = formatUnits(rawBalance, decimals);
   const sharePct = totalSupply > 0 ? (amount / totalSupply) * 100 : 0;
+  const totalDistributed = distRaw !== null ? formatUnits(distRaw, decimals) : null;
 
-  return { wallet, decimals, rawBalance, amount, totalSupply, sharePct };
+  return { wallet, decimals, rawBalance, amount, totalSupply, sharePct, totalDistributed };
 }
