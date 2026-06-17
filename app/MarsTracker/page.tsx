@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import MarsStage from '@/components/marstracker/MarsStage';
 import TrackerConsole from '@/components/marstracker/TrackerConsole';
+import SiteLinks from '@/components/sitemars/SiteLinks';
 
 export { metadata } from './metadata';
 
@@ -46,6 +47,10 @@ export default function MarsTrackerPage() {
         <main className="flex flex-1 items-start justify-center px-6 pt-[3vh] pb-20 md:pt-[5vh]">
           <TrackerConsole />
         </main>
+
+        <footer className="flex justify-center px-6 pb-12 pt-2">
+          <SiteLinks />
+        </footer>
       </div>
     </div>
   );

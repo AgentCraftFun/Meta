@@ -1,5 +1,6 @@
 'use client';
 
+import SiteLinks from '@/components/sitemars/SiteLinks';
 import CTAButton from '@/components/sitenew/CTAButton';
 import FadeUp from '@/components/sitenew/FadeUp';
 import SectionLabel from '@/components/sitenew/SectionLabel';
@@ -153,6 +154,12 @@ export default function CTA() {
           >
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent-300" />
             25,000,000 fixed supply · live on Ethereum
+          </div>
+        </FadeUp>
+
+        <FadeUp delay={0.6}>
+          <div className="mt-12 flex w-full justify-center">
+            <SiteLinks />
           </div>
         </FadeUp>
       </div>
