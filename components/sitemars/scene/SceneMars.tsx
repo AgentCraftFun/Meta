@@ -63,8 +63,8 @@ const FRAGMENT = /* glsl */ `
   }
 `;
 
-export default function SceneMars() {
-  const textures = useMemo(() => ({ day: MARS_TEXTURE }), []);
+export default function SceneMars({ texture = MARS_TEXTURE }: { texture?: string } = {}) {
+  const textures = useMemo(() => ({ day: texture }), [texture]);
 
   const shader: CelestialShader = useMemo(
     () => ({

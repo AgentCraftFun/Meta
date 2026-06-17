@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import MarsBackdrop from '@/components/marstracker/MarsBackdrop';
+import MarsStage from '@/components/marstracker/MarsStage';
 import TrackerConsole from '@/components/marstracker/TrackerConsole';
 
 export { metadata } from './metadata';
@@ -14,8 +14,9 @@ export { metadata } from './metadata';
 export default function MarsTrackerPage() {
   return (
     <div className="theme-mars relative min-h-screen w-full overflow-hidden bg-[#05080F] text-slate-100">
-      {/* Branded ambient backdrop (Mars sphere, rings, starfield, vignette). */}
-      <MarsBackdrop />
+      {/* Branded ambient backdrop — live spinning 3D Mars (same grade as
+          /siteMARS), starfield, atmosphere, contrast vignette. */}
+      <MarsStage />
 
       {/* Foreground */}
       <div className="relative z-10 flex min-h-screen flex-col">

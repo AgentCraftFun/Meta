@@ -130,12 +130,18 @@ export default function TrackerConsole() {
           <SectionLabel index="◎" label="Rewards Tracker" align="center" />
         </FadeUp>
         <Decode className="mt-7">
-          <h1 className="font-display text-[44px] font-bold leading-[1.02] tracking-[-0.035em] text-white md:text-[64px]">
+          <h1
+            className="font-display text-[44px] font-bold leading-[1.02] tracking-[-0.035em] text-white md:text-[64px]"
+            style={{ textShadow: '0 2px 30px rgba(2,4,9,0.55)' }}
+          >
             Track your <Shimmer>$SPCX</Shimmer> rewards.
           </h1>
         </Decode>
         <FadeUp delay={0.12}>
-          <p className="mx-auto mt-6 max-w-[520px] text-[16px] leading-relaxed text-slate-300/90">
+          <p
+            className="mx-auto mt-6 max-w-[520px] text-[16px] leading-relaxed text-slate-200"
+            style={{ textShadow: '0 1px 16px rgba(2,4,9,0.85)' }}
+          >
             Paste any wallet to see the $SPCX it has accrued from Starship
             Protocol. Read live from Ethereum. No connection, no signing, fully
             non-custodial.
