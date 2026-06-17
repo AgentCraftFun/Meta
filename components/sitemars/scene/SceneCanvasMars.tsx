@@ -148,7 +148,7 @@ export default function SceneCanvasMars() {
           </Suspense>
         </Canvas>
       </div>
-      <LoadingScreen />
+      <LoadingScreen tone="mars" />
     </div>
   );
 }
