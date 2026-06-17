@@ -311,7 +311,10 @@ function RewardsResult({ data }: { data: SpcxRewards }) {
 
         {/* Stat strip */}
         <div className="mt-8 grid grid-cols-1 gap-px overflow-hidden rounded-sm border border-white/5 bg-white/5 sm:grid-cols-2">
-          <Stat label="Value (USD)" value={data.usdValue != null ? fmtUsd(data.usdValue) : '—'} />
+          <Stat
+            label="Total distributed (USD)"
+            value={data.totalDistributedUsd != null ? fmtUsd(data.totalDistributedUsd) : '—'}
+          />
           <Stat
             label="Total $SPCX distributed"
             value={data.totalDistributed != null ? fmtAmount(data.totalDistributed) : '—'}

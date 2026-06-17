@@ -223,8 +223,8 @@ export type SpcxRewards = {
   totalDistributed: number | null;
   /** $SPCX spot price in USD (deepest DEX pair), or null if unavailable. */
   priceUsd: number | null;
-  /** USD value of the wallet's accrued $SPCX (amount * priceUsd), or null. */
-  usdValue: number | null;
+  /** USD value of ALL $SPCX distributed by $STAR (totalDistributed * priceUsd). */
+  totalDistributedUsd: number | null;
 };
 
 /** Look up a wallet's on-chain $SPCX position. Throws TrackerError on failure. */
@@ -256,7 +256,8 @@ export async function getSpcxRewards(walletInput: string): Promise<SpcxRewards> 
   const amount = formatUnits(rawBalance, decimals);
   const sharePct = totalSupply > 0 ? (amount / totalSupply) * 100 : 0;
   const totalDistributed = distRaw !== null ? formatUnits(distRaw, decimals) : null;
-  const usdValue = priceUsd !== null ? amount * priceUsd : null;
+  const totalDistributedUsd =
+    totalDistributed !== null && priceUsd !== null ? totalDistributed * priceUsd : null;
 
   return {
     wallet,
@@ -267,6 +268,6 @@ export async function getSpcxRewards(walletInput: string): Promise<SpcxRewards> 
     sharePct,
     totalDistributed,
     priceUsd,
-    usdValue,
+    totalDistributedUsd,
   };
 }
