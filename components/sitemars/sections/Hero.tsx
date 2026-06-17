@@ -82,7 +82,7 @@ export default function Hero() {
               className="mt-6 max-w-[500px] text-[16px] leading-relaxed text-slate-300/90"
             >
               $STAR is a deflationary ERC-20 on Ethereum. Every sell routes
-              synthetic SPCX exposure to holders, bought on-chain and split
+              SPCX exposure to holders, bought on-chain and split
               automatically. Hold $STAR and your exposure accrues. Claim it
               whenever you want. No brokerage. No KYC.
             </motion.p>

@@ -23,7 +23,7 @@ const STEPS = [
   {
     n: '03',
     title: 'SPCX Bought',
-    desc: '1% buys synthetic SPCX exposure on-chain.',
+    desc: '1% buys SPCX exposure on-chain.',
     glyph: <TokenGlyph />,
   },
   {
@@ -58,7 +58,7 @@ export default function Insight() {
 
             <FadeUp delay={0.2}>
               <p className="mt-5 max-w-[560px] text-[18px] leading-snug text-slate-400 md:text-[20px]">
-                A 3% tax on every sell routes synthetic SPCX exposure to everyone
+                A 3% tax on every sell routes SPCX exposure to everyone
                 holding $STAR. On-chain. Automatic.
               </p>
             </FadeUp>

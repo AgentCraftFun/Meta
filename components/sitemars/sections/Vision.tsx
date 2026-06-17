@@ -62,7 +62,7 @@ const CARDS = [
     title: 'SPCX',
     subtitle: 'Rewards',
     description:
-      '1% buys synthetic SPCX exposure on-chain and pays it to every holder, by how much they hold.',
+      '1% buys SPCX exposure on-chain and pays it to every holder, by how much they hold.',
     status: '1% · Live',
     visual: <MoonVisual />,
     // Desktop-live: the real 3D moon (MoonCanvas) shows through this cutout.
@@ -353,7 +353,7 @@ function MoonVisual() {
         }
       `}</style>
       <span className="absolute right-6 top-5 font-mono text-[8px] uppercase tracking-[0.4em] text-amber-400/60">
-        SPCX / Synthetic
+        SPCX / On-Chain
       </span>
     </div>
   );

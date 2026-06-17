@@ -95,7 +95,7 @@ export default function CTA() {
           <h2 className="mt-10 max-w-[940px] font-display text-[52px] font-bold leading-[1.0] tracking-[-0.035em] text-white md:text-[88px]">
             Be early to the token that pays you in{' '}
             <span className="bg-gradient-to-r from-accent-300 via-accent-200 to-accent-400 bg-clip-text text-transparent">
-              synthetic SPCX
+              SPCX
             </span>
             .
           </h2>

@@ -27,7 +27,7 @@ const FEATURES = [
   {
     code: 'SPCX-03',
     title: 'On-Chain SPCX',
-    desc: 'Synthetic SPCX exposure accrues to holders automatically. No snapshots.',
+    desc: 'SPCX exposure accrues to holders automatically. No snapshots.',
     Icon: PulseIcon,
   },
   {
@@ -105,7 +105,7 @@ export default function Product() {
             <Decode>
               <h2 className="font-display text-[38px] font-bold leading-[1.04] tracking-[-0.025em] text-white md:text-[50px]">
                 A token that pays you{' '}
-                <Shimmer>in synthetic SPCX</Shimmer>.
+                <Shimmer>in SPCX</Shimmer>.
               </h2>
             </Decode>
 

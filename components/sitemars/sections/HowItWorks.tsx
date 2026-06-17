@@ -20,7 +20,7 @@ const STEPS = [
     n: '02',
     title: 'Swap',
     code: 'STAR→SPCX',
-    desc: 'The SPCX cut swaps on-chain: STAR → WETH → synthetic SPCX.',
+    desc: 'The SPCX cut swaps on-chain: STAR → WETH → SPCX.',
   },
   {
     n: '03',
@@ -32,7 +32,7 @@ const STEPS = [
     n: '04',
     title: 'Claim',
     code: 'CLAIM()',
-    desc: 'Call claimRewards() and your synthetic SPCX lands in your wallet.',
+    desc: 'Call claimRewards() and your SPCX lands in your wallet.',
   },
 ];
 
@@ -80,7 +80,7 @@ export default function HowItWorks() {
                 'Ethereum',
                 'ERC-20',
                 'Uniswap V2',
-                'Synthetix-Style',
+                'Pro-Rata',
                 'On-Chain',
                 'Non-Custodial',
               ].map((s) => (
