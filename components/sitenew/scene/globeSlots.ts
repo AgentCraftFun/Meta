@@ -174,6 +174,45 @@ export function viewportToSlotCenter(
   return { cx: (px - offX) / stageW, cy: (py - offY) / stageH };
 }
 
+/**
+ * Measure a page element and return the slot {cx, cy} that centres the globe on
+ * it — plus the element's pixel height (for optional size-matching). Works at
+ * any scroll position: the element and its snap section-wrapper pan together, so
+ * their centre offset is constant, and when that section is snap-centred the
+ * wrapper centre sits at the viewport centre. Returns null if not measurable.
+ */
+export function measureAnchor(
+  id: string,
+  sectionIndex: number,
+  vw: number,
+  vh: number
+): { cx: number; cy: number; boxH: number } | null {
+  if (typeof document === 'undefined') return null;
+  const el = document.getElementById(id);
+  const wrap = document.querySelector<HTMLElement>(
+    `[data-sn-section="${sectionIndex}"]`
+  );
+  if (!el || !wrap) return null;
+  const er = el.getBoundingClientRect();
+  const wr = wrap.getBoundingClientRect();
+  if (er.width === 0 || er.height === 0 || wr.height === 0) return null;
+  const dx = er.left + er.width / 2 - (wr.left + wr.width / 2);
+  const dy = er.top + er.height / 2 - (wr.top + wr.height / 2);
+  const { cx, cy } = viewportToSlotCenter(vw / 2 + dx, vh / 2 + dy, vw, vh);
+  return { cx, cy, boxH: er.height };
+}
+
+/**
+ * Slot scale that renders the (main-camera) globe at `fit × boxH` px tall. The
+ * final on-screen diameter from globeTransform is GLOBE_DIAM_VH·stageH·scale
+ * (the stageH/vh lock factor cancels vh), so size tracks the measured box, not
+ * the viewport height. Only valid for the hero-camera travelling globe.
+ */
+export function boxScale(boxH: number, fit: number, vh: number): number {
+  const stageH = Math.min(vh, _stageLockH);
+  return (fit * boxH) / (GLOBE_DIAM_VH * stageH);
+}
+
 export function lerpSlot(a: Slot, b: Slot, t: number): Slot {
   const k = t < 0 ? 0 : t > 1 ? 1 : t;
   return {

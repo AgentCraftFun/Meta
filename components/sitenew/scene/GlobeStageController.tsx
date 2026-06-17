@@ -15,7 +15,8 @@ import {
   scrollToT,
   slotAt,
   slotAtSmooth,
-  viewportToSlotCenter,
+  measureAnchor,
+  boxScale,
 } from './globeSlots';
 
 /**
@@ -54,12 +55,14 @@ function damp(curV: number, tgtV: number, k: number, eps: number): number {
 
 export default function GlobeStageController({
   slots = SLOTS,
-  cutoutTrack,
+  tracks,
 }: {
   slots?: Slot[];
-  /** Centre the globe on a MEASURED page element for one section (e.g. the
-   *  product-mock cutout), instead of its hand-tuned slot — exact at any size. */
-  cutoutTrack?: { index: number; id: string };
+  /** Centre the globe on MEASURED page elements for given sections (e.g. the
+   *  product-mock cutout, the Vision earth card) instead of hand-tuned slots —
+   *  exact at any screen size. `fitH` (optional) also size-matches the globe to
+   *  `fitH × element-height` (only for sections where the globe stands alone). */
+  tracks?: { index: number; id: string; fitH?: number }[];
 } = {}) {
   // Re-initialise the controller (and thus pick the right branch) if the snap
   // mode flips at runtime — RM toggle, pointer change, or crossing 768px.
@@ -89,8 +92,9 @@ export default function GlobeStageController({
     let baseH = vh;
     let anchors: number[] = [];
     let gEl: HTMLElement | null = null;
-    // Slots actually used by the loops — equals `slots`, except the cutout-track
-    // section, whose cx/cy is overwritten with the MEASURED cutout centre.
+    // Slots actually used by the loops — equals `slots`, except tracked
+    // sections, whose cx/cy (and optionally scale) are overwritten with the
+    // MEASURED target element's centre/size.
     let activeSlots = slots;
 
     const findEl = (): HTMLElement | null => {
@@ -98,35 +102,26 @@ export default function GlobeStageController({
       return gEl;
     };
 
-    // Centre the tracked section's globe on the live cutout element. The cutout
-    // and its section-wrapper pan together, so the cutout's offset from the
-    // wrapper centre is constant; when that section is snap-centred the wrapper
-    // centre sits at the viewport centre, giving the cutout's settled centre.
-    const measureCutout = () => {
-      if (!cutoutTrack) {
+    const measureTracks = () => {
+      // Tracking assumes a snap-centred, vh-tall section wrapper; in free-scroll
+      // mode that doesn't hold, so fall back to the static slots there.
+      if (!tracks || tracks.length === 0 || !isSnapEnabled()) {
         activeSlots = slots;
         return;
       }
-      const cut = document.getElementById(cutoutTrack.id);
-      const wrap = document.querySelector<HTMLElement>(
-        `[data-sn-section="${cutoutTrack.index}"]`
-      );
-      if (!cut || !wrap) {
-        activeSlots = slots;
-        return;
+      let next: Slot[] | null = null;
+      for (const tk of tracks) {
+        const a = measureAnchor(tk.id, tk.index, vw, vh);
+        if (!a) continue;
+        if (!next) next = slots.slice();
+        next[tk.index] = {
+          ...slots[tk.index],
+          cx: a.cx,
+          cy: a.cy,
+          scale: tk.fitH ? boxScale(a.boxH, tk.fitH, vh) : slots[tk.index].scale,
+        };
       }
-      const cr = cut.getBoundingClientRect();
-      const wr = wrap.getBoundingClientRect();
-      if (cr.width === 0 || wr.height === 0) {
-        activeSlots = slots;
-        return;
-      }
-      const dx = cr.left + cr.width / 2 - (wr.left + wr.width / 2);
-      const dy = cr.top + cr.height / 2 - (wr.top + wr.height / 2);
-      const { cx, cy } = viewportToSlotCenter(vw / 2 + dx, vh / 2 + dy, vw, vh);
-      activeSlots = slots.map((s, i) =>
-        i === cutoutTrack.index ? { ...s, cx, cy } : s
-      );
+      activeSlots = next ?? slots;
     };
 
     const measure = () => {
@@ -138,7 +133,7 @@ export default function GlobeStageController({
         baseH = g.offsetHeight || vh;
       }
       anchors = buildAnchors(getSections(), vh, getScroll());
-      measureCutout();
+      measureTracks();
     };
 
     // ---- SECTION-SNAP: globe follows the snap progress `p` --------------

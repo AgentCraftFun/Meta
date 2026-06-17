@@ -154,6 +154,7 @@ export default function Vision() {
                     big body overflows this box, so cutout cards drop the bottom
                     border (it drew a line ACROSS the sphere). */}
                 <div
+                  id={`vision-globe-${card.key}`}
                   className={`relative aspect-[5/3] w-full overflow-hidden ${
                     isCutout ? '' : 'border-b border-white/5 bg-[#06090F]'
                   }`}

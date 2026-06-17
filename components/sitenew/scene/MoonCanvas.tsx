@@ -7,7 +7,7 @@ import { useReducedMotion } from '@/lib/useReducedMotion';
 import { z } from '../system/motion';
 import { useSceneStore } from '../system/useSceneStore';
 import { shouldUseFallback } from './deviceTier';
-import { globeTransform } from './globeSlots';
+import { globeTransform, measureAnchor } from './globeSlots';
 import SceneMoon from './SceneMoon';
 
 /**
@@ -51,14 +51,19 @@ export default function MoonCanvas() {
     let vh = window.innerHeight;
     let baseW = vw;
     let baseH = vh;
+    // Centre on the measured Moon card so it tracks the card at any screen size.
+    let anchor: { cx: number; cy: number } | null = null;
     const measure = () => {
       vw = window.innerWidth;
       vh = window.innerHeight;
       baseW = el.offsetWidth || vw;
       baseH = el.offsetHeight || vh;
+      const a = measureAnchor('vision-globe-moon', VISION_INDEX, vw, vh);
+      anchor = a ? { cx: a.cx, cy: a.cy } : null;
     };
     measure();
     const settle = window.setTimeout(measure, 300);
+    const settle2 = window.setTimeout(measure, 1200);
     window.addEventListener('resize', measure);
     window.addEventListener('load', measure);
 
@@ -83,10 +88,12 @@ export default function MoonCanvas() {
       // into place with it. (Pinning it to a fixed point made the rising section
       // slide past it, which read as the moon drifting DOWN.) EXIT (travel ≥ 5):
       // hold the settled slot — stay in place while only the Earth travels on.
+      const baseCx = anchor ? anchor.cx : MOON_SLOT.cx;
+      const baseCy = anchor ? anchor.cy : MOON_SLOT.cy;
       const cy =
-        travel < VISION_INDEX ? MOON_SLOT.cy + (VISION_INDEX - travel) : MOON_SLOT.cy;
+        travel < VISION_INDEX ? baseCy + (VISION_INDEX - travel) : baseCy;
       el.style.transform = globeTransform(
-        MOON_SLOT.cx,
+        baseCx,
         cy,
         MOON_SLOT.scale,
         vw,
@@ -101,6 +108,7 @@ export default function MoonCanvas() {
     return () => {
       cancelAnimationFrame(raf);
       window.clearTimeout(settle);
+      window.clearTimeout(settle2);
       window.removeEventListener('resize', measure);
       window.removeEventListener('load', measure);
     };

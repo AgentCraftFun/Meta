@@ -69,11 +69,15 @@ export default function LandingPage() {
         {/* §5 orb-bot — third fixed canvas (z-0), parked on the Develop card. */}
         <OrbbotCanvas />
         {/* Travelling-globe scroll controller (damps the #globe-transform).
-            Mars slots centre the Vision globe; §3 (The Token) is centred on the
-            MEASURED product-mock cutout so it's exact at any viewport. */}
+            §3 (The Token) and §5 (Tokenomics — Burn card) centre the globe on the
+            MEASURED content boxes, so they're exact at ANY screen size; §3 also
+            size-matches the globe to the mock cutout. */}
         <GlobeStageController
           slots={SLOTS_MARS}
-          cutoutTrack={{ index: 3, id: 'product-globe-cutout' }}
+          tracks={[
+            { index: 3, id: 'product-globe-cutout', fitH: 1.07 },
+            { index: 5, id: 'vision-globe-earth' },
+          ]}
         />
         {/* DEV-ONLY live placement tool — inert unless the URL has ?place. */}
         <GlobePlacer />

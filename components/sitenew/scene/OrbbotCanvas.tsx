@@ -8,7 +8,7 @@ import { useReducedMotion } from '@/lib/useReducedMotion';
 import { z } from '../system/motion';
 import { useSceneStore } from '../system/useSceneStore';
 import { shouldUseFallback } from './deviceTier';
-import { globeTransform } from './globeSlots';
+import { globeTransform, measureAnchor } from './globeSlots';
 import SceneOrbbot from './SceneOrbbot';
 
 /**
@@ -45,14 +45,19 @@ export default function OrbbotCanvas() {
     let vh = window.innerHeight;
     let baseW = vw;
     let baseH = vh;
+    // Centre on the measured Bots card so it tracks the card at any screen size.
+    let anchor: { cx: number; cy: number } | null = null;
     const measure = () => {
       vw = window.innerWidth;
       vh = window.innerHeight;
       baseW = el.offsetWidth || vw;
       baseH = el.offsetHeight || vh;
+      const a = measureAnchor('vision-globe-bots', VISION_INDEX, vw, vh);
+      anchor = a ? { cx: a.cx, cy: a.cy } : null;
     };
     measure();
     const settle = window.setTimeout(measure, 300);
+    const settle2 = window.setTimeout(measure, 1200);
     window.addEventListener('resize', measure);
     window.addEventListener('load', measure);
 
@@ -75,10 +80,12 @@ export default function OrbbotCanvas() {
       // its card and rises UP into place, instead of the rising section sliding
       // past a pinned bot (which read as it drifting DOWN). EXIT (travel ≥ 5):
       // hold the settled slot — stay in place while only the Earth travels on.
+      const baseCx = anchor ? anchor.cx : ORB_SLOT.cx;
+      const baseCy = anchor ? anchor.cy : ORB_SLOT.cy;
       const cy =
-        travel < VISION_INDEX ? ORB_SLOT.cy + (VISION_INDEX - travel) : ORB_SLOT.cy;
+        travel < VISION_INDEX ? baseCy + (VISION_INDEX - travel) : baseCy;
       el.style.transform = globeTransform(
-        ORB_SLOT.cx,
+        baseCx,
         cy,
         ORB_SLOT.scale,
         vw,
@@ -93,6 +100,7 @@ export default function OrbbotCanvas() {
     return () => {
       cancelAnimationFrame(raf);
       window.clearTimeout(settle);
+      window.clearTimeout(settle2);
       window.removeEventListener('resize', measure);
       window.removeEventListener('load', measure);
     };
