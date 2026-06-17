@@ -148,7 +148,7 @@ export default function SceneCanvasMars() {
           </Suspense>
         </Canvas>
       </div>
-      <LoadingScreen tone="mars" />
+      <LoadingScreen tone="mars" title="Initializing Starship Protocol…" />
     </div>
   );
 }
