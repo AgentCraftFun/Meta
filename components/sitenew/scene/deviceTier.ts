@@ -27,7 +27,7 @@ export function hasWebGL(): boolean {
   }
 }
 
-function isNarrow(): boolean {
+export function isNarrow(): boolean {
   if (typeof window === 'undefined') return false;
   return window.matchMedia('(max-width: 768px)').matches;
 }

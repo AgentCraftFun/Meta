@@ -10,11 +10,12 @@ import LoadingScreen from '@/components/celestial/LoadingScreen';
 import CameraRig from '@/components/sitenew/scene/CameraRig';
 import SceneBeacons from '@/components/sitenew/scene/SceneBeacons';
 import VisionCardBackdrops from '@/components/sitenew/scene/VisionCardBackdrops';
-import { shouldUseFallback } from '@/components/sitenew/scene/deviceTier';
+import { hasWebGL, isMobileLowPower, isNarrow } from '@/components/sitenew/scene/deviceTier';
 import { z } from '@/components/sitenew/system/motion';
 import { useSceneStore } from '@/components/sitenew/system/useSceneStore';
 import { SUN_POSITION } from '@/lib/sun';
 import { useReducedMotion } from '@/lib/useReducedMotion';
+import HeroMarsBackdropLive from './HeroMarsBackdropLive';
 import LightHeroFallbackMars from './LightHeroFallbackMars';
 import SceneMars from './SceneMars';
 
@@ -95,8 +96,17 @@ export default function SceneCanvasMars() {
 
   if (!mounted) return null;
 
-  if (shouldUseFallback(reduced)) {
+  // Reduced-motion, no WebGL, or a genuinely constrained phone → static frame.
+  if (reduced || !hasWebGL() || isMobileLowPower()) {
     return <LightHeroFallbackMars />;
+  }
+
+  // Capable phone / tablet (narrow, not low-power): a LIVE, self-contained hero
+  // Mars. The travelling stage below relies on desktop scroll-snap, so on mobile
+  // we render a non-travelling spinning Mars that fades past the hero rather
+  // than a fixed globe that would float over every section.
+  if (isNarrow()) {
+    return <HeroMarsBackdropLive />;
   }
 
   return (
