@@ -49,7 +49,7 @@ const CARDS = [
     title: 'Burn',
     subtitle: 'Deflation',
     description:
-      '1% of every sell is destroyed forever. Supply only shrinks — STAR grows scarcer with volume.',
+      '1% of every sell is burned for good. Supply only shrinks. $STAR gets scarcer as volume grows.',
     status: '1% · Live',
     visual: <EarthVisual />,
     // Desktop-live: the real travelling Mars body docks here (slot §5); the
@@ -59,10 +59,10 @@ const CARDS = [
   {
     key: 'moon',
     theme: 'amber' as const,
-    title: 'SpaceX',
+    title: 'SPCX',
     subtitle: 'Rewards',
     description:
-      '1% buys real SpaceX stock on-chain and pays it to every holder, in proportion to their stake.',
+      '1% buys synthetic SPCX exposure on-chain and pays it to every holder, by how much they hold.',
     status: '1% · Live',
     visual: <MoonVisual />,
     // Desktop-live: the real 3D moon (MoonCanvas) shows through this cutout.
@@ -74,7 +74,7 @@ const CARDS = [
     title: 'Develop',
     subtitle: 'Growth',
     description:
-      '1% is sent in ETH to the Starship wallet to fund development, marketing, and ecosystem growth.',
+      '1% goes in ETH to the Starship wallet for dev, marketing, and ecosystem growth.',
     status: '1% · Live',
     visual: <BotsVisual />,
     // Desktop-live: the real 3D orb-bot (OrbbotCanvas) shows through this cutout.
@@ -109,7 +109,7 @@ export default function Vision() {
 
         <FadeUp delay={0.2}>
           <p className="mx-auto mt-6 max-w-[720px] text-center text-[16px] leading-snug text-slate-400 md:text-[18px]">
-            One 3% tax, engineered to compound scarcity, rewards, and growth.
+            One 3% tax. Three jobs: burn supply, pay holders, fund growth.
           </p>
         </FadeUp>
 
@@ -353,7 +353,7 @@ function MoonVisual() {
         }
       `}</style>
       <span className="absolute right-6 top-5 font-mono text-[8px] uppercase tracking-[0.4em] text-amber-400/60">
-        SpaceX / Stock
+        SPCX / Synthetic
       </span>
     </div>
   );
@@ -366,17 +366,17 @@ const BASE_LINES: Line[] = [
   { tone: 'muted', text: '>  Liquidity locked · pair STAR/WETH' },
   { tone: 'cyan', text: '✶  Sell taxed 3% · 1/1/1 split' },
   { tone: 'red', text: '🔥 Burned 182 STAR → dead address' },
-  { tone: 'green', text: '✓  SpaceX distributed · +$61 to holders' },
+  { tone: 'green', text: '✓  SPCX distributed · +$61 to holders' },
   { tone: 'muted', text: '$  router fund --dev 0.04 ETH' },
 ];
 
 // Pool the feed cycles through — a new line types in every 4s.
 const FEED_LINES: Line[] = [
   { tone: 'cyan', text: '✶  Sell taxed 3% · routed on-chain' },
-  { tone: 'green', text: '✓  Holder claimed · $418 SPX → wallet' },
+  { tone: 'green', text: '✓  Holder claimed · $418 SPCX → wallet' },
   { tone: 'red', text: '🔥 Burned 74 STAR · supply 24,288,104' },
-  { tone: 'green', text: '✓  accSpxPerToken advanced · +$27' },
-  { tone: 'muted', text: '>  Accruing SpaceX for 1,204 holders…' },
+  { tone: 'green', text: '✓  accSpcxPerToken advanced · +$27' },
+  { tone: 'muted', text: '>  Accruing SPCX for 1,204 holders…' },
 ];
 
 function BotsVisual() {

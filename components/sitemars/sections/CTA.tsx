@@ -93,9 +93,9 @@ export default function CTA() {
 
         <FadeUp delay={0.1}>
           <h2 className="mt-10 max-w-[940px] font-display text-[52px] font-bold leading-[1.0] tracking-[-0.035em] text-white md:text-[88px]">
-            Be early to the token that{' '}
+            Be early to the token that pays you in{' '}
             <span className="bg-gradient-to-r from-accent-300 via-accent-200 to-accent-400 bg-clip-text text-transparent">
-              buys you SpaceX
+              synthetic SPCX
             </span>
             .
           </h2>
@@ -103,7 +103,7 @@ export default function CTA() {
 
         <FadeUp delay={0.2}>
           <p className="mt-7 max-w-[520px] text-[16px] leading-relaxed text-slate-400">
-            No brokers. No accreditation. No active management. Just hold and accrue.
+            No brokerage. No KYC. No managing it. Hold $STAR and accrue.
           </p>
         </FadeUp>
 

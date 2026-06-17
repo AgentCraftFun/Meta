@@ -1,5 +1,4 @@
 import CTA from '@/components/sitemars/sections/CTA';
-import Footer from '@/components/sitemars/sections/Footer';
 import Hero from '@/components/sitemars/sections/Hero';
 import HowItWorks from '@/components/sitemars/sections/HowItWorks';
 import Insight from '@/components/sitemars/sections/Insight';
@@ -15,7 +14,6 @@ import StageLock from '@/components/sitemars/scene/StageLock';
 import { SLOTS_MARS } from '@/components/sitemars/scene/globeSlotsMars';
 import BootSequence from '@/components/sitemars/system/BootSequence';
 import Grade from '@/components/sitenew/system/Grade';
-import LiveSignal from '@/components/sitemars/system/LiveSignal';
 import Reticle from '@/components/sitenew/system/Reticle';
 import ScrollDirector from '@/components/sitenew/system/ScrollDirector';
 import SmoothScroll from '@/components/sitenew/system/SmoothScroll';
@@ -40,7 +38,6 @@ const SECTIONS: { Component: () => JSX.Element; label: string }[] = [
   { Component: HowItWorks, label: 'How it works' },
   { Component: Vision, label: 'Tokenomics' },
   { Component: CTA, label: 'Acquire STAR' },
-  { Component: Footer, label: 'Footer' },
 ];
 
 export default function LandingPage() {
@@ -87,8 +84,6 @@ export default function LandingPage() {
         <ScrollDirector />
         {/* Hero targeting-reticle cursor. */}
         <Reticle />
-        {/* Ambient live protocol strip (tax feed + next-swap clock). */}
-        <LiveSignal />
 
         {/* Content floats over the globe; transparent main, z-10. In snap mode
             SnapStage locks this to one section at a time; otherwise it is an inert

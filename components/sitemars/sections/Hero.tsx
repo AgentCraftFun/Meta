@@ -72,18 +72,19 @@ export default function Hero() {
               {...line(0.85)}
               className="mt-6 font-mono text-[13px] uppercase leading-relaxed tracking-[0.32em] text-accent-300/95"
             >
-              Own a piece of SpaceX —
+              On-chain SPCX exposure.
               <br />
-              every time someone sells.
+              It grows every time someone sells.
             </motion.div>
 
             <motion.p
               {...line(1.05)}
               className="mt-6 max-w-[500px] text-[16px] leading-relaxed text-slate-300/90"
             >
-              $STAR is a deflationary ERC-20 on Ethereum that routes real SpaceX
-              stock to every holder — bought on-chain and paid out automatically,
-              funded by trading volume. Buy once, then accrue. Hands-free, forever.
+              $STAR is a deflationary ERC-20 on Ethereum. Every sell routes
+              synthetic SPCX exposure to holders, bought on-chain and split
+              automatically. Hold $STAR and your exposure accrues. Claim it
+              whenever you want. No brokerage. No KYC.
             </motion.p>
 
             <motion.div {...line(1.3)} className="mt-10">

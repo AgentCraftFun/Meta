@@ -15,25 +15,25 @@ const FEATURES = [
   {
     code: 'SUP-01',
     title: 'Fixed 25M Supply',
-    desc: 'Minted once at deploy. No mint function, no inflation — ever.',
+    desc: 'Minted once at deploy. No mint function. No inflation, ever.',
     Icon: GlobeIcon,
   },
   {
     code: 'TAX-02',
     title: '3% Sell Tax',
-    desc: 'Split equally: 1% burn, 1% SpaceX rewards, 1% development.',
+    desc: 'Split equally: 1% burn, 1% SPCX rewards, 1% dev.',
     Icon: BeaconIcon,
   },
   {
-    code: 'SPX-03',
-    title: 'On-Chain SpaceX',
-    desc: 'Real SpaceX stock accrues to holders automatically. No snapshots.',
+    code: 'SPCX-03',
+    title: 'On-Chain SPCX',
+    desc: 'Synthetic SPCX exposure accrues to holders automatically. No snapshots.',
     Icon: PulseIcon,
   },
   {
     code: 'BRN-04',
     title: 'Deflationary',
-    desc: 'Every sell burns supply forever. STAR only gets scarcer.',
+    desc: 'Every sell burns supply for good. $STAR only gets scarcer.',
     Icon: ClockIcon,
   },
 ];
@@ -105,7 +105,7 @@ export default function Product() {
             <Decode>
               <h2 className="font-display text-[38px] font-bold leading-[1.04] tracking-[-0.025em] text-white md:text-[50px]">
                 A token that pays you{' '}
-                <Shimmer>in real SpaceX stock</Shimmer>.
+                <Shimmer>in synthetic SPCX</Shimmer>.
               </h2>
             </Decode>
 
@@ -357,7 +357,7 @@ function ProductMock() {
           {/* Side panel */}
           <div className="flex flex-col gap-2 bg-[#0B1220] p-3">
             <div className="font-mono text-[9px] uppercase tracking-[0.32em] text-slate-500">
-              ⬢ Sell Tax · SpaceX Flow
+              ⬢ Sell Tax · SPCX Flow
             </div>
             <ol className="flex flex-col gap-2">
               <AnimatePresence initial={false}>
@@ -385,7 +385,7 @@ function ProductMock() {
                           <div className={`h-full ${c.bar}`} style={{ width: `${n.vol}%` }} />
                         </div>
                         <span className="text-[9px] tabular-nums text-emerald-300/85">
-                          {n.mom} SPX
+                          {n.mom} SPCX
                         </span>
                       </div>
                     </motion.li>

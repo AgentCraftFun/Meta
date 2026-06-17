@@ -14,25 +14,25 @@ const STEPS = [
     n: '01',
     title: 'Tax',
     code: 'SELL.3%',
-    desc: 'Every sell on Uniswap is taxed 3% — split burn, SpaceX, dev.',
+    desc: 'Every sell on Uniswap is taxed 3%. Split: burn, SPCX, dev.',
   },
   {
     n: '02',
     title: 'Swap',
-    code: 'STAR→SPX',
-    desc: 'The SpaceX cut swaps on-chain: STAR → WETH → SpaceX stock.',
+    code: 'STAR→SPCX',
+    desc: 'The SPCX cut swaps on-chain: STAR → WETH → synthetic SPCX.',
   },
   {
     n: '03',
     title: 'Accrue',
     code: 'ACC.18D',
-    desc: 'accSpxPerToken rises for every real holder, by their stake.',
+    desc: 'accSpcxPerToken rises for every holder, by how much they hold.',
   },
   {
     n: '04',
     title: 'Claim',
     code: 'CLAIM()',
-    desc: 'Call claimRewards() and SpaceX stock lands in your wallet.',
+    desc: 'Call claimRewards() and your synthetic SPCX lands in your wallet.',
   },
 ];
 
@@ -47,7 +47,7 @@ export default function HowItWorks() {
 
         <Decode className="text-center">
           <h2 className="mt-8 text-center font-display text-[40px] font-bold leading-[1.04] tracking-[-0.025em] text-white md:text-[60px]">
-            From sell tax to <Shimmer>SpaceX in your wallet</Shimmer>.
+            From sell tax to <Shimmer>SPCX in your wallet</Shimmer>.
           </h2>
         </Decode>
 

@@ -11,25 +11,25 @@ const STEPS = [
   {
     n: '01',
     title: 'Someone Sells',
-    desc: 'Any sell through the Uniswap pool triggers a 3% protocol tax.',
+    desc: 'Every sell on the Uniswap pool triggers a 3% tax.',
     glyph: <BreakingGlyph />,
   },
   {
     n: '02',
     title: 'Tax Splits',
-    desc: 'Three equal cuts — 1% burn, 1% SpaceX, 1% development.',
+    desc: 'It splits three equal ways: 1% burn, 1% SPCX, 1% dev.',
     glyph: <TrendsGlyph />,
   },
   {
     n: '03',
-    title: 'SpaceX Bought',
-    desc: '1% is swapped on-chain into real SpaceX stock tokens.',
+    title: 'SPCX Bought',
+    desc: '1% buys synthetic SPCX exposure on-chain.',
     glyph: <TokenGlyph />,
   },
   {
     n: '04',
     title: 'Holders Paid',
-    desc: 'Distributed to every holder, in proportion to their stake.',
+    desc: 'It goes to every holder, by how much $STAR you hold.',
     glyph: <PumpGlyph />,
   },
 ];
@@ -52,13 +52,14 @@ export default function Insight() {
 
             <Decode>
               <h2 className="mt-6 font-display text-[40px] font-bold leading-[1.04] tracking-[-0.03em] text-white md:text-[54px]">
-                Every sell buys you <Shimmer>SpaceX</Shimmer>.
+                Every sell buys <Shimmer>SPCX</Shimmer> for holders.
               </h2>
             </Decode>
 
             <FadeUp delay={0.2}>
               <p className="mt-5 max-w-[560px] text-[18px] leading-snug text-slate-400 md:text-[20px]">
-                A 3% tax on every sale quietly routes real SpaceX stock to everyone holding $STAR.
+                A 3% tax on every sell routes synthetic SPCX exposure to everyone
+                holding $STAR. On-chain. Automatic.
               </p>
             </FadeUp>
 
@@ -115,7 +116,7 @@ export default function Insight() {
                     The Edge
                   </div>
                   <div className="mt-2.5 font-display text-[20px] font-bold tracking-[0.04em] text-white md:text-[24px]">
-                    The more $STAR trades, the more SpaceX you own.
+                    The more $STAR trades, the more SPCX you stack.
                   </div>
                 </div>
               </TacticalFrame>

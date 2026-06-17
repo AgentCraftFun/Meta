@@ -6,32 +6,37 @@ import FadeUp from '@/components/sitenew/FadeUp';
 import SectionLabel from '@/components/sitenew/SectionLabel';
 import Shimmer from '@/components/sitenew/Shimmer';
 
-// The walls that have kept SpaceX off-limits to ordinary investors.
-const GATEKEEPERS = [
-  'Institutional Rounds',
-  'Accredited Only',
-  'Private Secondaries',
-  '$0 Retail Access',
-];
+// SPCX is public now, but it sits in a brokerage doing nothing on-chain.
+const GATEKEEPERS = ['Brokerage Only', 'KYC Required', 'Off-Chain', 'Static Position'];
 
-const STATS = [
+type Stat = {
+  target: number;
+  prefix?: string;
+  suffix?: string;
+  formatter?: (n: number) => string;
+  label: string;
+  desc: string;
+};
+
+const STATS: Stat[] = [
   {
-    target: 350,
+    target: 2.6,
     prefix: '$',
-    suffix: 'B+',
-    label: 'SpaceX Valuation',
-    desc: 'One of the most valuable private companies on Earth — and still climbing.',
+    suffix: 'T',
+    formatter: (n) => n.toFixed(1),
+    label: 'SPCX Market Cap',
+    desc: 'Fifth-largest public company in the world, days after listing.',
+  },
+  {
+    target: 135,
+    prefix: '$',
+    label: 'IPO Price',
+    desc: 'Listed June 12, 2026. It has not traded sideways since.',
   },
   {
     target: 0,
-    label: 'Shares For Retail',
-    desc: 'Ordinary investors have never been able to buy SpaceX equity directly.',
-  },
-  {
-    target: 100,
-    suffix: '%',
-    label: 'Locked To Insiders',
-    desc: 'Access reserved for institutions, funds, and accredited private rounds.',
+    label: 'On-Chain SPCX',
+    desc: 'No native, self-custodial way to hold SPCX exposure on-chain. Until $STAR.',
   },
 ];
 
@@ -48,29 +53,20 @@ export default function Problem() {
 
           <Decode>
             <h2 className="mt-7 font-display text-[42px] font-bold leading-[1.02] tracking-[-0.025em] text-white md:text-[58px]">
-              SpaceX is the trade{' '}
-              <span className="relative inline-block">
-                <Shimmer>retail can&apos;t make</Shimmer>
-                <span
-                  aria-hidden
-                  className="absolute -bottom-1 left-0 h-px w-full"
-                  style={{
-                    background:
-                      'linear-gradient(90deg, transparent, rgb(var(--accent-400) / 0.6), transparent)',
-                  }}
-                />
-              </span>
-              .
+              SpaceX went public.
+              <br />
+              <Shimmer>Your bags still sit in a brokerage.</Shimmer>
             </h2>
           </Decode>
 
           <FadeUp delay={0.2}>
             <p className="mt-5 text-[19px] leading-snug text-slate-400 md:text-[22px]">
-              The most valuable rocket company on Earth — and you can&apos;t own a single share.
+              Anyone can buy SPCX now. But it lives in a brokerage, off-chain,
+              KYC&apos;d to your name, doing nothing while volume rips.
             </p>
           </FadeUp>
 
-          {/* Gatekeeper strip — the walls keeping SpaceX private. */}
+          {/* Where SPCX still lives today: off-chain and static. */}
           <FadeUp delay={0.3}>
             <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-2 sm:gap-x-5">
               {GATEKEEPERS.map((g) => (
@@ -85,7 +81,7 @@ export default function Problem() {
             </div>
           </FadeUp>
 
-          {/* Stat ledger — the access gap, number-led. */}
+          {/* Stat ledger — the on-chain gap, number-led. */}
           <div className="mt-8 border-t border-[#1E293B]/70">
             {STATS.map((stat, i) => (
               <FadeUp key={stat.label} delay={0.4 + i * 0.08}>
@@ -95,6 +91,7 @@ export default function Problem() {
                     duration={1.0}
                     prefix={stat.prefix}
                     suffix={stat.suffix}
+                    formatter={stat.formatter}
                     className="font-display text-[32px] font-bold leading-none tracking-[-0.03em] text-white md:text-[40px]"
                   />
                   <div className="max-w-[420px]">
