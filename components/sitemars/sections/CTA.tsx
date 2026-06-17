@@ -85,6 +85,18 @@ export default function CTA() {
         }}
       />
 
+      {/* Contrast vignette — the bright Mars body travels behind this final
+          section, so a centred darkening keeps the eyebrow, headline, secondary
+          copy, ghost CTA, and supply line readable while Mars still glows at the
+          frame edges. Sits above the rings/glow, below the content. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(ellipse 90% 70% at 50% 50%, rgba(2,4,9,0.74) 0%, rgba(2,4,9,0.66) 40%, rgba(2,4,9,0.34) 66%, rgba(2,4,9,0) 84%)',
+        }}
+      />
 
       <div className="relative mx-auto flex max-w-[1100px] flex-col items-center text-center">
         <FadeUp>
@@ -92,7 +104,10 @@ export default function CTA() {
         </FadeUp>
 
         <FadeUp delay={0.1}>
-          <h2 className="mt-10 max-w-[940px] font-display text-[52px] font-bold leading-[1.0] tracking-[-0.035em] text-white md:text-[88px]">
+          <h2
+            className="mt-10 max-w-[940px] font-display text-[52px] font-bold leading-[1.0] tracking-[-0.035em] text-white md:text-[88px]"
+            style={{ textShadow: '0 2px 28px rgba(2,4,9,0.55)' }}
+          >
             Be early to the token that pays you in{' '}
             <span className="bg-gradient-to-r from-accent-300 via-accent-200 to-accent-400 bg-clip-text text-transparent">
               SPCX
@@ -102,13 +117,29 @@ export default function CTA() {
         </FadeUp>
 
         <FadeUp delay={0.2}>
-          <p className="mt-7 max-w-[520px] text-[16px] leading-relaxed text-slate-400">
+          <p
+            className="mt-7 max-w-[520px] text-[16px] leading-relaxed text-slate-200"
+            style={{ textShadow: '0 1px 16px rgba(2,4,9,0.7)' }}
+          >
             No brokerage. No KYC. No managing it. Hold $STAR and accrue.
           </p>
         </FadeUp>
 
         <FadeUp delay={0.3}>
-          <div className="mt-12">
+          <div className="relative isolate mt-12 inline-flex">
+            {/* Dark backing halo — guarantees the ghost CTA reads over the
+                bright Mars body behind this section. */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute left-1/2 top-1/2 -z-10 -translate-x-1/2 -translate-y-1/2"
+              style={{
+                width: '150%',
+                height: '300%',
+                background:
+                  'radial-gradient(ellipse at center, rgba(2,4,9,0.9) 0%, rgba(2,4,9,0.5) 48%, transparent 74%)',
+                filter: 'blur(10px)',
+              }}
+            />
             <CTAButton href="https://app.uniswap.org" size="lg">
               Acquire $STAR
             </CTAButton>
@@ -116,7 +147,10 @@ export default function CTA() {
         </FadeUp>
 
         <FadeUp delay={0.45}>
-          <div className="mt-10 flex items-center gap-4 font-mono text-[10px] uppercase tracking-[0.45em] text-slate-500">
+          <div
+            className="mt-10 flex items-center gap-4 font-mono text-[10px] uppercase tracking-[0.45em] text-slate-300"
+            style={{ textShadow: '0 1px 12px rgba(2,4,9,0.7)' }}
+          >
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent-300" />
             25,000,000 fixed supply · live on Ethereum
           </div>
