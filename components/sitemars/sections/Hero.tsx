@@ -43,14 +43,14 @@ export default function Hero() {
         {/* Top-left tactical readout */}
         <motion.div
           {...line(0.1)}
-          className="flex items-center gap-2 px-10 pt-10 font-mono text-[10px] uppercase tracking-[0.45em] text-accent-300/80"
+          className="flex items-center gap-2 px-6 pt-8 font-mono text-[10px] uppercase tracking-[0.45em] text-accent-300/80 md:px-10 md:pt-10"
         >
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent-300 shadow-[0_0_10px_rgb(var(--accent-400)_/_0.85)]" />
           Live · Ethereum Mainnet
         </motion.div>
 
         {/* Center-left main content */}
-        <div className="flex flex-1 items-center px-10">
+        <div className="flex flex-1 items-center px-6 md:px-10">
           <div className="pointer-events-auto max-w-[660px]">
             {/* Emblem */}
             <motion.img
@@ -94,7 +94,7 @@ export default function Hero() {
         </div>
 
         {/* Bottom row */}
-        <div className="flex items-end justify-between px-10 pb-10 font-mono text-[10px] uppercase tracking-[0.4em] text-slate-500">
+        <div className="flex items-end justify-between px-6 pb-8 font-mono text-[10px] uppercase tracking-[0.4em] text-slate-500 md:px-10 md:pb-10">
           <motion.span {...line(1.5)}>$STAR · ERC-20</motion.span>
           <motion.div {...line(1.5)} className="flex items-center gap-2 text-slate-400/70">
             <span aria-hidden className="animate-bounce">↓</span>

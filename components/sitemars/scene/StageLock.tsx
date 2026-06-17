@@ -17,8 +17,18 @@ const LOCK_H = 752;
 
 export default function StageLock() {
   useEffect(() => {
-    setStageLock(LOCK_W, LOCK_H);
-    return () => setStageLock();
+    // Desktop only. The lock maps every globeTransform onto a tuned 1512×752
+    // desktop stage; on mobile the globes render as 2D fallbacks, so locking
+    // would only skew layout math. Native mobile gets no lock, and we re-apply
+    // if the viewport crosses the breakpoint.
+    const mq = window.matchMedia('(min-width: 768px)');
+    const apply = () => (mq.matches ? setStageLock(LOCK_W, LOCK_H) : setStageLock());
+    apply();
+    mq.addEventListener('change', apply);
+    return () => {
+      mq.removeEventListener('change', apply);
+      setStageLock();
+    };
   }, []);
   return null;
 }

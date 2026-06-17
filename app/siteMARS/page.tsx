@@ -48,7 +48,7 @@ export default function LandingPage() {
           Mars glass. It sets only CSS variables, so it creates no stacking
           context and the fixed z-0 canvases / z-10 content layer exactly as on
           /siteNEW. /siteNEW has no such wrapper, so it stays cyan. */}
-      <div className="theme-mars">
+      <div className="theme-mars overflow-x-clip">
         {/* Centre-lock the globe stage to the tuned 1512×752 viewport (Mars only). */}
         <StageLock />
         {/* Skip link — first focusable, above everything (z-60). */}
