@@ -86,14 +86,14 @@ function StaticMars() {
     <>
       {/* Warm atmosphere bloom off the limb. */}
       <div
-        className="absolute left-1/2 top-[72%] h-[900px] w-[900px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[60px]"
+        className="tk-bloom absolute left-1/2 top-[72%] h-[900px] w-[900px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[60px]"
         style={{
           background:
             'radial-gradient(circle at 50% 35%, rgb(var(--accent-400) / 0.28) 0%, rgb(var(--accent-400) / 0.08) 38%, transparent 65%)',
         }}
       />
       <div
-        className="absolute left-1/2 top-[120%] h-[1180px] w-[1180px] -translate-x-1/2 -translate-y-1/2 rounded-full"
+        className="tk-planet absolute left-1/2 top-[120%] h-[1180px] w-[1180px] -translate-x-1/2 -translate-y-1/2 rounded-full"
         style={{
           backgroundImage: 'url(/textures/mars_tracker_bg.jpg)',
           backgroundSize: 'cover',
@@ -122,7 +122,7 @@ export default function MarsStage() {
       style={{ zIndex: 0 }}
     >
       {/* Starfield */}
-      <div className="absolute inset-0">
+      <div className="tk-stars absolute inset-0">
         {STARS.map((s, i) => (
           <span
             key={i}
@@ -164,6 +164,52 @@ export default function MarsStage() {
             'radial-gradient(ellipse 110% 78% at 50% 34%, rgba(5,8,15,0) 44%, rgba(5,8,15,0.55) 100%)',
         }}
       />
+
+      {/* MOBILE / static-branch life: GPU-cheap drift + breathe + twinkle so the
+          tracker isn't a dead still image. Disabled under reduced-motion. The
+          live-WebGL (desktop) branch already spins, so these only add a subtle
+          star twinkle there. */}
+      <style jsx global>{`
+        @media (prefers-reduced-motion: no-preference) {
+          .tk-stars {
+            animation: tk-twinkle 5.5s ease-in-out infinite;
+          }
+          .tk-bloom {
+            animation: tk-breathe 7.5s ease-in-out infinite;
+          }
+          .tk-planet {
+            animation: tk-drift 34s ease-in-out infinite alternate;
+          }
+        }
+        @keyframes tk-twinkle {
+          0%,
+          100% {
+            opacity: 0.78;
+          }
+          50% {
+            opacity: 1;
+          }
+        }
+        @keyframes tk-breathe {
+          0%,
+          100% {
+            opacity: 0.8;
+            transform: translate(-50%, -50%) scale(1);
+          }
+          50% {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1.06);
+          }
+        }
+        @keyframes tk-drift {
+          from {
+            background-position: 44% 30%;
+          }
+          to {
+            background-position: 56% 30%;
+          }
+        }
+      `}</style>
     </div>
   );
 }
