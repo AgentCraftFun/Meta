@@ -34,6 +34,9 @@ const RPCS = [
 const LOG_RPCS = ['https://ethereum-rpc.publicnode.com', 'https://eth.drpc.org'];
 const MAX_LOG_RANGE = 50000;
 
+// $SPCX spot price (USD) — DexScreener aggregates the DEX pairs, CORS-enabled.
+const DEXSCREENER = `https://api.dexscreener.com/latest/dex/tokens/${SPCX_ADDRESS}`;
+
 // ERC-20 view selectors (first 4 bytes of keccak256(signature)).
 const SEL = {
   decimals: '0x313ce567',
@@ -187,6 +190,24 @@ async function getTotalDistributedRaw(): Promise<bigint> {
   throw lastErr instanceof Error ? lastErr : new Error('getLogs unavailable');
 }
 
+type DexPair = { priceUsd?: string; liquidity?: { usd?: number } };
+
+/** Best-effort $SPCX spot price (USD), from the deepest DexScreener pair. */
+async function getSpcxPriceUsd(): Promise<number | null> {
+  try {
+    const res = await fetch(DEXSCREENER, { headers: { accept: 'application/json' } });
+    if (!res.ok) return null;
+    const json = (await res.json()) as { pairs?: DexPair[] };
+    const pairs = (json.pairs ?? []).filter((p) => p.priceUsd);
+    if (pairs.length === 0) return null;
+    pairs.sort((a, b) => (b.liquidity?.usd ?? 0) - (a.liquidity?.usd ?? 0));
+    const price = Number(pairs[0].priceUsd);
+    return Number.isFinite(price) && price > 0 ? price : null;
+  } catch {
+    return null;
+  }
+}
+
 export type SpcxRewards = {
   wallet: string;
   decimals: number;
@@ -200,6 +221,10 @@ export type SpcxRewards = {
   /** Total $SPCX the $STAR contract has distributed to holders (sum of outgoing
    *  transfers), human units. null if the log scan was unavailable. */
   totalDistributed: number | null;
+  /** $SPCX spot price in USD (deepest DEX pair), or null if unavailable. */
+  priceUsd: number | null;
+  /** USD value of the wallet's accrued $SPCX (amount * priceUsd), or null. */
+  usdValue: number | null;
 };
 
 /** Look up a wallet's on-chain $SPCX position. Throws TrackerError on failure. */
@@ -209,11 +234,12 @@ export async function getSpcxRewards(walletInput: string): Promise<SpcxRewards> 
     throw new TrackerError('INVALID_ADDRESS', 'Enter a valid Ethereum address (0x…).');
   }
 
-  const [map, distRaw] = await Promise.all([
+  const [map, distRaw, priceUsd] = await Promise.all([
     batchWithFailover(wallet),
-    // Total distributed is best-effort: a getLogs failure must not break the
-    // wallet lookup (the balance is the primary read).
+    // Both are best-effort: a getLogs / price failure must not break the wallet
+    // lookup (the balance is the primary read).
     getTotalDistributedRaw().catch(() => null),
+    getSpcxPriceUsd(),
   ]);
   const decHex = map.get(ID.decimals);
   const balHex = map.get(ID.balanceOf);
@@ -230,6 +256,17 @@ export async function getSpcxRewards(walletInput: string): Promise<SpcxRewards> 
   const amount = formatUnits(rawBalance, decimals);
   const sharePct = totalSupply > 0 ? (amount / totalSupply) * 100 : 0;
   const totalDistributed = distRaw !== null ? formatUnits(distRaw, decimals) : null;
+  const usdValue = priceUsd !== null ? amount * priceUsd : null;
 
-  return { wallet, decimals, rawBalance, amount, totalSupply, sharePct, totalDistributed };
+  return {
+    wallet,
+    decimals,
+    rawBalance,
+    amount,
+    totalSupply,
+    sharePct,
+    totalDistributed,
+    priceUsd,
+    usdValue,
+  };
 }

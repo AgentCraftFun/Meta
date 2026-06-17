@@ -33,11 +33,13 @@ function fmtAmount(n: number): string {
   return new Intl.NumberFormat('en-US', { maximumFractionDigits: max }).format(n);
 }
 
-function fmtPct(p: number): string {
-  if (p === 0) return '0%';
-  if (p < 0.0001) return '<0.0001%';
-  if (p < 1) return `${p.toFixed(4)}%`;
-  return `${p.toFixed(2)}%`;
+function fmtUsd(n: number): string {
+  if (n > 0 && n < 0.01) return '<$0.01';
+  return n.toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: n < 1000 ? 2 : 0,
+  });
 }
 
 function shortAddr(a: string): string {
@@ -309,7 +311,7 @@ function RewardsResult({ data }: { data: SpcxRewards }) {
 
         {/* Stat strip */}
         <div className="mt-8 grid grid-cols-1 gap-px overflow-hidden rounded-sm border border-white/5 bg-white/5 sm:grid-cols-2">
-          <Stat label="Share of all $SPCX" value={fmtPct(data.sharePct)} />
+          <Stat label="Value (USD)" value={data.usdValue != null ? fmtUsd(data.usdValue) : '—'} />
           <Stat
             label="Total $SPCX distributed"
             value={data.totalDistributed != null ? fmtAmount(data.totalDistributed) : '—'}
